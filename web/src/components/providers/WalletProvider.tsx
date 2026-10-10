@@ -2,7 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
+import { readAccount, type AccountState } from '@/lib/account'
 import { DEFAULT_LOOKBACK_BLOCKS, currentBlock, fetchTransfers, mergeTransfers, type Transfer } from '@/lib/activity'
+import { isEvicted } from '@/lib/eviction'
 import { useIsClient } from '@/lib/hooks'
 import { getRecoveryStatus, isPasskeyOwner, type RecoveryStatus } from '@/lib/recovery'
 import { clearAll, loadWallet, saveWallet, toPublicKey, type StoredWallet } from '@/lib/storage'
@@ -14,10 +16,16 @@ import { getUsdcBalance, isDeployed } from '@/lib/wallet'
  */
 
 export type ChainState = {
+  /** USDC on the funds address: the Account once it exists (ADR-017), else the Key Safe. */
   balance: bigint | null
+  /** USDC left on the phone's Key Safe once an Account exists (received before it): to sweep. */
+  keySafeBalance: bigint | null
+  /** Key Safe (the passkey Safe) deployed. */
   deployed: boolean | null
   recovery: RecoveryStatus | null
   isOwner: boolean | null
+  /** Account owners, allowance left today, pending eviction (null before protection). */
+  account: AccountState | null
 }
 
 type WalletContextValue = {
@@ -26,6 +34,8 @@ type WalletContextValue = {
   wallet: StoredWallet | null
   /** The Account Safe holding the funds (ADR-017), null until protection is activated. */
   account: `0x${string}` | null
+  /** Where funds live and are received: the Account, or the Key Safe before protection. */
+  fundsAddress: `0x${string}` | null
   setWallet: (wallet: StoredWallet) => void
   forget: () => void
   chain: ChainState
@@ -34,7 +44,17 @@ type WalletContextValue = {
   refresh: () => void
 }
 
-const EMPTY_CHAIN: ChainState = { balance: null, deployed: null, recovery: null, isOwner: null }
+const EMPTY_CHAIN: ChainState = {
+  balance: null,
+  keySafeBalance: null,
+  deployed: null,
+  recovery: null,
+  isOwner: null,
+  account: null,
+}
+
+/** Chain state and history are keyed by wallet + Account, so protecting a wallet never shows stale data. */
+const keyOf = (wallet: StoredWallet) => `${wallet.address}:${wallet.account ?? ''}`
 
 const WalletContext = createContext<WalletContextValue | null>(null)
 
@@ -51,15 +71,25 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!wallet) return
     let cancelled = false
+    const account = wallet.account
     const load = () =>
       Promise.all([
-        getUsdcBalance(wallet.address),
+        getUsdcBalance(account ?? wallet.address),
+        account ? getUsdcBalance(wallet.address) : Promise.resolve(null),
         isDeployed(wallet.address),
         getRecoveryStatus(wallet.address),
         isPasskeyOwner(wallet.address, toPublicKey(wallet)),
+        account ? readAccount(account, { keySafe: wallet.address }) : Promise.resolve(null),
       ])
-        .then(([balance, deployed, recovery, isOwner]) => {
-          if (!cancelled) setChainState({ address: wallet.address, state: { balance, deployed, recovery, isOwner } })
+        .then(([balance, keySafeBalance, deployed, recovery, isOwner, accountState]) => {
+          if (!cancelled) {
+            // Revoked if the passkey lost the Key Safe (legacy recovery) or the Key Safe lost the Account (eviction, #16).
+            const owner = isOwner && !isEvicted(accountState, wallet.address)
+            setChainState({
+              address: keyOf(wallet),
+              state: { balance, keySafeBalance, deployed, recovery, isOwner: owner, account: accountState },
+            })
+          }
         })
         .catch(() => {
           // RPC hiccup: keep the last known values.
@@ -81,11 +111,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       try {
         const from =
           cursor ?? (wallet.createdBlock ? BigInt(wallet.createdBlock) : (await currentBlock()) - DEFAULT_LOOKBACK_BLOCKS)
-        const { transfers, toBlock } = await fetchTransfers(wallet.address, from)
+        const { transfers, toBlock } = await fetchTransfers(wallet.account ?? wallet.address, from)
         if (cancelled) return
         cursor = toBlock + 1n
         items = mergeTransfers(items, transfers)
-        setHistory({ address: wallet.address, items })
+        setHistory({ address: keyOf(wallet), items })
       } catch {
         // Retry on the next tick.
       }
@@ -115,11 +145,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       ready,
       wallet,
       account: wallet?.account ?? null,
+      fundsAddress: wallet ? (wallet.account ?? wallet.address) : null,
       setWallet,
       forget,
       refresh,
-      chain: chainState && wallet && chainState.address === wallet.address ? chainState.state : EMPTY_CHAIN,
-      transfers: history && wallet && history.address === wallet.address ? history.items : null,
+      chain: chainState && wallet && chainState.address === keyOf(wallet) ? chainState.state : EMPTY_CHAIN,
+      transfers: history && wallet && history.address === keyOf(wallet) ? history.items : null,
     }),
     [ready, wallet, setWallet, forget, refresh, chainState, history],
   )

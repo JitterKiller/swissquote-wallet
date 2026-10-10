@@ -55,7 +55,7 @@ function BalanceCard() {
           <Lock className="h-3.5 w-3.5" /> Self-custody · only you can move these funds
         </span>
         <span className="hidden sm:inline-flex">
-          <AddressPill address={wallet.address} tone="hero" />
+          <AddressPill address={wallet.account ?? wallet.address} tone="hero" />
         </span>
       </div>
       <div className="relative mt-8">

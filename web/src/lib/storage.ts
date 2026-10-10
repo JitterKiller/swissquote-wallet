@@ -40,10 +40,30 @@ export type LocalRecovery = {
   account?: `0x${string}`
 }
 
+/**
+ * An eviction started on THIS (new) device (#15): the new passkey is persisted before anything is
+ * sent, so a reload during the delay keeps it. Public data only.
+ */
+export type LocalEviction = {
+  account: `0x${string}`
+  oldKeySafe: `0x${string}`
+  newKeySafe: `0x${string}`
+  name: string
+  credentialId: string
+  publicKey: { x: string; y: string }
+  level?: Level
+  startTx?: string
+  executeAfter?: number
+  /** Old phone's daily limit (USDC base units) to hand over to the new phone. */
+  dailyLimit?: string
+  finalizeTx?: string
+}
+
 const WALLET_KEY = 'sq-wallet:v1'
 const RECOVERY_KEY = 'sq-recovery:v1'
 // The only secret stored client-side, and always encrypted (ADR-018).
 const KIT_KEY = 'sq-kit:v3'
+const EVICTION_KEY = 'sq-eviction:v1'
 const KIT_TESTED_KEY = 'sq-kit-tested:v1'
 
 export function toPublicKey(stored: { publicKey: { x: string; y: string } }): WebauthnPublicKey {
@@ -82,6 +102,14 @@ export function clearLocalRecovery() {
   } catch {}
 }
 
+export const loadLocalEviction = () => read<LocalEviction>(EVICTION_KEY)
+export const saveLocalEviction = (eviction: LocalEviction) => write(EVICTION_KEY, eviction)
+export function clearLocalEviction() {
+  try {
+    window.localStorage.removeItem(EVICTION_KEY)
+  } catch {}
+}
+
 /** Encrypted Kit copy, so a large payment only asks for the passphrase (PDR-016). */
 export const loadLocalKit = () => read<RecoveryKitV3>(KIT_KEY)
 export const saveLocalKit = (kit: RecoveryKitV3) => write(KIT_KEY, kit)
@@ -96,5 +124,6 @@ export function clearAll() {
     window.localStorage.removeItem(RECOVERY_KEY)
     window.localStorage.removeItem(KIT_KEY)
     window.localStorage.removeItem(KIT_TESTED_KEY)
+    window.localStorage.removeItem(EVICTION_KEY)
   } catch {}
 }

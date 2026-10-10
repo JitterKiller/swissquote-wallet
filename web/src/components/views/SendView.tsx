@@ -14,6 +14,7 @@ import { ProgressList, Stepper } from '@/components/ui/stepper'
 import { EXPLORER_URL, USDC_DECIMALS } from '@/lib/config'
 import { errorMessage, formatUsdc, shortAddress } from '@/lib/format'
 import { toPublicKey } from '@/lib/storage'
+import { spend, spendRoute } from '@/lib/spend'
 import { SEND_STEP_LABEL, sendCalls, usdcTransfer, type SendStep } from '@/lib/wallet'
 
 type Stage = 'details' | 'review' | 'sending' | 'done'
@@ -41,19 +42,27 @@ export function SendView() {
         : null
   const canContinue = isAddress(to) && amountValue !== null && amountValue > 0n && !amountError
   const firstTime = !!transfers && !transfers.some((t) => t.counterparty.toLowerCase() === to.toLowerCase())
-  const toSelf = to.toLowerCase() === wallet.address.toLowerCase()
+  const fundsAddress = wallet.account ?? wallet.address
+  const toSelf = to.toLowerCase() === fundsAddress.toLowerCase()
+  // With an Account (ADR-017): Face ID alone up to today's allowance; above it the Kit is needed (#12).
+  const route = wallet.account && amountValue !== null ? spendRoute(chain.account, balance, amountValue) : null
 
   async function send() {
     setError(null)
     setStage('sending')
     try {
-      const result = await sendCalls({
-        address: wallet.address,
-        credentialId: wallet.credentialId,
-        publicKey: toPublicKey(wallet),
-        calls: [usdcTransfer(to as `0x${string}`, amount)],
-        onStep: setStep,
-      })
+      if (route === 'kit') {
+        throw new Error('This is above what Face ID alone can send today. Above your daily limit, your Recovery Kit is needed too.')
+      }
+      const result = wallet.account
+        ? await spend({ wallet: { ...wallet, account: wallet.account }, to: to as `0x${string}`, amount: amountValue!, onStep: setStep })
+        : await sendCalls({
+            address: wallet.address,
+            credentialId: wallet.credentialId,
+            publicKey: toPublicKey(wallet),
+            calls: [usdcTransfer(to as `0x${string}`, amount)],
+            onStep: setStep,
+          })
       setTxHash(result.txHash)
       setStage('done')
       refresh()

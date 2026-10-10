@@ -14,6 +14,8 @@ import { USDC_FAUCET_URL } from '@/lib/config'
 export function ReceiveView() {
   const { wallet } = useLoadedWallet()
   const { copied, copy } = useCopy()
+  // Funds are received on the Account once it exists (ADR-017), else on the Key Safe.
+  const address = wallet.account ?? wallet.address
 
   return (
     <div className="space-y-6">
@@ -22,11 +24,11 @@ export function ReceiveView() {
         <Card>
           <CardBody className="flex flex-col items-center py-8 text-center">
             <div className="rounded-2xl border border-border bg-white p-4">
-              <QRCode value={wallet.address} size={184} fgColor="#121418" bgColor="#ffffff" />
+              <QRCode value={address} size={184} fgColor="#121418" bgColor="#ffffff" />
             </div>
             <p className="mt-6 text-sm text-muted">Your wallet address</p>
-            <p className="mt-1 max-w-sm break-all font-mono text-sm">{wallet.address}</p>
-            <Button className="mt-5 w-full max-w-xs" onClick={() => copy(wallet.address, 'Address copied')}>
+            <p className="mt-1 max-w-sm break-all font-mono text-sm">{address}</p>
+            <Button className="mt-5 w-full max-w-xs" onClick={() => copy(address, 'Address copied')}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? 'Copied' : 'Copy address'}
             </Button>

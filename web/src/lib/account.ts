@@ -60,6 +60,7 @@ const safeAbi = parseAbi([
   'function getThreshold() view returns (uint256)',
   'function getModulesPaginated(address start, uint256 pageSize) view returns (address[] array, address next)',
   'function enableModule(address module)',
+  'function disableModule(address prevModule, address module)',
   'function addOwnerWithThreshold(address owner, uint256 _threshold)',
   'function swapOwner(address prevOwner, address oldOwner, address newOwner)',
 ])
@@ -196,9 +197,27 @@ export async function accountSetupCalls(
 export const accountNonce = (account: Address) =>
   publicClient.readContract({ address: account, abi: safeAbi, functionName: 'nonce' })
 
+/**
+ * Full Account state. The public RPC is load-balanced: right after a transaction some nodes have not
+ * seen the block yet and module reads fail, so a failed read is retried a few times.
+ */
 export async function readAccount(
   account: Address,
   options: { keySafe?: Address; token?: Address } = {},
+): Promise<AccountState> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await readAccountOnce(account, options)
+    } catch (error) {
+      if (attempt >= 4) throw error
+      await new Promise((resolve) => setTimeout(resolve, 1_000 * attempt))
+    }
+  }
+}
+
+async function readAccountOnce(
+  account: Address,
+  options: { keySafe?: Address; token?: Address },
 ): Promise<AccountState> {
   if (!(await isDeployed(account))) {
     return {
@@ -368,6 +387,24 @@ export function accountExecCall(account: Address, call: AccountCall, signatures:
   }
 }
 
+/**
+ * One 2-factor Account transaction sent by the Key Safe: the Kit owner key signs the SafeTx at the
+ * current nonce and the Key Safe approves as msg.sender (one sponsored UserOp). Used above the daily
+ * limit (#12), for the limit (#13), to cancel an eviction (#16), for the handover (#15) and the level
+ * upgrade (#21).
+ */
+export async function twoFactorCall(params: {
+  account: Address
+  keySafe: Address
+  call: AccountCall
+  kit: KitSigner
+}): Promise<MetaTransaction> {
+  const { account, keySafe, call, kit } = params
+  const nonce = await accountNonce(account)
+  const signatures = encodeSafeSignatures([await kitSignature(kit, account, call, nonce), senderSignature(keySafe)])
+  return accountExecCall(account, call, signatures)
+}
+
 /** Several Account calls as one delegatecall to MultiSendCallOnly: one signature set, atomic. */
 export function batchCalls(calls: AccountCall[]): AccountCall {
   if (calls.length === 1) return calls[0]
@@ -401,6 +438,52 @@ export function swapOwnerCall(account: Address, owners: Address[], oldOwner: Add
 }
 
 /** Move the daily allowance from the old Key Safe to the new one. */
+/** New daily limit for the Key Safe (PDR-020): 2 factors, same daily reset as at setup. */
+export function setDailyLimitCall({
+  keySafe,
+  dailyLimit,
+  token = USDC_ADDRESS,
+}: {
+  keySafe: Address
+  dailyLimit: bigint
+  token?: Address
+}): AccountCall {
+  if (dailyLimit <= 0n || dailyLimit >= 2n ** 96n) throw new Error('Invalid daily limit')
+  return asCall(allowanceModule.createBaseSetAllowanceMetaTransaction(keySafe, token, dailyLimit, ALLOWANCE_RESET_MINUTES, 0n))
+}
+
+/**
+ * Upgrade to level 1 (PDR-015, PDR-019, issue #21): Swissquote becomes the second eviction guardian
+ * (threshold 2, identity check before it signs) and the delay drops to the level-1 module's.
+ * When both levels share one module (the 3-minute demo), Swissquote is just added; otherwise the
+ * level-0 module is swapped for the level-1 one with both guardians. 2 factors (twoFactorCall).
+ */
+export function upgradeToLevel1Call(params: {
+  account: Address
+  state: Pick<AccountState, 'modules' | 'evictionModule' | 'guardians' | 'pendingEviction'>
+  kitGuardian: Address
+  swissquoteGuardian: Address
+}): AccountCall {
+  const { account, state, kitGuardian, swissquoteGuardian } = params
+  const current = state.evictionModule
+  const target = ACCOUNT_RECOVERY_MODULE[1]
+  if (!current) throw new Error('This Account has no lock-out module')
+  if (state.pendingEviction) throw new Error('A lock-out is in progress: cancel or finish it first')
+  if (state.guardians.some((g) => g.toLowerCase() === swissquoteGuardian.toLowerCase())) {
+    throw new Error('This Account is already at level 1')
+  }
+  const addSwissquote = asCall(evictionModule(target).createAddGuardianWithThresholdMetaTransaction(swissquoteGuardian, 2n))
+  if (current.toLowerCase() === target.toLowerCase()) return batchCalls([addSwissquote])
+  const i = state.modules.findIndex((m) => m.toLowerCase() === current.toLowerCase())
+  const prev = i <= 0 ? SENTINEL_OWNERS : state.modules[i - 1]
+  return batchCalls([
+    { to: account, data: encodeFunctionData({ abi: safeAbi, functionName: 'disableModule', args: [prev, current] }) },
+    { to: account, data: encodeFunctionData({ abi: safeAbi, functionName: 'enableModule', args: [target] }) },
+    asCall(evictionModule(target).createAddGuardianWithThresholdMetaTransaction(kitGuardian, 1n)),
+    addSwissquote,
+  ])
+}
+
 export function handoverCall({
   oldKeySafe,
   newKeySafe,
