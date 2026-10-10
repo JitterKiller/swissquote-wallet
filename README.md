@@ -104,6 +104,7 @@ npm run spike:two-safe-variants # 2-owner eviction + immediate eviction with Kit
 npm run check:account  # lib/account.ts: setup + C1–C4 on Base Sepolia (~1 min)
 npm run check:kit      # Kit v3 encryption, local (~5 s)
 npm run check:eviction-api # /api/eviction endpoints over HTTP, needs npm run dev (~4 min)
+npm run check:registry # wallet registry: valid proof, replay, other passkey, other origin, foreign Key Safe (needs npm run dev)
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.
@@ -119,12 +120,15 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 | `POST /api/recovery/finalize` | Relays `finalizeRecovery` after the delay |
 | `POST /api/eviction` | Starts a time-locked eviction of the phone (Key Safe) on the Account: Kit guardian signature; at level 1 also a verified KYC session, then Swissquote co-signs. Refuses anything but replacing the Key Safe (ADR-019, PDR-021) |
 | `POST /api/eviction/finalize` | Relays `finalizeRecovery` on the Account after the delay |
+| `POST /api/wallets/challenge` | Registry: single-use challenge for the ownership statement (ADR-021, MOCK auth) |
+| `POST /api/wallets` | Registry: verifies the passkey-signed EIP-712 statement + on-chain owners, links the Account to the client |
+| `GET` / `DELETE /api/wallets/me?clientId=` | Registry: the caller's entry / unlink (MOCK auth: client id in the query) |
 
 ## Real vs mocked
 
 | Real (on-chain / standard) | Mocked (documented) |
 |---|---|
-| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail |
+| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller) |
 
 ## Repo layout
 

@@ -15,7 +15,8 @@
     "check:account": "tsx scripts/check-account-lib.mts",
     "spike:two-safe-variants": "tsx scripts/spike-two-safe-variants.mts",
     "check:kit": "tsx scripts/check-kit.mts",
-    "check:eviction-api": "tsx scripts/check-eviction-api.mts"
+    "check:eviction-api": "tsx scripts/check-eviction-api.mts",
+    "check:registry": "node scripts/check-registry.mts"
   },
   "dependencies": {
     "@upstash/redis": "^1.39.0",

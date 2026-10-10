@@ -36,6 +36,24 @@ export async function createPasskey(userName: string): Promise<Passkey> {
   }
 }
 
+/**
+ * Biometric prompt → raw WebAuthn assertion over `challenge`, for proofs checked by
+ * the backend (registry, ADR-021) rather than on-chain.
+ */
+export async function assertWithPasskey(credentialId: string, challenge: Hex.Hex) {
+  const { metadata, signature } = await WebAuthnP256.sign({
+    credentialId,
+    challenge,
+    rpId: window.location.hostname,
+    userVerification: 'required',
+  })
+  return {
+    authenticatorData: metadata.authenticatorData,
+    clientDataJSON: metadata.clientDataJSON,
+    signature: { r: signature.r, s: signature.s },
+  }
+}
+
 /** Biometric prompt → WebAuthn assertion over `challenge` (a UserOp hash). */
 export async function signWithPasskey(
   credentialId: string,
