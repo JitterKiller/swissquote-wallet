@@ -1,17 +1,19 @@
 'use client'
 
-import { AtSign, BadgeCheck, Check, Copy, Link2, LogOut, ShieldCheck, Users } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { AtSign, Check, Copy, Users } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { parseUnits } from 'viem'
 import QRCode from 'react-qr-code'
 
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { ComplianceChecks } from '@/components/send/ComplianceChecks'
 import { RecipientField, type Recipient } from '@/components/send/RecipientField'
+import { SwissquoteLinkCard } from '@/components/swissquote/SwissquoteLinkCard'
+import { useSwissquoteLink } from '@/components/swissquote/useSwissquoteLink'
 import { useCopy } from '@/components/ui/address'
 import { Button } from '@/components/ui/button'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
-import { Alert, Badge } from '@/components/ui/feedback'
+import { Alert } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
 import { PageHeader } from '@/components/ui/page'
 import { USDC_DECIMALS } from '@/lib/config'
@@ -25,8 +27,6 @@ import {
   type MyHandle,
   type Visibility,
 } from '@/lib/handles'
-import { getMyWallet, linkWallet, type RegisteredWallet } from '@/lib/registry'
-import { clearSession, getSession, mockSignIn, type SwissquoteSession } from '@/lib/session'
 import { usdcTransfer } from '@/lib/wallet'
 
 const VISIBILITY: { value: Visibility; label: string; hint: string }[] = [
@@ -39,11 +39,9 @@ const VISIBILITY: { value: Visibility; label: string; hint: string }[] = [
 export function HandleView() {
   const { wallet, chain, transfers } = useLoadedWallet()
   const { copied, copy } = useCopy()
-  // Client-only page (AppShell renders after hydration): localStorage is available.
-  const [session, setSessionState] = useState<SwissquoteSession | null>(() => getSession())
-  const [linked, setLinked] = useState<RegisteredWallet | null>(null)
+  const link = useSwissquoteLink(wallet)
+  const { session, linked } = link
   const [mine, setMine] = useState<MyHandle>(null)
-  const [name, setName] = useState('')
   const [handle, setHandle] = useState('')
   const [contact, setContact] = useState('')
   const [amount, setAmount] = useState('')
@@ -53,36 +51,17 @@ export function HandleView() {
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const load = useCallback(
-    async (current: SwissquoteSession | null) => {
-      const entry = current ? await getMyWallet(current.clientId).catch(() => null) : null
-      const ownsThisWallet = !!entry && entry.keySafe.toLowerCase() === wallet.address.toLowerCase()
-      const handle = ownsThisWallet && current ? await getMyHandle(current.clientId).catch(() => null) : null
-      return { linked: ownsThisWallet ? entry : null, mine: handle }
-    },
-    [wallet.address],
-  )
-
-  const refresh = useCallback(
-    async (current: SwissquoteSession | null) => {
-      const next = await load(current)
-      setLinked(next.linked)
-      setMine(next.mine)
-    },
-    [load],
-  )
-
+  const linkedClient = linked?.clientId
   useEffect(() => {
+    if (!linkedClient) return
     let cancelled = false
-    load(getSession()).then((next) => {
-      if (cancelled) return
-      setLinked(next.linked)
-      setMine(next.mine)
-    })
+    getMyHandle(linkedClient)
+      .catch(() => null)
+      .then((next) => !cancelled && setMine(next))
     return () => {
       cancelled = true
     }
-  }, [load])
+  }, [linkedClient])
 
   async function act(label: string, fn: () => Promise<void>) {
     setBusy(label)
@@ -96,7 +75,7 @@ export function HandleView() {
     }
   }
 
-  const requestUrl = mine ? paymentRequestUrl(mine.handle, amount || undefined) : ''
+  const requestUrl = mine && linked ? paymentRequestUrl(mine.handle, amount || undefined) : ''
 
   return (
     <div className="space-y-6">
@@ -105,79 +84,7 @@ export function HandleView() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <div className="space-y-6">
-          <Card>
-            <CardHeader
-              icon={<ShieldCheck className="h-[18px] w-[18px]" />}
-              title="Swissquote account"
-              description="Handles are for linked Swissquote clients: your name is verified by your KYC."
-              action={<Badge tone="warning">MOCK</Badge>}
-            />
-            <CardBody className="space-y-4">
-              {!session ? (
-                <form
-                  className="space-y-3"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    const next = mockSignIn(name)
-                    setSessionState(next)
-                    void refresh(next)
-                  }}
-                >
-                  <Field label="Name on your Swissquote account" htmlFor="name" hint="Mock e-banking sign-in for the demo.">
-                    <Input id="name" placeholder="Adam Meier" value={name} onChange={(e) => setName(e.target.value)} />
-                  </Field>
-                  <Button type="submit" className="w-full" disabled={name.trim().length < 2}>
-                    Sign in with Swissquote
-                  </Button>
-                </form>
-              ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{session.displayName}</p>
-                    <p className="text-xs text-muted">Client {session.clientId}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      clearSession()
-                      setSessionState(null)
-                      void refresh(null)
-                    }}
-                  >
-                    <LogOut className="h-4 w-4" /> Sign out
-                  </Button>
-                </div>
-              )}
-
-              {session && !linked && (
-                <Alert
-                  tone="info"
-                  title="Link this wallet to your account"
-                  action={
-                    <Button
-                      disabled={busy !== null}
-                      onClick={() =>
-                        act('link', async () => {
-                          setLinked(await linkWallet({ clientId: session.clientId, displayName: session.displayName, wallet }))
-                          setMine(await getMyHandle(session.clientId).catch(() => null))
-                        })
-                      }
-                    >
-                      <Link2 className="h-4 w-4" /> {busy === 'link' ? 'Waiting for Face ID…' : 'Link with Face ID'}
-                    </Button>
-                  }
-                >
-                  One Face ID signs a statement that this wallet is yours. Swissquote keeps it as proof of ownership (FINMA travel rule) and will see this wallet&apos;s on-chain activity.
-                </Alert>
-              )}
-              {linked && (
-                <p className="flex items-center gap-2 text-sm">
-                  <BadgeCheck className="h-4 w-4 text-success" /> Linked as <span className="font-medium">{linked.maskedName}</span>
-                </p>
-              )}
-            </CardBody>
-          </Card>
+          <SwissquoteLinkCard link={link} description="Handles are for linked Swissquote clients: your name is verified by your KYC." />
 
           {linked && session && (
             <Card>
@@ -247,7 +154,7 @@ export function HandleView() {
         </div>
 
         <div className="space-y-6">
-          {mine && (
+          {mine && linked && (
             <Card>
               <CardHeader title="Request a payment" description="Share a link or a QR code: the payer sees your verified name before paying." />
               <CardBody className="flex flex-col items-center space-y-4 text-center">

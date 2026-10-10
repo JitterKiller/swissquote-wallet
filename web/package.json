@@ -18,7 +18,8 @@
     "check:eviction-api": "tsx scripts/check-eviction-api.mts",
     "check:registry": "node scripts/check-registry.mts",
     "check:sponsorship": "node scripts/check-sponsorship.mts",
-    "check:handles": "node scripts/check-handles.mts"
+    "check:handles": "node scripts/check-handles.mts",
+    "check:swissquote": "node scripts/check-swissquote.mts"
   },
   "dependencies": {
     "@upstash/redis": "^1.39.0",

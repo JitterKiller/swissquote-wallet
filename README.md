@@ -20,7 +20,8 @@ Why things are built this way: see the decision records in **[docs/adr/](docs/ad
 | Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022); send-flow integration in #12 | ✅ |
 | Approved-dApp list (#25) | ⏳ |
 | `@handle` directory: verified payee before Face ID, visibility, contacts, payment request link + QR (PDR-010, ADR-024); send-flow integration in #12 | ✅ |
-| Transfer from Swissquote account, third guardian | ⏳ |
+| Transfers between the Swissquote account and the wallet, both directions, travel rule filled in (PDR-024, ADR-025); demo treasury to fund once | ✅ |
+| Third guardian (trusted contact) | ⏳ |
 | Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ⏳ (spike ✅) |
 | One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019) | ⏳ (spike ✅) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018) | ⏳ |
@@ -91,6 +92,7 @@ npm run dev        # http://localhost:3000 (app + mock backend)
 2. Project → Storage → Marketplace → **Upstash Redis** (free) → connect it to the project (all environments).
 3. Settings → Environment Variables → `SWISSQUOTE_GUARDIAN_PRIVATE_KEY` (Production + Preview) = the team's shared key.
 4. Redeploy, then open `/api/health`: expect `"ok": true, "store": "upstash-redis", "guardianFromEnv": true`.
+5. Fund the demo treasury once (#19): send test USDC from the [Circle faucet](https://faucet.circle.com) (Base Sepolia) to the `relayer` address shown by `/api/health`.
 
 Passkeys are bound to the domain: create demo wallets **on the production URL**. Wallets made on `localhost` or a preview URL do not work there.
 
@@ -109,6 +111,7 @@ npm run check:eviction-api # /api/eviction endpoints over HTTP, needs npm run de
 npm run check:registry # wallet registry: valid proof, replay, other passkey, other origin, foreign Key Safe (needs npm run dev)
 npm run check:sponsorship # sponsorship policy: quota, security ops, mixed batches, sanctions, linked client, stolen report (needs npm run dev)
 npm run check:handles  # @handles: uniqueness, reserved names, verified name, hidden = missing, contacts, rate limit (needs npm run dev)
+npm run check:swissquote # Swissquote transfers: balance, unlinked refused, overdraft, treasury, deposit verification (needs npm run dev)
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.
@@ -132,13 +135,16 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 | `GET /api/handles/[handle]?clientId=` | Exact-match resolution → Account + masked verified name (rate-limited, no enumeration) |
 | `POST /api/handles/contacts` | Allow a client (by handle) to resolve my handle when visibility is "contacts" |
 | `POST /api/compliance/screen` | Sanctions screening of one address: MOCK list + optional Chainalysis (ADR-022) |
+| `GET /api/swissquote/account?clientId=` | MOCK Swissquote account balance, deposit address (relayer Safe), treasury balance |
+| `POST /api/swissquote/withdraw` | Swissquote account → wallet: on-chain USDC from the treasury to the linked Account |
+| `POST /api/swissquote/deposit` | Wallet → Swissquote account: credits a verified on-chain transfer from the linked wallet (once per tx) |
 | `POST /api/report-stolen` | Report a stolen phone: its Key Safe loses sponsorship (identity session or Recovery Kit signature) |
 
 ## Real vs mocked
 
 | Real (on-chain / standard) | Mocked (documented) |
 |---|---|
-| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`) |
+| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC) |
 
 ## Repo layout
 
