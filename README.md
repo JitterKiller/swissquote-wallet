@@ -4,6 +4,8 @@ Prototype for the **Swissquote Wallet Challenge** (BSA Hackathon): a self-custod
 
 Why things are built this way: see the decision records in **[docs/adr/](docs/adr/README.md)** (product decisions and architecture decisions).
 
+For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs/business/business-case.md)** (model: `python3 docs/business/model.py`) · **[pitch and demo script](docs/pitch/deck.md)**.
+
 ## Status
 
 | Step | Status |
