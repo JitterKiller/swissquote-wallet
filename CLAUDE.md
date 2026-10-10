@@ -12,7 +12,7 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - Swissquote must never gain unilateral power over client funds (PDR-001) and is never an owner of the Account: the user always holds the majority (PDR-013, PDR-014).
 - Mark mocked parts as MOCK (code comment + UI badge) and keep the README's "Real vs mocked" table current.
 - UI: pages are thin files in `web/src/app/(wallet)` and `(onboarding)` rendering views from `web/src/components/views`. Shared state comes from `useWallet()` / `useLoadedWallet()` (`WalletProvider`). Use the kit in `web/src/components/ui` and the tokens in `globals.css`, never raw colors.
-- UI work: follow the design skills in `.claude/skills/` (start with `emil-design-eng`; `break-ui` to stress-test a screen, `mobile-native` for phone polish, `ask-sonner` for toasts). See `.claude/skills/README.md`.
+- UI work: follow the design skills in `.claude/skills/`: `/impeccable` for layout, typography, color, copy and UX review (`shape` before coding a screen, `critique` / `harden` / `polish` after), and Emil's skills for motion and interaction (start with `emil-design-eng`; `break-ui` to stress-test a screen, `mobile-native` for phone polish, `ask-sonner` for toasts). Keep our tokens and kit. See `.claude/skills/README.md`.
 - User transactions go through `sendCalls` in `web/src/lib/wallet.ts` (sponsored + passkey-signed). Server-only code stays in `web/src/server/`.
 - Backend data goes through `store()` in `web/src/server/store.ts` (async, one record per key; Upstash Redis when deployed, JSON file locally, ADR-020). Never write files from route handlers.
 - Passkeys are bound to the domain: wallets created on localhost or a preview URL do not work on the production demo domain (ADR-020).

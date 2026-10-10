@@ -1,1 +1,4 @@
 .DS_Store
+
+# Impeccable engine binary: downloaded and sha256-checked per machine on first run
+.claude/skills/impeccable/scripts/bin/
