@@ -1,6 +1,6 @@
 # ADR-004: Bundler and paymaster — Candide public endpoints (ERC-7677)
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-023](ADR-023-sponsorship-policy-proxy.md) (wallet UserOps reach the paymaster through Swissquote's sponsorship policy)
 - **Date:** 2026-10-10
 - **Related:** [PDR-003](../product/PDR-003-gasless-by-default.md), [ADR-003](ADR-003-network-base-sepolia.md)
 

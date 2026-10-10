@@ -15,8 +15,13 @@ export const LOGS_NODE_URL =
 // so wallets never need to hold ETH.
 export const BUNDLER_URL =
   process.env.NEXT_PUBLIC_BUNDLER_URL ?? 'https://api.candide.dev/public/v3/84532'
+// Upstream ERC-7677 paymaster. Only the Swissquote backend talks to it directly (relayer, proxy).
+export const UPSTREAM_PAYMASTER_URL =
+  process.env.PAYMASTER_UPSTREAM_URL ?? 'https://api.candide.dev/public/v3/84532'
+// Wallet UserOps go through Swissquote's sponsorship policy (PDR-019, issue #23): /api/paymaster.
 export const PAYMASTER_URL =
-  process.env.NEXT_PUBLIC_PAYMASTER_URL ?? 'https://api.candide.dev/public/v3/84532'
+  process.env.NEXT_PUBLIC_PAYMASTER_URL ??
+  (typeof window === 'undefined' ? UPSTREAM_PAYMASTER_URL : `${window.location.origin}/api/paymaster`)
 
 // Circle's official testnet USDC on Base Sepolia (faucet: https://faucet.circle.com).
 export const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as const

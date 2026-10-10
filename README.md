@@ -105,6 +105,7 @@ npm run check:account  # lib/account.ts: setup + C1–C4 on Base Sepolia (~1 min
 npm run check:kit      # Kit v3 encryption, local (~5 s)
 npm run check:eviction-api # /api/eviction endpoints over HTTP, needs npm run dev (~4 min)
 npm run check:registry # wallet registry: valid proof, replay, other passkey, other origin, foreign Key Safe (needs npm run dev)
+npm run check:sponsorship # sponsorship policy: quota, security ops, mixed batches, sanctions, linked client, stolen report (needs npm run dev)
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.
@@ -123,12 +124,14 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 | `POST /api/wallets/challenge` | Registry: single-use challenge for the ownership statement (ADR-021, MOCK auth) |
 | `POST /api/wallets` | Registry: verifies the passkey-signed EIP-712 statement + on-chain owners, links the Account to the client |
 | `GET` / `DELETE /api/wallets/me?clientId=` | Registry: the caller's entry / unlink (MOCK auth: client id in the query) |
+| `POST /api/paymaster` | Swissquote sponsorship policy in front of the ERC-7677 paymaster: level 0 quota, security operations always sponsored, sanctions, reported-stolen devices (ADR-023) |
+| `POST /api/report-stolen` | Report a stolen phone: its Key Safe loses sponsorship (identity session or Recovery Kit signature) |
 
 ## Real vs mocked
 
 | Real (on-chain / standard) | Mocked (documented) |
 |---|---|
-| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller) |
+| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022) |
 
 ## Repo layout
 

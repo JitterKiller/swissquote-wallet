@@ -54,7 +54,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-001](architecture/ADR-001-safe-smart-account.md) | Safe smart account via abstractionkit (`SafeMultiChainSigAccountV1`, EntryPoint v0.9) | Accepted |
 | [ADR-002](architecture/ADR-002-passkey-signing-safe-webauthn.md) | Passkey signing through Safe's WebAuthn signer (shared signer → verifier proxy) | Accepted |
 | [ADR-003](architecture/ADR-003-network-base-sepolia.md) | Base Sepolia + Circle testnet USDC | Accepted |
-| [ADR-004](architecture/ADR-004-bundler-and-paymaster.md) | Candide public bundler + ERC-7677 paymaster | Accepted |
+| [ADR-004](architecture/ADR-004-bundler-and-paymaster.md) | Candide public bundler + ERC-7677 paymaster | Accepted, amended by ADR-023 |
 | [ADR-005](architecture/ADR-005-social-recovery-module.md) | Candide Social Recovery Module **v0.0.1** | Accepted, amended by ADR-019 |
 | [ADR-006](architecture/ADR-006-recovery-target-verifier-proxy.md) | Recovery target = new passkey's verifier proxy, deployed in the request UserOp | Superseded by ADR-019 (target design; still in the code) |
 | [ADR-007](architecture/ADR-007-swissquote-guardian-and-relayer.md) | Swissquote Guardian key + relayer Safe (mock HSM) | Accepted |
@@ -73,6 +73,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-020](architecture/ADR-020-deployment-vercel-upstash.md) | Deployment: Vercel + Upstash Redis behind an async `store()`, one fixed demo domain (passkey rpId) | Accepted |
 | [ADR-021](architecture/ADR-021-wallet-registry.md) | Wallet registry: passkey-signed EIP-712 statement, verified with ox + on-chain owner checks | Accepted |
 | [ADR-022](architecture/ADR-022-compliance-checks.md) | Compliance checks: server screening (mock list + optional Chainalysis), client preview, look-alike and high-value warnings | Accepted |
+| [ADR-023](architecture/ADR-023-sponsorship-policy-proxy.md) | Sponsorship policy: ERC-7677 paymaster proxy (quota, security operations, sanctions, stolen-device reports) | Accepted |
 
 ## Open questions (future records)
 

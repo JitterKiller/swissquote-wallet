@@ -26,7 +26,8 @@ import { Hex, P256, WebAuthnP256 } from 'ox'
 const CHAIN_ID = 84532n
 const NODE_URL = 'https://sepolia.base.org'
 const BUNDLER_URL = 'https://api.candide.dev/public/v3/84532'
-const PAYMASTER_URL = 'https://api.candide.dev/public/v3/84532'
+// PAYMASTER_URL=http://localhost:3000/api/paymaster runs it through Swissquote's sponsorship policy (ADR-023).
+const PAYMASTER_URL = process.env.PAYMASTER_URL ?? 'https://api.candide.dev/public/v3/84532'
 
 // "Passkey": a P-256 key pair, like the one living in the Secure Enclave.
 const privateKey = P256.randomPrivateKey()

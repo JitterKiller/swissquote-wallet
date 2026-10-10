@@ -16,7 +16,8 @@
     "spike:two-safe-variants": "tsx scripts/spike-two-safe-variants.mts",
     "check:kit": "tsx scripts/check-kit.mts",
     "check:eviction-api": "tsx scripts/check-eviction-api.mts",
-    "check:registry": "node scripts/check-registry.mts"
+    "check:registry": "node scripts/check-registry.mts",
+    "check:sponsorship": "node scripts/check-sponsorship.mts"
   },
   "dependencies": {
     "@upstash/redis": "^1.39.0",

@@ -5,7 +5,7 @@ import {
 } from 'abstractionkit'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 
-import { BUNDLER_URL, CHAIN_ID, NODE_URL, PAYMASTER_URL } from '@/lib/config'
+import { BUNDLER_URL, CHAIN_ID, NODE_URL, UPSTREAM_PAYMASTER_URL } from '@/lib/config'
 import { isDeployed } from '@/lib/wallet'
 
 import { store } from './store'
@@ -53,7 +53,7 @@ export async function relay(calls: MetaTransaction[]): Promise<string> {
 
   let userOp = await account.createUserOperation(calls, NODE_URL, BUNDLER_URL)
   userOp = (
-    await new Erc7677Paymaster(PAYMASTER_URL).createPaymasterUserOperation(account, userOp, BUNDLER_URL)
+    await new Erc7677Paymaster(UPSTREAM_PAYMASTER_URL).createPaymasterUserOperation(account, userOp, BUNDLER_URL)
   ).userOperation
   userOp.signature = account.signUserOperation(userOp, [await guardianKey()], CHAIN_ID)
 

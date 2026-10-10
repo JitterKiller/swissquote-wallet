@@ -54,6 +54,12 @@ export async function getWalletByClient(clientId: string): Promise<RegisteredWal
   return entry ? toPublic(entry) : null
 }
 
+/** The registered wallet whose Key Safe (the phone) is `keySafe`. */
+export async function getWalletByKeySafe(keySafe: string): Promise<RegisteredWallet | null> {
+  const clientId = await store().get<string>('walletByKeySafe', keySafe.toLowerCase())
+  return clientId ? getWalletByClient(clientId) : null
+}
+
 export async function getWalletByAccount(account: string): Promise<RegisteredWallet | null> {
   const clientId = await store().get<string>('walletByAccount', account.toLowerCase())
   return clientId ? getWalletByClient(clientId) : null
@@ -152,8 +158,12 @@ export async function registerWallet(request: RegisterWalletRequest, origin: str
   if (previous && previous.account !== entry.account) {
     await store().delete('walletByAccount', previous.account.toLowerCase())
   }
+  if (previous && previous.keySafe !== entry.keySafe) {
+    await store().delete('walletByKeySafe', previous.keySafe.toLowerCase())
+  }
   await store().set('wallets', clientId, entry)
   await store().set('walletByAccount', entry.account.toLowerCase(), clientId)
+  await store().set('walletByKeySafe', entry.keySafe.toLowerCase(), clientId)
   return toPublic(entry)
 }
 
@@ -161,6 +171,7 @@ export async function unlinkWallet(clientId: string) {
   const entry = await store().get<WalletEntry>('wallets', clientId)
   if (!entry) return false
   await store().delete('walletByAccount', entry.account.toLowerCase())
+  await store().delete('walletByKeySafe', entry.keySafe.toLowerCase())
   await store().delete('wallets', clientId)
   return true
 }

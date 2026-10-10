@@ -54,6 +54,8 @@ export interface Store {
   all<T>(collection: string): Promise<Record<string, T>>
   /** Atomic counter (quotas, rate limits). The TTL is set when the counter is created. */
   increment(counter: string, ttlSeconds?: number): Promise<number>
+  /** Current value of a counter (0 if absent or expired). */
+  count(counter: string): Promise<number>
   /** Appends to a capped log, newest first. */
   append<T>(log: string, value: T, maxLength?: number): Promise<void>
   recent<T>(log: string, count?: number): Promise<T[]>
@@ -90,6 +92,9 @@ class RedisStore implements Store {
     const value = await this.redis.incr(key)
     if (value === 1 && ttlSeconds) await this.redis.expire(key, ttlSeconds)
     return value
+  }
+  async count(counter: string) {
+    return Number((await this.redis.get<string>(`${PREFIX}:counter:${counter}`)) ?? 0)
   }
   async append<T>(log: string, value: T, maxLength = 500) {
     const key = `${PREFIX}:log:${log}`
@@ -177,6 +182,10 @@ class FileStore implements Store {
       data.counters[counter] = next
       return next.value
     })
+  }
+  async count(counter: string) {
+    const current = this.read().counters[counter]
+    return current && (current.expiresAt === null || current.expiresAt > Date.now()) ? current.value : 0
   }
   async append<T>(log: string, value: T, maxLength = 500) {
     this.update((data) => {
