@@ -206,7 +206,7 @@ function SecurityStatusCard() {
             <Check className="h-4 w-4 text-success" /> {fact}
           </p>
         ))}
-        <Link href="/security" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-accent">
+        <Link href="/security" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-accent-ink">
           Manage security <ChevronRight className="h-4 w-4" />
         </Link>
       </CardBody>
@@ -221,7 +221,7 @@ function RecentActivityCard() {
       <CardHeader
         title="Recent activity"
         action={
-          <Link href="/activity" className="text-sm font-medium text-accent">
+          <Link href="/activity" className="text-sm font-medium text-accent-ink">
             View all
           </Link>
         }

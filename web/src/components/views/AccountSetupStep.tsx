@@ -1,6 +1,5 @@
 'use client'
 
-import { Gauge, ShieldCheck, Smartphone, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { formatUnits, parseUnits, type Address } from 'viem'
 
@@ -8,6 +7,7 @@ import { useWallet } from '@/components/providers/WalletProvider'
 import { Button } from '@/components/ui/button'
 import { Alert, Badge, Spinner } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
+import { Plate, PlateRow } from '@/components/ui/plate'
 import { accountSetupCalls } from '@/lib/account'
 import { api } from '@/lib/api'
 import {
@@ -113,12 +113,11 @@ export function AccountSetupStep({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <Field
         label="Daily limit"
         htmlFor="daily-limit"
         error={limitError}
-        hint="Resets every day at 00:00 UTC. You can change it later with your Kit."
       >
         <div className="relative">
           <Input
@@ -126,10 +125,10 @@ export function AccountSetupStep({
             inputMode="decimal"
             value={limit}
             onChange={(e) => setLimit(e.target.value.replace(',', '.'))}
-            className="h-14 pr-20 text-2xl font-semibold tabular-nums"
+            className="h-[60px] border-[1.5px] border-foreground pr-28 font-mono !text-5xl font-semibold tabular-nums tracking-tight"
             autoComplete="off"
           />
-          <span className="absolute right-2 top-2 rounded-lg bg-surface-2 px-2.5 py-2 text-sm font-medium">USDC</span>
+          <span className="token pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">USDC / day</span>
         </div>
       </Field>
 
@@ -142,56 +141,56 @@ export function AccountSetupStep({
               type="button"
               aria-pressed={selected}
               onClick={() => setLimit(preset)}
-              className={`h-9 rounded-full border px-3.5 text-sm tabular-nums transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] ${
+              className={`h-9 rounded-lg border px-3.5 font-mono text-sm tabular-nums transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] ${
                 selected
-                  ? 'border-accent bg-accent-soft font-medium text-accent'
+                  ? 'border-transparent bg-accent font-semibold text-accent-fg'
                   : 'border-border bg-surface text-foreground hover:bg-surface-2'
               }`}
             >
               {Number(preset).toLocaleString('en-US')}
-              {preset === SUGGESTED && <span className="ml-1 text-xs text-muted">· suggested</span>}
+              {preset === SUGGESTED && (
+                <span className={`ml-1.5 font-sans text-[11px] ${selected ? 'text-accent-fg' : 'text-muted'}`}>suggested</span>
+              )}
             </button>
           )
         })}
       </div>
 
-      <div className="rounded-2xl bg-surface-2 p-4 sm:p-5">
-        <p className="text-sm text-muted">If your phone is stolen, a thief can take at most about</p>
-        <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
-          {valid ? formatUsdcShort(dailyLimit * BigInt(days)) : '–'} <span className="text-lg text-muted">USDC</span>
-        </p>
-        <p className="mt-1 text-sm text-muted">
-          {valid ? formatUsdcShort(dailyLimit) : '–'} a day × {days} days, until your Kit locks them out
-          {level === 1 ? ' with a Swissquote identity check.' : '.'}
-        </p>
-        {EVICTION_DELAY_IS_DEMO && (
-          <p className="mt-3 flex items-center gap-2 text-xs text-muted">
-            <Badge tone="warning">Demo</Badge>
-            On this testnet the lock-out takes {Math.round(EVICTION_DELAY_SECONDS[level] / 60)} minutes.
+      <section className="rounded-2xl bg-accent-soft p-4" aria-label="Worst case if your phone is stolen">
+        <p className="text-sm text-foreground/75">If your phone is stolen, a thief can take at most about</p>
+        <div className="mt-1 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+          <p className="font-mono text-4xl font-semibold tabular-nums tracking-tight">
+            {valid ? formatUsdcShort(dailyLimit * BigInt(days)) : '–'} <span className="font-sans text-lg">USDC</span>
           </p>
-        )}
-      </div>
+          <DaySquares days={days} />
+        </div>
+        <p className="mt-2 text-sm text-foreground/75">
+          <span className="tabular-nums">{valid ? formatUsdcShort(dailyLimit) : '–'}</span> a day × {days} days, until
+          your Kit locks them out{level === 1 ? ' with a Swissquote identity check.' : '.'}
+          {EVICTION_DELAY_IS_DEMO && (
+            <span className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap text-xs">
+              <Badge tone="warning">Demo</Badge>
+              {Math.round(EVICTION_DELAY_SECONDS[level] / 60)} min on testnet
+            </span>
+          )}
+        </p>
+      </section>
 
-      <div className="space-y-3 rounded-2xl border border-border bg-surface p-4 shadow-card sm:p-5">
-        <p className="text-sm font-medium">Face ID will approve</p>
-        <ul className="space-y-2.5 text-sm">
-          <ReviewRow icon={<ShieldCheck className="h-4 w-4" />}>
-            Your Account: this phone and your Kit, both needed for anything above the limit
-          </ReviewRow>
-          <ReviewRow icon={<Gauge className="h-4 w-4" />}>
-            Up to {valid ? formatUsdcShort(dailyLimit) : '–'} USDC a day with Face ID alone
-          </ReviewRow>
-          <ReviewRow icon={<Smartphone className="h-4 w-4" />}>
-            {level === 1
-              ? `A new phone with your Kit and a Swissquote identity check, after ${days} days`
-              : `A new phone with your Kit alone, after ${days} days`}
-          </ReviewRow>
-          <ReviewRow icon={<Sparkles className="h-4 w-4" />}>Network fee covered by Swissquote</ReviewRow>
-        </ul>
-        {level === 0 && (
-          <p className="text-xs text-muted">Swissquote client? Link your account later to shorten the delay to 3 days.</p>
-        )}
-      </div>
+      <Plate title="Face ID will approve" className="!mt-16">
+        <dl>
+          <PlateRow label="Account owners">
+            This phone + your Kit · <span className="tabular-nums">2 of 2</span>
+          </PlateRow>
+          <PlateRow label="Face ID alone">
+            Up to <span className="tabular-nums">{valid ? formatUsdcShort(dailyLimit) : '–'}</span> USDC a day
+            <span className="block text-xs font-normal text-hero-muted">Resets at 00:00 UTC</span>
+          </PlateRow>
+          <PlateRow label="New phone">
+            {level === 1 ? 'Kit + Swissquote identity check' : 'Kit alone'}, after {days} days
+          </PlateRow>
+          <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
+        </dl>
+      </Plate>
 
       <Button size="lg" className="w-full" disabled={!valid || step !== null} onClick={activate}>
         {step ? (
@@ -203,16 +202,25 @@ export function AccountSetupStep({
         )}
       </Button>
       {error && <Alert tone="danger">{error}</Alert>}
+      <p className="text-center text-xs text-muted">
+        You can change your limit later with your Kit.
+        {level === 0 && ' Swissquote client? Link your account later to shorten the delay to 3 days.'}
+      </p>
     </div>
   )
 }
 
-function ReviewRow({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+/** One square per day of exposure, the first day fully lit: the bound drawn to scale. */
+function DaySquares({ days }: { days: number }) {
   return (
-    <li className="flex gap-3">
-      <span className="mt-0.5 shrink-0 text-muted">{icon}</span>
-      <span>{children}</span>
-    </li>
+    <div className="flex items-end gap-1" aria-hidden>
+      {Array.from({ length: days }, (_, i) => (
+        <span key={i} className="flex flex-col items-center gap-1">
+          <span className={`h-7 w-7 rounded-[3px] ${i === 0 ? 'bg-accent' : 'bg-accent/45'}`} />
+          <span className="font-mono text-[11px] tabular-nums text-foreground/70">{i + 1}</span>
+        </span>
+      ))}
+    </div>
   )
 }
 

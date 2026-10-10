@@ -5,7 +5,7 @@ type Tone = 'neutral' | 'accent' | 'success' | 'danger' | 'warning'
 
 const BADGE_TONES: Record<Tone, string> = {
   neutral: 'bg-surface-2 text-muted border-border',
-  accent: 'bg-accent-soft text-accent border-transparent',
+  accent: 'bg-accent-soft text-accent-ink border-transparent',
   success: 'bg-success-soft text-success border-transparent',
   danger: 'bg-danger-soft text-danger border-transparent',
   warning: 'bg-warning-soft text-warning border-transparent',
@@ -22,7 +22,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${BADGE_TONES[tone]} ${className}`}
+      className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-medium ${BADGE_TONES[tone]} ${className}`}
     >
       {children}
     </span>

@@ -69,7 +69,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 
 ## Stack
 
-- **Next.js 16** (App Router with route groups, client-only wallet UI + route handlers for the mock backend), Tailwind CSS v4 with design tokens, lucide-react icons, sonner toasts, react-qr-code
+- **Next.js 16** (App Router with route groups, client-only wallet UI + route handlers for the mock backend), Tailwind CSS v4 with design tokens (visual rules in [DESIGN.md](DESIGN.md), ADR-027), Hanken Grotesk + JetBrains Mono, lucide-react icons, sonner toasts, react-qr-code
 - **abstractionkit** (Candide): Safe accounts, WebAuthn signer, paymaster, Social Recovery Module
 - **ox**: WebAuthn ceremonies · **viem**: chain reads, ABI encoding, EIP-712
 - **Network**: Base Sepolia (RIP-7212 P-256 precompile), Circle testnet USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e`

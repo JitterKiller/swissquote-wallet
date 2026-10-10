@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             Base Sepolia · Testnet
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink">
               {initials}
             </span>
             <div className="min-w-0">
@@ -117,7 +117,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? 'text-accent' : 'text-muted'}`}
+              className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? 'text-accent-ink' : 'text-muted'}`}
               aria-current={active ? 'page' : undefined}
             >
               <Icon className="h-5 w-5" />
@@ -152,7 +152,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
       href={item.href}
       aria-current={active ? 'page' : undefined}
       className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-        active ? 'bg-accent-soft font-medium text-accent' : 'text-muted hover:bg-surface-2 hover:text-foreground'
+        active ? 'bg-accent-soft font-medium text-accent-ink' : 'text-muted hover:bg-surface-2 hover:text-foreground'
       }`}
     >
       <Icon className="h-[18px] w-[18px]" />

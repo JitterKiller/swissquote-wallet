@@ -215,7 +215,7 @@ function StepCard({ icon, title, description, children }: { icon: ReactNode; tit
   return (
     <div className="space-y-5 rounded-2xl border border-border bg-surface p-5 shadow-card sm:p-6">
       <div className="flex gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">{icon}</span>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent-ink">{icon}</span>
         <div>
           <p className="font-semibold">{title}</p>
           <p className="mt-0.5 text-sm text-muted">{description}</p>

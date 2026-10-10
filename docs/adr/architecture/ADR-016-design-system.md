@@ -1,6 +1,6 @@
 # ADR-016: Design system — Tailwind tokens + small in-house component kit
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-027](ADR-027-visual-world-swiss-onchain-fintech.md) (new visual world, DESIGN.md as the visual authority)
 - **Date:** 2026-10-10
 - **Related:** [PDR-012](../product/PDR-012-web-first-banking-ux.md), [ADR-010](ADR-010-frontend-nextjs-client-only.md)
 

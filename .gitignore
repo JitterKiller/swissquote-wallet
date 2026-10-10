@@ -2,3 +2,8 @@
 
 # Impeccable engine binary: downloaded and sha256-checked per machine on first run
 .claude/skills/impeccable/scripts/bin/
+
+# Impeccable local artifacts: decision sketches, review captures, decision server state
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/questions/

@@ -1,16 +1,16 @@
 'use client'
 
-import { CircleCheck, Cloud, Download, ExternalLink, Eye, EyeOff, FileKey, KeyRound, ScanFace, Upload } from 'lucide-react'
+import { CircleCheck, Download, ExternalLink, Eye, EyeOff, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
-import { toast } from 'sonner'
 
 import { useWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
 import { Button, ButtonLink } from '@/components/ui/button'
 import { Alert, Spinner } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
+import { Plate, PlateRow } from '@/components/ui/plate'
 import { Stepper } from '@/components/ui/stepper'
 import { predictAccountAddress } from '@/lib/account'
 import { EVICTION_DAYS, EVICTION_DELAY_IS_DEMO, EVICTION_DELAY_SECONDS, EXPLORER_URL, type Level } from '@/lib/config'
@@ -120,16 +120,14 @@ export function ProtectWalletView() {
   }
 
   const { title, description } = COPY[step]
+  const index = STEPS.indexOf(step)
 
   return (
-    <div className="space-y-8">
-      <Stepper steps={ONBOARDING_STEPS} current={1} />
-      <div key={step} className="animate-enter space-y-8">
+    <div className="space-y-6">
+      <Stepper steps={['Create', `Protect ${index + 1}/${STEPS.length}`, 'Done']} current={1} />
+      <div key={step} className="animate-enter space-y-6">
         <div>
-          <p className="text-sm font-medium text-accent">
-            Step {STEPS.indexOf(step) + 1} of {STEPS.length}
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">{title}</h1>
+          <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.035em] sm:text-5xl">{title}</h1>
           <p className="mt-2 text-muted">{description}</p>
         </div>
 
@@ -251,31 +249,31 @@ function PassphraseStep({
   )
 }
 
+// Factor codes, the same on every screen: phone = orange fill, Kit = ink fill, cloud = outline.
 const LOCKS = [
-  { icon: ScanFace, title: 'Face ID', text: 'Everyday payments, up to your daily limit' },
-  { icon: Cloud, title: 'Your iCloud or Google account', text: 'Keeps your encrypted Kit file' },
-  { icon: KeyRound, title: 'Your Kit passphrase', text: 'Opens the Kit: large payments, a new phone' },
+  { code: 'bg-accent', title: 'Face ID', text: 'Everyday payments, up to your daily limit' },
+  { code: 'border border-foreground', title: 'Your iCloud or Google account', text: 'Keeps your encrypted Kit file' },
+  { code: 'bg-foreground', title: 'Your Kit passphrase', text: 'Opens the Kit: large payments, a new phone' },
 ]
 
 function ThreeLocks() {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4 shadow-card sm:p-5">
-      <p className="text-sm font-medium">Three locks, all held by you</p>
-      <ul className="mt-3 space-y-3">
-        {LOCKS.map(({ icon: Icon, title, text }) => (
-          <li key={title} className="flex items-center gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
-              <Icon className="h-[18px] w-[18px]" />
-            </span>
-            <span className="min-w-0 text-sm">
-              <span className="block font-medium">{title}</span>
-              <span className="block text-muted">{text}</span>
-            </span>
+    <section>
+      <h2 className="text-sm font-semibold">Three locks, all held by you</h2>
+      <ul className="mt-2 border-t border-border">
+        {LOCKS.map(({ code, title, text }) => (
+          <li
+            key={title}
+            className="grid grid-cols-[10px_1fr] items-baseline gap-x-3 border-b border-border py-2.5 text-sm sm:grid-cols-[10px_13rem_1fr]"
+          >
+            <span className={`h-2.5 w-2.5 ${code}`} aria-hidden />
+            <span className="font-medium">{title}</span>
+            <span className="col-start-2 text-muted sm:col-start-auto">{text}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-xs text-muted">Swissquote never sees your Kit or your passphrase.</p>
-    </div>
+      <p className="mt-2 text-xs text-muted">Swissquote never sees your Kit or your passphrase.</p>
+    </section>
   )
 }
 
@@ -289,7 +287,7 @@ function StrengthMeter({ strength }: { strength: number | null }) {
         {[1, 2, 3, 4].map((i) => (
           <span
             key={i}
-            className={`h-1 flex-1 rounded-full transition-colors duration-200 ${i <= level ? STRENGTH_TONE[level] : 'bg-border'}`}
+            className={`h-1.5 flex-1 rounded-[2px] transition-colors duration-200 ${i <= level ? STRENGTH_TONE[level] : 'bg-border'}`}
           />
         ))}
       </div>
@@ -306,15 +304,10 @@ function SaveStep({ kit, onContinue }: { kit: RecoveryKitV3; onContinue: () => v
   const [downloaded, setDownloaded] = useState(false)
   return (
     <div className="space-y-6">
-      <div className="space-y-4 rounded-2xl border border-border bg-surface p-4 shadow-card sm:p-5">
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
-            <FileKey className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate font-mono text-xs">{kitFileName(kit)}</p>
-            <p className="mt-0.5 text-xs text-muted">Encrypted with your passphrase</p>
-          </div>
+      <div className="space-y-4 rounded-2xl border border-border p-4 sm:p-5">
+        <div className="min-w-0">
+          <p className="token text-muted">Recovery Kit · encrypted with your passphrase</p>
+          <p className="mt-1.5 truncate font-mono text-sm">{kitFileName(kit)}</p>
         </div>
         <Button
           variant={downloaded ? 'secondary' : 'primary'}
@@ -351,7 +344,7 @@ function Instruction({ n, done = false, children }: { n: number; done?: boolean;
   return (
     <li className="flex gap-3">
       <span
-        className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold transition-colors duration-200 ${
+        className={`grid h-6 w-6 shrink-0 place-items-center rounded-md text-[11px] font-semibold tabular-nums transition-colors duration-200 ${
           done ? 'bg-success-soft text-success' : 'bg-surface-2 text-muted'
         }`}
       >
@@ -385,7 +378,6 @@ function TestStep({ kit, onTested, onRestart }: { kit: RecoveryKitV3; onTested: 
         throw new Error('This Kit file is damaged. Download it again.')
       }
       saveKitTestedAt()
-      toast.success('Your Recovery Kit works')
       onTested()
     } catch (e) {
       setError(e instanceof KitPassphraseError ? 'Wrong passphrase. Check it and try again.' : errorMessage(e))
@@ -404,7 +396,7 @@ function TestStep({ kit, onTested, onRestart }: { kit: RecoveryKitV3; onTested: 
     >
       <label
         className={`flex cursor-pointer items-center gap-3 rounded-xl border border-dashed px-4 py-4 text-sm transition-colors ${
-          file ? 'border-success bg-success-soft' : 'border-border bg-surface-2 hover:border-accent'
+          file ? 'border-success bg-success-soft' : 'border-border bg-surface-2 hover:border-accent-ink'
         }`}
       >
         {file ? <CircleCheck className="h-5 w-5 shrink-0 text-success" /> : <Upload className="h-5 w-5 shrink-0 text-muted" />}
@@ -461,31 +453,34 @@ function Protected({ account, dailyLimit, level }: { account: `0x${string}`; dai
   return (
     <div className="space-y-8">
       <Stepper steps={ONBOARDING_STEPS} current={2} />
-      <div className="text-center">
-        <div className="animate-pop mx-auto grid h-16 w-16 place-items-center rounded-full bg-success-soft text-success">
-          <CircleCheck className="h-8 w-8" />
-        </div>
-        <h1 className="mt-5 text-3xl font-semibold tracking-tight">Your wallet is protected</h1>
+      <div>
+        <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.035em] sm:text-5xl">Your wallet is protected</h1>
         <p className="mt-2 text-muted">
           This phone spends up to your daily limit. Anything above it, or a new phone, needs your Kit.
         </p>
       </div>
 
-      <dl className="animate-enter divide-y divide-border rounded-2xl border border-border bg-surface px-4 shadow-card [animation-delay:80ms] sm:px-5">
-        <SummaryRow label="Account">
-          <AddressPill address={account} />
-        </SummaryRow>
-        {dailyLimit !== null && <SummaryRow label="Daily limit">{formatUsdcShort(dailyLimit)} USDC with Face ID</SummaryRow>}
-        <SummaryRow label="Recovery Kit">Saved and tested</SummaryRow>
-        <SummaryRow label="Stolen phone locked out">
-          After {EVICTION_DAYS[level]} days
-          {EVICTION_DELAY_IS_DEMO && (
-            <span className="block text-xs font-normal text-muted">
-              {Math.round(EVICTION_DELAY_SECONDS[level] / 60)} minutes in this demo
-            </span>
+      <Plate title="Account · live onchain" className="animate-enter !mt-16">
+        <dl>
+          <PlateRow label="Account">
+            <AddressPill address={account} tone="hero" />
+          </PlateRow>
+          {dailyLimit !== null && (
+            <PlateRow label="Daily limit">
+              <span className="tabular-nums">{formatUsdcShort(dailyLimit)} USDC</span> with Face ID
+            </PlateRow>
           )}
-        </SummaryRow>
-      </dl>
+          <PlateRow label="Recovery Kit">Saved and tested</PlateRow>
+          <PlateRow label="Stolen phone locked out">
+            After {EVICTION_DAYS[level]} days
+            {EVICTION_DELAY_IS_DEMO && (
+              <span className="block text-xs font-normal text-hero-muted">
+                {Math.round(EVICTION_DELAY_SECONDS[level] / 60)} minutes in this demo
+              </span>
+            )}
+          </PlateRow>
+        </dl>
+      </Plate>
 
       <div className="space-y-3">
         <ButtonLink href="/" size="lg" className="w-full">
@@ -504,11 +499,3 @@ function Protected({ account, dailyLimit, level }: { account: `0x${string}`; dai
   )
 }
 
-function SummaryRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-4 py-3.5 text-sm">
-      <dt className="text-muted">{label}</dt>
-      <dd className="text-right font-medium">{children}</dd>
-    </div>
-  )
-}

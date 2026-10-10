@@ -36,7 +36,7 @@ export function Field({
 export function Input({ className = '', ...props }: ComponentProps<'input'>) {
   return (
     <input
-      className={`h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-4 focus:ring-accent-soft ${className}`}
+      className={`h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus:border-accent-ink focus:ring-4 focus:ring-accent-soft ${className}`}
       {...props}
     />
   )
@@ -45,7 +45,7 @@ export function Input({ className = '', ...props }: ComponentProps<'input'>) {
 export function Textarea({ className = '', ...props }: ComponentProps<'textarea'>) {
   return (
     <textarea
-      className={`w-full rounded-xl border border-border bg-surface p-3.5 text-sm outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-4 focus:ring-accent-soft ${className}`}
+      className={`w-full rounded-xl border border-border bg-surface p-3.5 text-sm outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus:border-accent-ink focus:ring-4 focus:ring-accent-soft ${className}`}
       {...props}
     />
   )

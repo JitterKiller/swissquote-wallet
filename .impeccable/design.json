@@ -1,0 +1,583 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-10T21:21:59+00:00",
+  "title": "Design System: Swissquote Wallet",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Swissquote Orange",
+        "canonical": "color(display-p3 1 0.38 0.06)",
+        "tonalRamp": [
+          "oklch(15% 0.2 42)",
+          "oklch(26% 0.2 42)",
+          "oklch(37% 0.2 42)",
+          "oklch(48% 0.2 42)",
+          "oklch(59% 0.2 42)",
+          "oklch(70% 0.2 42)",
+          "oklch(82% 0.2 42)",
+          "oklch(95% 0.2 42)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Pressed Orange",
+        "canonical": "color(display-p3 0.95 0.33 0.02)",
+        "tonalRamp": [
+          "oklch(15% 0.2 42)",
+          "oklch(26% 0.2 42)",
+          "oklch(37% 0.2 42)",
+          "oklch(48% 0.2 42)",
+          "oklch(59% 0.2 42)",
+          "oklch(70% 0.2 42)",
+          "oklch(82% 0.2 42)",
+          "oklch(95% 0.2 42)"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Ember Ink",
+        "canonical": "#c2410c",
+        "tonalRamp": [
+          "oklch(15% 0.17 40)",
+          "oklch(26% 0.17 40)",
+          "oklch(37% 0.17 40)",
+          "oklch(48% 0.17 40)",
+          "oklch(59% 0.17 40)",
+          "oklch(70% 0.17 40)",
+          "oklch(82% 0.17 40)",
+          "oklch(95% 0.17 40)"
+        ],
+        "dark": "#ff8a4c"
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Apricot Field",
+        "canonical": "#fff0e6",
+        "tonalRamp": [
+          "oklch(15% 0.03 55)",
+          "oklch(26% 0.03 55)",
+          "oklch(37% 0.03 55)",
+          "oklch(48% 0.03 55)",
+          "oklch(59% 0.03 55)",
+          "oklch(70% 0.03 55)",
+          "oklch(82% 0.03 55)",
+          "oklch(95% 0.03 55)"
+        ],
+        "dark": "rgb(255 95 15 / 0.14)"
+      },
+      "accent-fg": {
+        "role": "neutral",
+        "displayName": "Ink on Orange",
+        "canonical": "#171717",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#171717",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "dark": "#f5f5f5"
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0.002 106)",
+          "oklch(26% 0.002 106)",
+          "oklch(37% 0.002 106)",
+          "oklch(48% 0.002 106)",
+          "oklch(59% 0.002 106)",
+          "oklch(70% 0.002 106)",
+          "oklch(82% 0.002 106)",
+          "oklch(95% 0.002 106)"
+        ],
+        "dark": "#0c0c0c"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0.002 106)",
+          "oklch(26% 0.002 106)",
+          "oklch(37% 0.002 106)",
+          "oklch(48% 0.002 106)",
+          "oklch(59% 0.002 106)",
+          "oklch(70% 0.002 106)",
+          "oklch(82% 0.002 106)",
+          "oklch(95% 0.002 106)"
+        ],
+        "dark": "#151515"
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Stone Wash",
+        "canonical": "#f5f5f4",
+        "tonalRamp": [
+          "oklch(15% 0.002 106)",
+          "oklch(26% 0.002 106)",
+          "oklch(37% 0.002 106)",
+          "oklch(48% 0.002 106)",
+          "oklch(59% 0.002 106)",
+          "oklch(70% 0.002 106)",
+          "oklch(82% 0.002 106)",
+          "oklch(95% 0.002 106)"
+        ],
+        "dark": "#1d1d1d"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#6b6b6b",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "dark": "#a3a3a3"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Hairline Stone",
+        "canonical": "#e7e5e4",
+        "tonalRamp": [
+          "oklch(15% 0.003 48)",
+          "oklch(26% 0.003 48)",
+          "oklch(37% 0.003 48)",
+          "oklch(48% 0.003 48)",
+          "oklch(59% 0.003 48)",
+          "oklch(70% 0.003 48)",
+          "oklch(82% 0.003 48)",
+          "oklch(95% 0.003 48)"
+        ],
+        "dark": "#2a2a2a"
+      },
+      "hero": {
+        "role": "neutral",
+        "displayName": "Plate Ink",
+        "canonical": "#171717",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "dark": "#1a1a1a"
+      },
+      "hero-2": {
+        "role": "neutral",
+        "displayName": "Plate Rule",
+        "canonical": "#232323",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "dark": "#262626"
+      },
+      "hero-fg": {
+        "role": "neutral",
+        "displayName": "Plate White",
+        "canonical": "#fafafa",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "dark": "#fafafa"
+      },
+      "hero-muted": {
+        "role": "neutral",
+        "displayName": "Plate Grey",
+        "canonical": "#a3a3a3",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "dark": "#a3a3a3"
+      },
+      "success": {
+        "role": "status",
+        "displayName": "Ledger Green",
+        "canonical": "#0f7a55",
+        "tonalRamp": [
+          "oklch(15% 0.11 163)",
+          "oklch(26% 0.11 163)",
+          "oklch(37% 0.11 163)",
+          "oklch(48% 0.11 163)",
+          "oklch(59% 0.11 163)",
+          "oklch(70% 0.11 163)",
+          "oklch(82% 0.11 163)",
+          "oklch(95% 0.11 163)"
+        ],
+        "dark": "#3cc28f"
+      },
+      "success-soft": {
+        "role": "status",
+        "displayName": "Ledger Green Wash",
+        "canonical": "#e6f4ee",
+        "tonalRamp": [
+          "oklch(15% 0.11 163)",
+          "oklch(26% 0.11 163)",
+          "oklch(37% 0.11 163)",
+          "oklch(48% 0.11 163)",
+          "oklch(59% 0.11 163)",
+          "oklch(70% 0.11 163)",
+          "oklch(82% 0.11 163)",
+          "oklch(95% 0.11 163)"
+        ],
+        "dark": "rgb(60 194 143 / 0.12)"
+      },
+      "danger": {
+        "role": "status",
+        "displayName": "Signal Red",
+        "canonical": "#c8302a",
+        "tonalRamp": [
+          "oklch(15% 0.18 28)",
+          "oklch(26% 0.18 28)",
+          "oklch(37% 0.18 28)",
+          "oklch(48% 0.18 28)",
+          "oklch(59% 0.18 28)",
+          "oklch(70% 0.18 28)",
+          "oklch(82% 0.18 28)",
+          "oklch(95% 0.18 28)"
+        ],
+        "dark": "#f2675f"
+      },
+      "danger-soft": {
+        "role": "status",
+        "displayName": "Signal Red Wash",
+        "canonical": "#fbeae9",
+        "tonalRamp": [
+          "oklch(15% 0.18 28)",
+          "oklch(26% 0.18 28)",
+          "oklch(37% 0.18 28)",
+          "oklch(48% 0.18 28)",
+          "oklch(59% 0.18 28)",
+          "oklch(70% 0.18 28)",
+          "oklch(82% 0.18 28)",
+          "oklch(95% 0.18 28)"
+        ],
+        "dark": "rgb(242 103 95 / 0.12)"
+      },
+      "warning": {
+        "role": "status",
+        "displayName": "Amber Note",
+        "canonical": "#9a5b00",
+        "tonalRamp": [
+          "oklch(15% 0.12 65)",
+          "oklch(26% 0.12 65)",
+          "oklch(37% 0.12 65)",
+          "oklch(48% 0.12 65)",
+          "oklch(59% 0.12 65)",
+          "oklch(70% 0.12 65)",
+          "oklch(82% 0.12 65)",
+          "oklch(95% 0.12 65)"
+        ],
+        "dark": "#e3a547"
+      },
+      "warning-soft": {
+        "role": "status",
+        "displayName": "Amber Note Wash",
+        "canonical": "#fdf1dc",
+        "tonalRamp": [
+          "oklch(15% 0.12 65)",
+          "oklch(26% 0.12 65)",
+          "oklch(37% 0.12 65)",
+          "oklch(48% 0.12 65)",
+          "oklch(59% 0.12 65)",
+          "oklch(70% 0.12 65)",
+          "oklch(82% 0.12 65)",
+          "oklch(95% 0.12 65)"
+        ],
+        "dark": "rgb(227 165 71 / 0.12)"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The one step title per screen, 3rem from 640px."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The step title on phones (2.25rem)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section titles inside a step and card headers."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Step descriptions, in Graphite under the title."
+      },
+      "body-sm": {
+        "displayName": "Body small",
+        "purpose": "Labels, list rows, plate rows, alerts."
+      },
+      "figure-xl": {
+        "displayName": "Figure XL",
+        "purpose": "The amount being chosen, inside the amount field."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Live strip facts on the ink panel."
+      },
+      "token": {
+        "displayName": "Token",
+        "purpose": "Uppercase mono labels for data: stepper, token bar, plate titles, units."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "none",
+        "purpose": "Deliberately flat (--card-shadow). Depth comes from hairlines and ink plates."
+      },
+      {
+        "name": "focus-field",
+        "value": "0 0 0 4px var(--accent-soft)",
+        "purpose": "Soft Apricot ring around a focused text field, with an Ember Ink border."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Default easing for entrances and state changes."
+      },
+      {
+        "name": "state",
+        "value": "150ms",
+        "purpose": "Colour, border and press transitions on buttons, chips and fields; press scales to 0.97."
+      },
+      {
+        "name": "enter",
+        "value": "280ms, opacity 0 and translateY(8px) to rest",
+        "purpose": "Rare, first-time screens: onboarding steps, success plates."
+      },
+      {
+        "name": "pop",
+        "value": "320ms, opacity 0 and scale(0.9) to rest",
+        "purpose": "Success marks."
+      },
+      {
+        "name": "seal-turn",
+        "value": "28s linear infinite rotation",
+        "purpose": "The seal ring text on commit plates."
+      },
+      {
+        "name": "block-field",
+        "value": "canvas, about 30fps, slow diagonal sine waves, pointer gather",
+        "purpose": "The ink panel signature; paused off screen, still under reduced motion."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all animations and transitions to 0.01ms",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Orange fill with ink text: the one main action per screen, full width at 48px.",
+      "html": "<button class=\"ds-btn-primary\">Activate protection</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border-radius:8px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:14px;font-weight:500;border:none;cursor:pointer;transition:background-color 150ms cubic-bezier(0.23,1,0.32,1),transform 150ms cubic-bezier(0.23,1,0.32,1);background:var(--accent, #ff5f0f);color:var(--accent-fg, #171717);font-weight:600;} .ds-btn-primary:hover{background:var(--accent-hover, #f25200);} .ds-btn-primary:active{transform:scale(0.97);} .ds-btn-primary:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;} .ds-btn-primary:disabled{opacity:0.45;pointer-events:none;}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "White with a hairline; for repeat or alternative actions.",
+      "html": "<button class=\"ds-btn-secondary\">Downloaded · download again</button>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border-radius:8px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:14px;font-weight:500;border:none;cursor:pointer;transition:background-color 150ms cubic-bezier(0.23,1,0.32,1),transform 150ms cubic-bezier(0.23,1,0.32,1);background:var(--surface, #ffffff);color:var(--foreground, #171717);border:1px solid var(--border, #e7e5e4);} .ds-btn-secondary:hover{background:var(--surface-2, #f5f5f4);} .ds-btn-secondary:active{transform:scale(0.97);} .ds-btn-secondary:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled 44px field; Ember Ink border and Apricot ring on focus.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Kit passphrase</span><input class=\"ds-input\" type=\"password\" placeholder=\"Three or four random words\"/><span class=\"ds-field-hint\">At least 12 characters.</span></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-field-label{font-size:14px;font-weight:500;} .ds-field-hint{font-size:12px;color:var(--muted, #6b6b6b);} .ds-input{height:44px;width:100%;border-radius:8px;border:1px solid var(--border, #e7e5e4);background:var(--surface, #ffffff);color:var(--foreground, #171717);padding:0 14px;font:inherit;font-size:14px;outline:none;caret-color:var(--accent-ink, #c2410c);transition:border-color 150ms,box-shadow 150ms;} .ds-input::placeholder{color:var(--muted, #6b6b6b);} .ds-input:focus{border-color:var(--accent-ink, #c2410c);box-shadow:0 0 0 4px var(--accent-soft, #fff0e6);}"
+    },
+    {
+      "name": "Amount Field with presets",
+      "kind": "input",
+      "refersTo": "input-amount",
+      "description": "The chosen amount in 48px mono inside a 1.5px ink frame, with mono preset chips; the selected chip is orange with ink text.",
+      "html": "<div class=\"ds-amount\"><div class=\"ds-amount-box\"><input class=\"ds-amount-input\" value=\"500\" inputmode=\"decimal\" aria-label=\"Daily limit\"/><span class=\"ds-token ds-amount-unit\">USDC / day</span></div><div class=\"ds-presets\"><button class=\"ds-chip\">100</button><button class=\"ds-chip\">250</button><button class=\"ds-chip\" aria-pressed=\"true\">500 <small>suggested</small></button><button class=\"ds-chip\">1,000</button></div></div>",
+      "css": ".ds-amount{display:flex;flex-direction:column;gap:20px;} .ds-amount-box{position:relative;} .ds-amount-input{height:60px;width:100%;border-radius:8px;border:1.5px solid var(--foreground, #171717);background:var(--surface, #ffffff);color:var(--foreground, #171717);padding:0 112px 0 14px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:48px;font-weight:600;letter-spacing:-0.025em;font-variant-numeric:tabular-nums;outline:none;} .ds-amount-input:focus{border-color:var(--accent-ink, #c2410c);box-shadow:0 0 0 4px var(--accent-soft, #fff0e6);} .ds-token{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;} .ds-amount-unit{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted, #6b6b6b);} .ds-presets{display:flex;flex-wrap:wrap;gap:8px;} .ds-chip{height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border, #e7e5e4);background:var(--surface, #ffffff);color:var(--foreground, #171717);font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:14px;cursor:pointer;transition:background-color 150ms,transform 150ms;} .ds-chip small{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:11px;color:var(--muted, #6b6b6b);margin-left:6px;} .ds-chip:hover{background:var(--surface-2, #f5f5f4);} .ds-chip:active{transform:scale(0.97);} .ds-chip:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;} .ds-chip[aria-pressed=true]{background:var(--accent, #ff5f0f);color:var(--accent-fg, #171717);border-color:transparent;font-weight:600;} .ds-chip[aria-pressed=true] small{color:var(--accent-fg, #171717);}"
+    },
+    {
+      "name": "Stepper",
+      "kind": "nav",
+      "refersTo": "stepper",
+      "description": "Squares joined by hairlines: done ink, active orange, pending outlined; token labels.",
+      "html": "<ol class=\"ds-stepper\"><li><span class=\"ds-step ds-done\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg></span><span class=\"ds-step-label\">Create</span><span class=\"ds-rule\"></span></li><li><span class=\"ds-step ds-active\">2</span><span class=\"ds-step-label ds-on\">Protect 4/4</span><span class=\"ds-rule\"></span></li><li><span class=\"ds-step\">3</span><span class=\"ds-step-label\">Done</span></li></ol>",
+      "css": ".ds-stepper{display:flex;gap:8px;list-style:none;margin:0;padding:0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;} .ds-stepper li{display:flex;align-items:center;gap:8px;flex:1;} .ds-step{display:grid;place-items:center;width:24px;height:24px;flex:none;border-radius:6px;border:1px solid var(--border, #e7e5e4);color:var(--muted, #6b6b6b);font-size:11px;font-weight:600;} .ds-done{background:var(--foreground, #171717);color:var(--background, #ffffff);border-color:transparent;} .ds-active{background:var(--accent, #ff5f0f);color:var(--accent-fg, #171717);border-color:transparent;} .ds-step-label{font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted, #6b6b6b);white-space:nowrap;} .ds-on{color:var(--foreground, #171717);} .ds-rule{height:1px;flex:1;min-width:12px;background:var(--border, #e7e5e4);}"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-accent",
+      "description": "6px tags on soft grounds; warning marks DEMO and MOCK.",
+      "html": "<span class=\"ds-badge ds-badge-accent\">Level 1</span> <span class=\"ds-badge ds-badge-warning\">Demo</span> <span class=\"ds-badge ds-badge-neutral\">Soon</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:4px;border-radius:6px;border:1px solid transparent;padding:2px 6px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:12px;font-weight:500;} .ds-badge-accent{background:var(--accent-soft, #fff0e6);color:var(--accent-ink, #c2410c);} .ds-badge-warning{background:var(--warning-soft, #fdf1dc);color:var(--warning, #9a5b00);} .ds-badge-neutral{background:var(--surface-2, #f5f5f4);color:var(--muted, #6b6b6b);border-color:var(--border, #e7e5e4);}"
+    },
+    {
+      "name": "Loss Bound",
+      "kind": "card",
+      "refersTo": "loss-bound-field",
+      "description": "Apricot field showing the worst case as an amount, with one square per day of exposure.",
+      "html": "<section class=\"ds-bound\"><p class=\"ds-bound-copy\">If your phone is stolen, a thief can take at most about</p><div class=\"ds-bound-row\"><p class=\"ds-bound-fig\">3,500 <span>USDC</span></p><div class=\"ds-days\"><span><i class=\"ds-day1\"></i>1</span><span><i class=\"\"></i>2</span><span><i class=\"\"></i>3</span><span><i class=\"\"></i>4</span><span><i class=\"\"></i>5</span><span><i class=\"\"></i>6</span><span><i class=\"\"></i>7</span></div></div><p class=\"ds-bound-copy\">500 a day × 7 days, until your Kit locks them out.</p></section>",
+      "css": ".ds-bound{background:var(--accent-soft, #fff0e6);border-radius:10px;padding:16px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-bound-copy{margin:0;font-size:14px;opacity:0.75;} .ds-bound-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin:4px 0 8px;} .ds-bound-fig{margin:0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:36px;font-weight:600;letter-spacing:-0.025em;font-variant-numeric:tabular-nums;} .ds-bound-fig span{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:18px;} .ds-days{display:flex;gap:4px;} .ds-days span{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;opacity:0.85;} .ds-days i{display:block;width:28px;height:28px;border-radius:3px;background:var(--accent, #ff5f0f);opacity:0.45;} .ds-days i.ds-day1{opacity:1;}"
+    },
+    {
+      "name": "Ink Plate with Seal",
+      "kind": "custom",
+      "refersTo": "plate",
+      "description": "The commit surface for anything Face ID signs: ink slab, two crosshairs, the turning seal half off the top edge, label/fact rows.",
+      "html": "<section class=\"ds-plate\"><svg aria-hidden=\"true\" viewBox=\"0 0 14 14\" class=\"ds-cross ds-cross-tl\"><path d=\"M7 0v14M0 7h14\" stroke=\"currentColor\" stroke-width=\"1\"/></svg><svg aria-hidden=\"true\" viewBox=\"0 0 14 14\" class=\"ds-cross ds-cross-br\"><path d=\"M7 0v14M0 7h14\" stroke=\"currentColor\" stroke-width=\"1\"/></svg><svg class=\"ds-seal\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\" role=\"img\" aria-label=\"Sponsored by Swissquote, 2 of 2, user majority\"><defs><path id=\"ds-ring\" d=\"M60 60 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0\"/></defs><circle cx=\"60\" cy=\"60\" r=\"58\" class=\"ds-seal-disc\"/><g class=\"ds-seal-turn\"><text class=\"ds-seal-ring\" font-size=\"9\" font-weight=\"600\"><textPath href=\"#ds-ring\" textLength=\"275\" lengthAdjust=\"spacingAndGlyphs\">SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY · </textPath></text></g><text x=\"60\" y=\"67\" text-anchor=\"middle\" class=\"ds-seal-sq\" font-size=\"20\" font-weight=\"700\">SQ</text></svg><p class=\"ds-plate-title\">Face ID will approve</p><dl class=\"ds-plate-rows\"><div><dt>Account owners</dt><dd>This phone + your Kit · 2 of 2</dd></div><div><dt>Face ID alone</dt><dd>Up to 500 USDC a day</dd></div><div><dt>Network fee</dt><dd>Covered by Swissquote</dd></div></dl></section>",
+      "css": ".ds-plate{position:relative;margin-top:64px;background:var(--hero, #171717);color:var(--hero-fg, #fafafa);border:1px solid var(--hero-2, #232323);border-radius:10px;padding:24px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-cross{position:absolute;width:14px;height:14px;color:var(--foreground, #171717);} .ds-cross-tl{left:-7px;top:-7px;} .ds-cross-br{right:-7px;bottom:-7px;} .ds-seal{position:absolute;top:-56px;right:24px;} .ds-seal-disc{fill:var(--accent, #ff5f0f);} .ds-seal-ring{fill:var(--accent-fg, #171717);font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;} .ds-seal-sq{fill:var(--accent-fg, #171717);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-seal-turn{transform-origin:60px 60px;transform-box:view-box;animation:ds-seal 28s linear infinite;} @keyframes ds-seal{to{transform:rotate(360deg);}} @media (prefers-reduced-motion:reduce){.ds-seal-turn{animation:none;}} .ds-plate-title{margin:0;padding-right:144px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--hero-muted, #a3a3a3);} .ds-plate-rows{margin:28px 0 0;} .ds-plate-rows div{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:8px 0;border-top:1px solid var(--hero-2, #232323);font-size:14px;} .ds-plate-rows div:first-child{border-top:0;padding-top:0;} .ds-plate-rows dt{color:var(--hero-muted, #a3a3a3);} .ds-plate-rows dd{margin:0;text-align:right;font-weight:500;}"
+    },
+    {
+      "name": "Live Strip",
+      "kind": "custom",
+      "refersTo": "live-strip",
+      "description": "Three verifiable chain facts in mono figures on the ink panel.",
+      "html": "<dl class=\"ds-live\"><div><dt>Network fee</dt><dd>0.00</dd></div><div><dt>Base Sepolia block</dt><dd>47,949,336</dd></div><div><dt>Status</dt><dd><i></i>Live</dd></div></dl>",
+      "css": ".ds-live{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:0;padding:16px 24px;border-top:1px solid var(--hero-2, #232323);background:var(--hero, #171717);color:var(--hero-fg, #fafafa);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-live dt{font-size:12px;color:var(--hero-muted, #a3a3a3);} .ds-live dd{margin:4px 0 0;display:flex;align-items:center;gap:8px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:20px;font-variant-numeric:tabular-nums;} .ds-live i{display:block;width:10px;height:10px;background:var(--success, #0f7a55);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Swiss onchain fintech at base.org's craft, with the registration plate's seal on commit moments",
+    "overview": "The wallet reads like a technical fintech, not a crypto toy and not a private bank. White ground, ink type, and one fully saturated Swissquote orange that does real work: it fills the primary action, lights the generative block field, and stamps the seal. The orange takes the place Base gives its blue. Warmth comes from that orange and from the apricot field that shows the worst case as an amount; precision comes from crisp corners, hairline borders and mono figures you can check against the chain.\n\nDensity is calm and single-column: one task per screen, the title at display size, then the facts. Live chain facts (network fee 0.00, the current Base Sepolia block, a live status square) sit beside the content as proof, never as decoration. Every moment where Face ID signs or something is committed onchain turns dark: an ink plate, registered by two crosshairs at opposite corners, with the orange Swissquote seal (\"SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY\") half off its top edge, turning slowly.\n\nThe system refuses both the purple-gradient crypto wallet and the beige private-bank page. Craft references are base.org (technical register, one committed colour, live facts, generative motion) and Phantom (warmth). The brand is a Swissquote-inspired prototype: the Swissquote name, its orange and the SQ monogram, no official assets.",
+    "keyCharacteristics": [
+      "White and ink with one committed colour, Swissquote orange, which always carries ink text.",
+      "Hanken Grotesk for UI and display, tight and large; JetBrains Mono strictly for figures, addresses and status tokens.",
+      "Crisp corners (6 to 10px), hairline borders, flat surfaces: no shadows.",
+      "A generative square field of orange cells on ink as the world's signature motion.",
+      "Ink plates with crosshairs and a turning seal for everything Face ID signs.",
+      "Light by default; dark follows the OS."
+    ],
+    "rules": [
+      {
+        "name": "The Ink-On-Orange Rule",
+        "body": "An orange fill always carries ink text (accent-fg), never white. When orange must be read as text on a light ground, use Ember Ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Committed Colour Rule",
+        "body": "Swissquote orange is the only brand hue. Green, red and amber are signals, never decoration, and there is no second accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Factor Code Rule",
+        "body": "The user's three factors keep one code on every screen: the phone (Face ID) is an orange-filled square, the cloud account an ink-outlined square, the Kit passphrase an ink-filled square. No other colours encode factors.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono-Is-Data Rule",
+        "body": "JetBrains Mono is reserved for figures, addresses, units and verifiable status. If the text is not a number, an address, a unit or a chain fact, it is set in Hanken Grotesk.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tight Display Rule",
+        "body": "Titles are semibold at 1.05 line-height with negative tracking (-0.03 to -0.035em). Display size is for the one title per screen.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Ground Rule",
+        "body": "No box shadows, no blurs, no glass. If something needs to stand out, it is either orange (action) or ink (commitment).",
+        "section": "elevation"
+      },
+      {
+        "name": "The Ink Plate Rule",
+        "body": "A dark plate on a light screen means Face ID will sign this, or this is now live onchain. Never use it for marketing or general grouping.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Crisp Corner Rule",
+        "body": "Nothing rectangular exceeds 12px radius. The seal is the only circle in the world's vocabulary.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "**Do** put ink text on every orange fill and use Ember Ink when orange has to be read as text.",
+      "**Do** show risk as a number before the user commits: limits, loss bounds and delays in mono figures on the apricot field.",
+      "**Do** put everything Face ID signs on an ink plate, with crosshairs and the seal, as the last block before the action.",
+      "**Do** keep live chain facts (fee, block, live status) visible in the shell: the live strip on desktop, the token bar on phones.",
+      "**Do** use the Factor Code Rule squares whenever the phone, the cloud account and the Kit appear together.",
+      "**Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours."
+    ],
+    "donts": [
+      "**Don't** set white text on Swissquote orange.",
+      "**Don't** add box shadows, glass or blur; the card shadow token stays `none`.",
+      "**Don't** introduce a second accent, purple gradients, or a beige private-bank palette.",
+      "**Don't** use JetBrains Mono or uppercase tokens as a decorative kicker above a headline; tokens label data.",
+      "**Don't** round rectangles beyond 12px or turn markers into pills; the seal is the only circle.",
+      "**Don't** place the seal anywhere but on a commit plate, and never more than one per screen."
+    ]
+  }
+}

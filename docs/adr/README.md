@@ -67,7 +67,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-013](architecture/ADR-013-vault-allowance-module.md) | Vault: second Safe + Safe Allowance Module, the Spending Safe as delegate | Superseded by ADR-017 |
 | [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted |
 | [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted |
-| [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted |
+| [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted, amended by ADR-027 |
 | [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Accepted (spike C1–C4 passed on 2026-10-10), amended by ADR-019 |
 | [ADR-018](architecture/ADR-018-recovery-kit-encryption-and-storage.md) | Recovery Kit: Ethereum keystore V3 via ethers, cloud + local encrypted copies | Accepted, amended by ADR-019 |
 | [ADR-019](architecture/ADR-019-account-eviction-module.md) | Account eviction: Candide recovery module on the Account, guardian = the Kit's second key | Accepted (spike C5 passed; amends ADR-017, ADR-018) |
@@ -78,6 +78,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-024](architecture/ADR-024-handle-directory.md) | `@handle` directory: exact-match resolution for linked clients, visibility and contacts, `RecipientField`, MOCK session | Accepted |
 | [ADR-025](architecture/ADR-025-swissquote-transfers.md) | Swissquote account transfers: treasury = relayer Safe, deposits verified from on-chain logs, MOCK balances | Accepted |
 | [ADR-026](architecture/ADR-026-transitional-legacy-key-safe-recovery.md) | Transitional: the protect flow keeps the legacy Key Safe recovery (same Kit guardian key) until the eviction flow ships | Accepted (temporary, #33) |
+| [ADR-027](architecture/ADR-027-visual-world-swiss-onchain-fintech.md) | Visual world: Swiss onchain fintech (white, ink, one Swissquote orange, sealed ink plates), recorded in DESIGN.md through impeccable | Accepted |
 
 ## Open questions (future records)
 

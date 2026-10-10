@@ -1,55 +1,66 @@
 @import "tailwindcss";
 
-/* Design tokens. Light by default, dark follows the OS setting. */
+/*
+ * Design tokens: Swiss onchain fintech (DESIGN.md). White and ink, one fully saturated
+ * Swissquote orange that carries ink text, apricot fields for bounds, ink plates for what
+ * Face ID signs. Light by default, dark follows the OS setting.
+ */
 :root {
-  --background: #f4f3ef;
+  --background: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f8f7f4;
-  --foreground: #121418;
-  --muted: #696d75;
-  --border: #e5e3dd;
-  --accent: #f26722;
-  --accent-hover: #df5a17;
-  --accent-fg: #ffffff;
-  --accent-soft: #fdeee5;
-  --success: #11805b;
-  --success-soft: #e5f4ec;
-  --danger: #c7372f;
+  --surface-2: #f5f5f4;
+  --foreground: #171717;
+  --muted: #6b6b6b;
+  --border: #e7e5e4;
+  /* Fills: buttons, logo, live cells. Always with ink text (--accent-fg). */
+  --accent: #ff5f0f;
+  --accent-hover: #f25200;
+  --accent-fg: #171717;
+  /* Orange text, icons and focus rings on light grounds (AA). */
+  --accent-ink: #c2410c;
+  --accent-soft: #fff0e6;
+  --success: #0f7a55;
+  --success-soft: #e6f4ee;
+  --danger: #c8302a;
   --danger-soft: #fbeae9;
-  --warning: #a2660f;
-  --warning-soft: #fcf2df;
-  --hero: #15171c;
-  --hero-2: #23262d;
-  --hero-fg: #f6f5f3;
-  --hero-muted: #a1a5ad;
-  --card-shadow: 0 1px 2px rgb(18 20 24 / 0.04), 0 8px 24px -12px rgb(18 20 24 / 0.08);
-  /* Motion (emil-design-eng): strong ease-out for entering UI. */
+  --warning: #9a5b00;
+  --warning-soft: #fdf1dc;
+  /* Ink plates: the onboarding panel, the balance, anything Face ID signs. */
+  --hero: #171717;
+  --hero-2: #232323;
+  --hero-fg: #fafafa;
+  --hero-muted: #a3a3a3;
+  --card-shadow: none;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@supports (color: color(display-p3 1 0 0)) {
+  :root {
+    --accent: color(display-p3 1 0.38 0.06);
+    --accent-hover: color(display-p3 0.95 0.33 0.02);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b0c0f;
-    --surface: #14161a;
-    --surface-2: #1a1d22;
-    --foreground: #f0f0f1;
-    --muted: #979ba4;
-    --border: #262930;
-    --accent: #ff7a33;
-    --accent-hover: #ff8d4f;
-    --accent-fg: #ffffff;
-    --accent-soft: rgb(255 122 51 / 0.13);
+    --background: #0c0c0c;
+    --surface: #151515;
+    --surface-2: #1d1d1d;
+    --foreground: #f5f5f5;
+    --muted: #a3a3a3;
+    --border: #2a2a2a;
+    --accent-ink: #ff8a4c;
+    --accent-soft: rgb(255 95 15 / 0.14);
     --success: #3cc28f;
     --success-soft: rgb(60 194 143 / 0.12);
     --danger: #f2675f;
     --danger-soft: rgb(242 103 95 / 0.12);
     --warning: #e3a547;
     --warning-soft: rgb(227 165 71 / 0.12);
-    --hero: #1a1d23;
-    --hero-2: #262a31;
-    --hero-fg: #f6f5f3;
-    --hero-muted: #a1a5ad;
-    --card-shadow: none;
+    --hero: #1a1a1a;
+    --hero-2: #262626;
+    --hero-fg: #fafafa;
+    --hero-muted: #a3a3a3;
   }
 }
 
@@ -63,6 +74,7 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-fg: var(--accent-fg);
+  --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
@@ -75,24 +87,49 @@
   --color-hero-fg: var(--hero-fg);
   --color-hero-muted: var(--hero-muted);
   --shadow-card: var(--card-shadow);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-hanken);
+  --font-mono: var(--font-jetbrains);
+  /* Crisp corners everywhere: the kit's rounded-* classes map to 6–12px. */
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
+}
+
+html {
+  scrollbar-color: var(--border) transparent;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+input,
+textarea {
+  caret-color: var(--accent-ink);
 }
 
 /* Keyboard focus ring. Text fields have their own (border + soft ring). */
 :focus-visible:not(input, textarea) {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-ink);
   outline-offset: 2px;
+}
+
+/* Status tokens, addresses and figures: data, never decoration. */
+.token {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* Entrance for rare, first-time screens (onboarding steps, success states). */
@@ -115,11 +152,22 @@ body {
   animation: pop 320ms var(--ease-out) both;
 }
 
+/* The Swissquote seal on commit plates turns slowly; reduced motion holds it still. */
+@keyframes seal-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-seal {
+  animation: seal-turn 28s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

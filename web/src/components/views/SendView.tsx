@@ -134,7 +134,7 @@ export function SendView() {
                       type="button"
                       disabled={!balance}
                       onClick={() => balance !== null && setAmount(maxAmount(balance))}
-                      className="h-10 rounded-lg px-2.5 text-xs font-semibold text-accent hover:bg-accent-soft disabled:opacity-40"
+                      className="h-10 rounded-lg px-2.5 text-xs font-semibold text-accent-ink hover:bg-accent-soft disabled:opacity-40"
                     >
                       MAX
                     </button>
@@ -218,7 +218,7 @@ export function SendView() {
                   href={`${EXPLORER_URL}/tx/${txHash}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent"
+                  className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent-ink"
                 >
                   View on explorer <ExternalLink className="h-4 w-4" />
                 </a>
