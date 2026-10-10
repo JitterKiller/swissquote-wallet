@@ -18,6 +18,7 @@ Why things are built this way: see the decision records in **[docs/adr/](docs/ad
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Compliance: sanctions screening, simulation, dApp allowlist, high-value checks | ⏳ |
 | Transfer from Swissquote account, `@handle` transfers, third guardian | ⏳ |
+| Vault with a daily limit (second Safe + Safe Allowance Module) | ⏳ |
 
 ## Architecture
 

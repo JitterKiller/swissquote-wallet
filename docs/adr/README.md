@@ -27,6 +27,9 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-006](product/PDR-006-identity-verification-before-guardian-approval.md) | Identity verification before Swissquote approves a recovery | Accepted |
 | [PDR-007](product/PDR-007-prototype-scope-real-vs-mocked.md) | Prototype scope: real on-chain, mocked banking | Accepted |
 | [PDR-008](product/PDR-008-english-ui-copy.md) | English UI copy and documentation | Accepted |
+| [PDR-009](product/PDR-009-feature-priorities.md) | Feature priorities and build order for the rest of the hackathon | Accepted |
+| [PDR-010](product/PDR-010-handle-transfers-verified-payee.md) | `@handle` transfers between Swissquote clients, with verified payee and privacy by design | Accepted |
+| [PDR-011](product/PDR-011-vault-daily-limit.md) | Vault with a daily limit: protect funds, not only access | Accepted |
 
 ## Architecture decisions
 
@@ -44,16 +47,17 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-010](architecture/ADR-010-frontend-nextjs-client-only.md) | Next.js 16, client-only wallet UI, Tailwind v4 | Accepted |
 | [ADR-011](architecture/ADR-011-no-custom-cryptography.md) | No custom cryptography | Accepted |
 | [ADR-012](architecture/ADR-012-testing-real-chain-real-webauthn.md) | Testing on the real chain with real Chrome WebAuthn | Accepted |
+| [ADR-013](architecture/ADR-013-vault-allowance-module.md) | Vault: second Safe + Safe Allowance Module, the Spending Safe as delegate | Proposed (spike pending) |
 
 ## Open questions (future records)
 
 | Topic | Kind | Notes |
 |---|---|---|
-| Third guardian (trusted contact or YubiKey passkey), making recovery 2 of 3 | PDR + ADR | So that losing the Recovery Kit is not fatal |
-| Compliance layer: SECO/OFAC sanctions screening, transaction simulation, approved-dApp list, high-value checks | PDR + ADR | Off-chain check or on-chain Safe guard? Must stay friction, not a veto (PDR-001) |
-| Wallet registry + proof of ownership (EIP-1271 signed message) | PDR + ADR | Needed for FINMA travel-rule transfers between the Swissquote account and the wallet |
-| Mock "transfer from my Swissquote account" | PDR | Avoids the faucet during the demo |
-| `@handle` transfers between Swissquote clients | PDR | Privacy: a handle reveals the address and its history |
+| Third guardian (trusted contact or YubiKey passkey), making recovery 2 of 3 | PDR + ADR | So that losing the Recovery Kit is not fatal. A trusted contact can also serve inheritance (Swissquote checks the certificate of inheritance instead of liveness). Build step 6 in PDR-009 |
+| Compliance layer: SECO/OFAC sanctions screening, transaction simulation, approved-dApp list, high-value checks | PDR + ADR | Off-chain check or on-chain Safe guard? Must stay friction, not a veto (PDR-001). Idea: the Swissquote paymaster refuses to sponsor transfers to sanctioned addresses. Build step 4 in PDR-009 |
+| Wallet registry + proof of ownership (EIP-1271 signed message) | PDR + ADR | Needed for FINMA travel-rule transfers between the Swissquote account and the wallet, and for `@handle` registration (PDR-010). Build step 1 in PDR-009 |
+| Mock "transfer from my Swissquote account" | PDR | Avoids the faucet during the demo. Build step 2 in PDR-009 |
+| Routing a `@handle` payment to the recipient's Swissquote account when they have no wallet | PDR | Needs legal validation: FINMA Guidance 02/2019 restricts transfers with external wallets to the client's own wallets (PDR-010) |
 | Demo domain | ADR | Passkeys are bound to their domain (rpId) |
 | React Native app | ADR | Associated domains to share passkeys with the web app |
 | Bitcoin | PDR | Roadmap story for the pitch |
