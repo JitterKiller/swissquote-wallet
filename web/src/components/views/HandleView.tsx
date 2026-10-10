@@ -2,16 +2,19 @@
 
 import { AtSign, BadgeCheck, Check, Copy, Link2, LogOut, ShieldCheck, Users } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { parseUnits } from 'viem'
 import QRCode from 'react-qr-code'
 
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
-import { RecipientField } from '@/components/send/RecipientField'
+import { ComplianceChecks } from '@/components/send/ComplianceChecks'
+import { RecipientField, type Recipient } from '@/components/send/RecipientField'
 import { useCopy } from '@/components/ui/address'
 import { Button } from '@/components/ui/button'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Alert, Badge } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
 import { PageHeader } from '@/components/ui/page'
+import { USDC_DECIMALS } from '@/lib/config'
 import { errorMessage } from '@/lib/format'
 import {
   addContact,
@@ -24,6 +27,7 @@ import {
 } from '@/lib/handles'
 import { getMyWallet, linkWallet, type RegisteredWallet } from '@/lib/registry'
 import { clearSession, getSession, mockSignIn, type SwissquoteSession } from '@/lib/session'
+import { usdcTransfer } from '@/lib/wallet'
 
 const VISIBILITY: { value: Visibility; label: string; hint: string }[] = [
   { value: 'clients', label: 'Swissquote clients', hint: 'Any signed-in client who types your exact handle.' },
@@ -33,7 +37,7 @@ const VISIBILITY: { value: Visibility; label: string; hint: string }[] = [
 
 /** `@handle` settings and payment requests (PDR-010, issue #20). */
 export function HandleView() {
-  const { wallet } = useLoadedWallet()
+  const { wallet, chain, transfers } = useLoadedWallet()
   const { copied, copy } = useCopy()
   // Client-only page (AppShell renders after hydration): localStorage is available.
   const [session, setSessionState] = useState<SwissquoteSession | null>(() => getSession())
@@ -44,6 +48,8 @@ export function HandleView() {
   const [contact, setContact] = useState('')
   const [amount, setAmount] = useState('')
   const [checkValue, setCheckValue] = useState('')
+  const [checkAmount, setCheckAmount] = useState('')
+  const [checkRecipient, setCheckRecipient] = useState<Recipient | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -260,13 +266,34 @@ export function HandleView() {
           )}
 
           <Card>
-            <CardHeader title="Check a recipient" description="What a payer sees before Face ID." />
-            <CardBody>
-              <RecipientField value={checkValue} onChange={setCheckValue} onRecipient={() => {}} />
+            <CardHeader title="Check a payment" description="What a payer sees before Face ID: verified name, sanctions screening, simulation, look-alike and large-payment checks." />
+            <CardBody className="space-y-4">
+              <RecipientField value={checkValue} onChange={setCheckValue} onRecipient={setCheckRecipient} />
+              <Field label="Amount (USDC)" htmlFor="check-amount">
+                <Input id="check-amount" inputMode="decimal" placeholder="0.00" value={checkAmount} onChange={(e) => setCheckAmount(e.target.value.replace(',', '.'))} />
+              </Field>
+              <ComplianceChecks
+                from={wallet.address}
+                to={checkRecipient?.address ?? null}
+                amount={parseAmount(checkAmount)}
+                balance={chain.balance}
+                knownRecipients={transfers?.map((t) => t.counterparty) ?? []}
+                calls={checkRecipient && parseAmount(checkAmount) ? [usdcTransfer(checkRecipient.address, checkAmount)] : undefined}
+                onChange={() => {}}
+              />
             </CardBody>
           </Card>
         </div>
       </div>
     </div>
   )
+}
+
+function parseAmount(value: string) {
+  try {
+    const amount = parseUnits(value || '0', USDC_DECIMALS)
+    return amount > 0n ? amount : null
+  } catch {
+    return null
+  }
 }

@@ -17,7 +17,8 @@ Why things are built this way: see the decision records in **[docs/adr/](docs/ad
 | Old device revoked after recovery | ✅ |
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity, security page, light/dark | ✅ |
-| Compliance: sanctions screening, simulation, dApp allowlist, high-value checks | ⏳ |
+| Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022); send-flow integration in #12 | ✅ |
+| Approved-dApp list (#25) | ⏳ |
 | `@handle` directory: verified payee before Face ID, visibility, contacts, payment request link + QR (PDR-010, ADR-024); send-flow integration in #12 | ✅ |
 | Transfer from Swissquote account, third guardian | ⏳ |
 | Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ⏳ (spike ✅) |
@@ -130,6 +131,7 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 | `POST` / `PATCH` / `DELETE /api/handles` | Claim, change visibility, release the caller's `@handle` (linked clients, MOCK auth) |
 | `GET /api/handles/[handle]?clientId=` | Exact-match resolution → Account + masked verified name (rate-limited, no enumeration) |
 | `POST /api/handles/contacts` | Allow a client (by handle) to resolve my handle when visibility is "contacts" |
+| `POST /api/compliance/screen` | Sanctions screening of one address: MOCK list + optional Chainalysis (ADR-022) |
 | `POST /api/report-stolen` | Report a stolen phone: its Key Safe loses sponsorship (identity session or Recovery Kit signature) |
 
 ## Real vs mocked
