@@ -1,5 +1,7 @@
 import type { WebauthnPublicKey } from 'abstractionkit'
 
+import type { RecoveryKitV3 } from './recoveryKit'
+
 /**
  * Local persistence of PUBLIC wallet data only (credential id, public key,
  * address). Nothing secret is stored: the private key never leaves the
@@ -32,6 +34,9 @@ export type LocalRecovery = {
 
 const WALLET_KEY = 'sq-wallet:v1'
 const RECOVERY_KEY = 'sq-recovery:v1'
+// The only secret stored client-side, and always encrypted (ADR-018).
+const KIT_KEY = 'sq-kit:v3'
+const KIT_TESTED_KEY = 'sq-kit-tested:v1'
 
 export function toPublicKey(stored: { publicKey: { x: string; y: string } }): WebauthnPublicKey {
   return { x: BigInt(stored.publicKey.x), y: BigInt(stored.publicKey.y) }
@@ -69,9 +74,19 @@ export function clearLocalRecovery() {
   } catch {}
 }
 
+/** Encrypted Kit copy, so a large payment only asks for the passphrase (PDR-016). */
+export const loadLocalKit = () => read<RecoveryKitV3>(KIT_KEY)
+export const saveLocalKit = (kit: RecoveryKitV3) => write(KIT_KEY, kit)
+
+/** Last successful "test your Kit" (ms), for the periodic reminder. */
+export const loadKitTestedAt = () => read<number>(KIT_TESTED_KEY)
+export const saveKitTestedAt = (at = Date.now()) => write(KIT_TESTED_KEY, at)
+
 export function clearAll() {
   try {
     window.localStorage.removeItem(WALLET_KEY)
     window.localStorage.removeItem(RECOVERY_KEY)
+    window.localStorage.removeItem(KIT_KEY)
+    window.localStorage.removeItem(KIT_TESTED_KEY)
   } catch {}
 }

@@ -13,10 +13,12 @@
     "screenshots": "node scripts/ui-screenshots.mts",
     "spike:two-safe": "node scripts/spike-two-safe.mts",
     "check:account": "tsx scripts/check-account-lib.mts",
-    "spike:two-safe-variants": "tsx scripts/spike-two-safe-variants.mts"
+    "spike:two-safe-variants": "tsx scripts/spike-two-safe-variants.mts",
+    "check:kit": "tsx scripts/check-kit.mts"
   },
   "dependencies": {
     "abstractionkit": "^0.4.3",
+    "ethers": "^6.17.0",
     "lucide-react": "^1.55.0",
     "next": "16.4.0",
     "ox": "^1.8.6",
