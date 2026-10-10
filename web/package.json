@@ -11,7 +11,8 @@
     "e2e": "node scripts/e2e-passkey.mts",
     "e2e:recovery": "node scripts/e2e-recovery.mts",
     "screenshots": "node scripts/ui-screenshots.mts",
-    "spike:two-safe": "node scripts/spike-two-safe.mts"
+    "spike:two-safe": "node scripts/spike-two-safe.mts",
+    "check:account": "tsx scripts/check-account-lib.mts"
   },
   "dependencies": {
     "abstractionkit": "^0.4.3",
@@ -33,6 +34,7 @@
     "eslint-config-next": "16.4.0",
     "playwright-core": "^1.64.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
