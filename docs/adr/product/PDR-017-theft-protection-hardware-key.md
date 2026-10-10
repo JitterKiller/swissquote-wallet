@@ -29,7 +29,16 @@ A third factor that the user holds breaks the tie without giving Swissquote any 
   3. report: the Swissquote paymaster stops sponsoring the stolen Key Safe (friction, not a veto). The reporter proves ownership with identity verification (level 1) or a Kit signature (level 0).
 - **Insurance of the capped loss** (about one day's limit): to explore with a licensed insurance partner. Swissquote cannot insure on its own without a FINMA insurance licence.
 - **Rule of three places:** the key stays at home, never in the same bag as the phone.
-- **Demo:** the key is simulated with Chrome's virtual authenticator, or a real YubiKey.
+- **Demo without a physical key:** on-chain, a hardware key is just another passkey (P-256 key + verifier proxy), so any WebAuthn authenticator exercises the real mechanism. Only the device that signs changes.
+  1. **Main option: a teammate's phone plays the key.** On the laptop, the WebAuthn prompt offers "use a phone". The second phone scans the QR code and acts as a security key over Bluetooth (standard WebAuthn hybrid transport). Requires the demo on an HTTPS domain (open question "Demo domain + deployment").
+  2. **Fallback: the laptop's Touch ID / Windows Hello** as the key.
+  3. **Rehearsals: Chrome's virtual authenticator** (DevTools → WebAuthn), as in the e2e tests.
+  4. **Last resort: a simulated key in the app** (P-256 signed with `ox`, as in `smoke-passkey.mts`), labelled **MOCK**.
+  5. **A real FIDO2 key** (YubiKey, Feitian, about CHF 25–50) if one can be obtained in time.
+
+  Never use the user's own phone, or a passkey synced in the same iCloud Keychain, as the "key": the point is a factor independent from the phone. Production enrolment forces a roaming key (`authenticatorAttachment: 'cross-platform'`), which excludes laptop Touch ID, so the demo needs a flag that accepts any authenticator.
+
+  Pitch line: "In the demo this phone plays the security key. In production it is a FIDO2 key with a PIN, shipped by Swissquote. The on-chain mechanism is identical: you can check on Basescan that it is the Account's third owner."
 - **Price references:** Zengo Pro launched at about $20 a month, Ledger Recover at $9.99 a month, and a YubiKey costs about CHF 50–80.
 
 ## Consequences
