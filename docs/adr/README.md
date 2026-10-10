@@ -74,6 +74,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-021](architecture/ADR-021-wallet-registry.md) | Wallet registry: passkey-signed EIP-712 statement, verified with ox + on-chain owner checks | Accepted |
 | [ADR-022](architecture/ADR-022-compliance-checks.md) | Compliance checks: server screening (mock list + optional Chainalysis), client preview, look-alike and high-value warnings | Accepted |
 | [ADR-023](architecture/ADR-023-sponsorship-policy-proxy.md) | Sponsorship policy: ERC-7677 paymaster proxy (quota, security operations, sanctions, stolen-device reports) | Accepted |
+| [ADR-024](architecture/ADR-024-handle-directory.md) | `@handle` directory: exact-match resolution for linked clients, visibility and contacts, `RecipientField`, MOCK session | Accepted |
 
 ## Open questions (future records)
 

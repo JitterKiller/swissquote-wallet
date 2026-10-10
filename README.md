@@ -18,7 +18,8 @@ Why things are built this way: see the decision records in **[docs/adr/](docs/ad
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity, security page, light/dark | ✅ |
 | Compliance: sanctions screening, simulation, dApp allowlist, high-value checks | ⏳ |
-| Transfer from Swissquote account, `@handle` transfers, third guardian | ⏳ |
+| `@handle` directory: verified payee before Face ID, visibility, contacts, payment request link + QR (PDR-010, ADR-024); send-flow integration in #12 | ✅ |
+| Transfer from Swissquote account, third guardian | ⏳ |
 | Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ⏳ (spike ✅) |
 | One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019) | ⏳ (spike ✅) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018) | ⏳ |
@@ -106,6 +107,7 @@ npm run check:kit      # Kit v3 encryption, local (~5 s)
 npm run check:eviction-api # /api/eviction endpoints over HTTP, needs npm run dev (~4 min)
 npm run check:registry # wallet registry: valid proof, replay, other passkey, other origin, foreign Key Safe (needs npm run dev)
 npm run check:sponsorship # sponsorship policy: quota, security ops, mixed batches, sanctions, linked client, stolen report (needs npm run dev)
+npm run check:handles  # @handles: uniqueness, reserved names, verified name, hidden = missing, contacts, rate limit (needs npm run dev)
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.
@@ -125,13 +127,16 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 | `POST /api/wallets` | Registry: verifies the passkey-signed EIP-712 statement + on-chain owners, links the Account to the client |
 | `GET` / `DELETE /api/wallets/me?clientId=` | Registry: the caller's entry / unlink (MOCK auth: client id in the query) |
 | `POST /api/paymaster` | Swissquote sponsorship policy in front of the ERC-7677 paymaster: level 0 quota, security operations always sponsored, sanctions, reported-stolen devices (ADR-023) |
+| `POST` / `PATCH` / `DELETE /api/handles` | Claim, change visibility, release the caller's `@handle` (linked clients, MOCK auth) |
+| `GET /api/handles/[handle]?clientId=` | Exact-match resolution → Account + masked verified name (rate-limited, no enumeration) |
+| `POST /api/handles/contacts` | Allow a client (by handle) to resolve my handle when visibility is "contacts" |
 | `POST /api/report-stolen` | Report a stolen phone: its Key Safe loses sponsorship (identity session or Recovery Kit signature) |
 
 ## Real vs mocked
 
 | Real (on-chain / standard) | Mocked (documented) |
 |---|---|
-| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022) |
+| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`) |
 
 ## Repo layout
 

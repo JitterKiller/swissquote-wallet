@@ -25,3 +25,4 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - `npm run spike:two-safe`: on-chain spike of the two-Safe account and the time-locked eviction (ADR-017, ADR-019), about 5 minutes
 - `npm run check:registry`: wallet registry checks against `npm run dev` (ADR-021)
 - `npm run check:sponsorship`: sponsorship policy checks against `npm run dev` (ADR-023)
+- `npm run check:handles`: `@handle` checks against `npm run dev` (ADR-024)

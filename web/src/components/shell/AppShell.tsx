@@ -3,6 +3,7 @@
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  AtSign,
   Clock,
   House,
   Repeat,
@@ -27,6 +28,7 @@ const NAV: NavItem[] = [
   { href: '/', label: 'Overview', icon: House },
   { href: '/send', label: 'Send', icon: ArrowUpRight },
   { href: '/receive', label: 'Receive', icon: ArrowDownLeft },
+  { href: '/handle', label: 'Handle', icon: AtSign },
   { href: '/swap', label: 'Swap', icon: Repeat, soon: true },
   { href: '/activity', label: 'Activity', icon: Clock },
   { href: '/security', label: 'Security', icon: ShieldCheck },
