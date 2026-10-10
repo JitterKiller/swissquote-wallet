@@ -115,6 +115,7 @@ npm run check:registry # wallet registry: valid proof, replay, other passkey, ot
 npm run check:sponsorship # sponsorship policy: quota, security ops, mixed batches, sanctions, linked client, stolen report (needs npm run dev)
 npm run check:handles  # @handles: uniqueness, reserved names, verified name, hidden = missing, contacts, rate limit (needs npm run dev)
 npm run check:swissquote # Swissquote transfers: balance, unlinked refused, overdraft, treasury, deposit verification (needs npm run dev)
+npm run e2e:link       # real Chrome + virtual passkey: protect, sign in (MOCK), "Link with Face ID", claim @handle, /swissquote (~2 min)
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.

@@ -28,3 +28,4 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - `npm run check:sponsorship`: sponsorship policy checks against `npm run dev` (ADR-023)
 - `npm run check:handles`: `@handle` checks against `npm run dev` (ADR-024)
 - `npm run check:swissquote`: Swissquote account transfer checks against `npm run dev` (ADR-025)
+- `npm run e2e:link`: "Link with Face ID" in real Chrome with a virtual passkey, then @handle and /swissquote

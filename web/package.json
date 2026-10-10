@@ -20,7 +20,8 @@
     "check:registry": "node scripts/check-registry.mts",
     "check:sponsorship": "node scripts/check-sponsorship.mts",
     "check:handles": "node scripts/check-handles.mts",
-    "check:swissquote": "node scripts/check-swissquote.mts"
+    "check:swissquote": "node scripts/check-swissquote.mts",
+    "e2e:link": "tsx scripts/e2e-link.mts"
   },
   "dependencies": {
     "@upstash/redis": "^1.39.0",
