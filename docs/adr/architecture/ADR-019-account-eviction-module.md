@@ -1,6 +1,6 @@
 # ADR-019: Account eviction — Candide recovery module on the Account, guardian = the Kit's second key
 
-- **Status:** Proposed (accepted together with PDR-018; spike C5 below)
+- **Status:** Accepted (spike C5 passed on 2026-10-10; PDR-018 accepted)
 - **Date:** 2026-10-10
 - **Amends:** [ADR-017](ADR-017-two-safe-account.md) (the Account also enables a recovery module and registers the Kit's guardian key), [ADR-018](ADR-018-recovery-kit-encryption-and-storage.md) (the Kit file carries a second encrypted key)
 - **Related:** [PDR-014](../product/PDR-014-separation-of-powers.md), [PDR-018](../product/PDR-018-time-locked-eviction.md), [ADR-005](ADR-005-social-recovery-module.md), [ADR-007](ADR-007-swissquote-guardian-and-relayer.md), [ADR-011](ADR-011-no-custom-cryptography.md)
@@ -81,7 +81,7 @@ Things the run confirmed:
 - ✅ Only audited contracts. It reuses the module, the EIP-712 guardian flow, the relayer and the recovery UI patterns already built for the Key Safe.
 - ✅ The thief can neither cancel nor reconfigure: every Account action needs 2 factors.
 - ⚠️ `finalizeRecovery` does not touch the Allowance Module. The old Key Safe stays a delegate until the handover, so the new device must run the handover right after finalizing (automatically, in the app).
-- ⚠️ Two recovery paths now coexist: the Key Safe recovery (lost phone, ADR-005) and the Account eviction (stolen phone). Follow-up question: use the eviction for both, to keep a single "lost or stolen phone" flow.
+- ✅ Decided in PDR-021: the eviction is the single flow for a lost **or** stolen phone. In the target design the Key Safe no longer gets its own recovery module (amends ADR-017); the current Key Safe recovery stays in the code until the eviction UI ships.
 - ⚠️ Decrypting two keystores doubles the scrypt time (about 2–4 s).
 
 ## Alternatives considered

@@ -1,6 +1,6 @@
 # PDR-015: Open wallet for everyone, the Swissquote link as the upgrade
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [PDR-018](PDR-018-time-locked-eviction.md) (stolen phone), [PDR-020](PDR-020-daily-limit-chosen-by-user.md) (no limit per level) and [PDR-021](PDR-021-one-flow-lost-or-stolen-phone.md) (the Account eviction replaces the Key Safe recovery); refined by [PDR-019](PDR-019-offer-tiers.md) (offers: Premium for linked clients, self-service hardware key at every level, security operations always sponsored)
 - **Date:** 2026-10-10
 - **Refines:** [PDR-003](PDR-003-gasless-by-default.md) (sponsorship policy), [PDR-004](PDR-004-recovery-policy.md) (level 0 recovery)
 - **Related:** [PDR-006](PDR-006-identity-verification-before-guardian-approval.md), [PDR-010](PDR-010-handle-transfers-verified-payee.md), [PDR-014](PDR-014-separation-of-powers.md), [PDR-016](PDR-016-recovery-kit-encrypted-cloud-backup.md), [PDR-017](PDR-017-theft-protection-hardware-key.md)

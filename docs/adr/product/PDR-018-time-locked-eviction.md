@@ -1,6 +1,6 @@
 # PDR-018: Time-locked eviction — a stolen phone loses by default, not only with a hardware key
 
-- **Status:** Proposed (accepted once the team agrees and spike C5 passes, see ADR-019)
+- **Status:** Accepted (spike C5 passed on 2026-10-10, see ADR-019)
 - **Date:** 2026-10-10
 - **Amends:** [PDR-014](PDR-014-separation-of-powers.md) (the phone-theft tie), [PDR-015](PDR-015-open-wallet-and-levels.md) (honest comparison), [PDR-017](PDR-017-theft-protection-hardware-key.md) (the hardware key becomes the *fast* eviction, not the only one)
 - **Related:** [PDR-001](PDR-001-non-custodial-model.md), [PDR-013](PDR-013-key-management-user-majority.md), [PDR-016](PDR-016-recovery-kit-encrypted-cloud-backup.md), [PDR-019](PDR-019-offer-tiers.md), [ADR-017](../architecture/ADR-017-two-safe-account.md), [ADR-019](../architecture/ADR-019-account-eviction-module.md)
@@ -28,16 +28,16 @@ There is no free lunch. When the owner and the thief hold the same number of fac
 | Who starts the eviction | The Kit (its guardian key) | The Kit + Swissquote after identity verification (PDR-006) | Kit + key, no delay |
 | Delay | **7 days** | **3 days** | None |
 | Who can cancel | 2 factors (Face ID + Kit, or Kit + key) | Same | — |
-| Loss bound for a stolen phone | ≈ 7 days of limit (≈ 1,400 USDC at the default 200/day) | ≈ 3 days of limit | ≈ 1 day of limit |
+| Loss bound for a stolen phone | ≈ 7 × the daily limit the user chose (PDR-020) | ≈ 3 × the daily limit | ≈ 1 × the daily limit |
 
 - **The thief cannot cancel.** Cancelling is an Account transaction, which needs 2 of the user's factors, and the thief holds only one.
 - **When the delay ends**, the stolen Key Safe is replaced by the new phone's Key Safe, and the daily allowance moves to it. The old passkey can no longer spend.
 - **Swissquote is never decisive on its own.** At level 0 it plays no part. At level 1 it co-signs with the Kit, exactly like the Key Safe recovery (PDR-004), and it is never an owner (PDR-013).
 - **The UI explains it plainly:**
-  - "Phone stolen? Open the app on another device, enter your Kit passphrase: the stolen phone is locked out in 7 days (3 days for Swissquote clients, immediately with Theft protection)."
+  - "Phone lost or stolen? Open the app on another device, enter your Kit passphrase: the old phone is locked out in 7 days (3 days for Swissquote clients, immediately with Theft protection)."
   - Every channel alerts the owner as soon as an eviction starts. If it wasn't them, they cancel with Face ID + the Kit.
-- **It replaces nothing:**
-  - the Key Safe recovery (PDR-004 / PDR-015) still covers a lost phone without changing the Account;
+- **It is also the flow for a lost phone** (PDR-021): the Key Safe recovery (PDR-004) is no longer set up in the target design.
+- **It keeps the other options:**
   - the hardware key stays the instant eviction;
   - a trusted contact can still be added as an extra guardian.
 
@@ -50,7 +50,8 @@ There is no free lunch. When the owner and the thief hold the same number of fac
 
   Swissquote sells speed, comfort and insurance, not the basic fix.
 - ✅ Same principle as the time-locked recovery path we plan for Bitcoin (PDR-013, Liana-style miniscript).
-- ⚠️ During the delay the thief keeps drawing the daily limit. Spike C5 shows it. A lower limit means a smaller loss.
+- ⚠️ During the delay the thief keeps drawing the daily limit. Spike C5 shows it. A lower limit means a smaller loss, and the user chooses it (PDR-020).
+- ⚠️ **Level 1 depends on Swissquote to start an eviction**, because the guardian key and Swissquote must both sign. If Swissquote cannot sign when a phone is stolen (long outage, end of service), the client is back to the tie. This is accepted on purpose: it is what stops a stolen Kit at level 1. Mitigation: if Swissquote ends the service, the app moves the Account to the 7-day Kit-only module. That is a 2-factor operation done while the client still has the phone, so clients keep control if Swissquote disappears (PDR-001).
 - ⚠️ **Stolen Kit** (file + cracked passphrase) at level 0: the attacker can start an eviction. The owner must cancel with 2 factors within 7 days. This adds no new risk: today at level 0 a stolen Kit can already recover the Key Safe in 7 days, and Key Safe + Kit is full control. At level 1, Swissquote's identity check stops it.
 - ⚠️ **Lost Kit and stolen phone** at the same time: no path without a hardware key or contact. That's the rule of three places.
 - ⚠️ Level 1 Account settings (switching to the 3-day module, adding Swissquote) need 2 factors (Face ID + Kit), not one passkey signature.

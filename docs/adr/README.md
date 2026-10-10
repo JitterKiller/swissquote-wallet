@@ -8,7 +8,7 @@ A **Safe smart account** (ERC-4337) on **Base Sepolia**, owned by a **passkey** 
 
 ## Target design (decided, being built)
 
-**The user always holds the majority, Swissquote never does** (PDR-013). Funds move to an **Account Safe** whose owners are only the user's factors: the **Key Safe** (today's passkey Safe, which holds no funds), the **Recovery Kit** (a passphrase-encrypted cloud backup, PDR-016) and, optionally, a **hardware key** (PDR-017). Threshold 2. Face ID alone can only spend up to a **daily limit**; anything else needs 2 factors, so a thief with an unlocked phone cannot empty the account or block anything on it (PDR-014, ADR-017). The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Swissquote is **never an owner**.
+**The user always holds the majority, Swissquote never does** (PDR-013). Funds move to an **Account Safe** whose owners are only the user's factors: the **Key Safe** (today's passkey Safe, which holds no funds), the **Recovery Kit** (a passphrase-encrypted cloud backup, PDR-016) and, optionally, a **hardware key** (PDR-017). Threshold 2. Face ID alone can only spend up to a **daily limit**; anything else needs 2 factors, so a thief with an unlocked phone cannot empty the account or block anything on it (PDR-014, ADR-017). The user chooses the limit (PDR-020). A **lost or stolen phone** goes through one flow: the Kit evicts it after **7 days** (3 days for linked clients, immediately with a hardware key), and the thief cannot cancel (PDR-018, PDR-021, ADR-019). The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Swissquote is **never an owner**.
 
 ## Two kinds of records
 
@@ -25,8 +25,8 @@ A product decision usually has one or more architecture decisions implementing i
 |---|---|---|
 | [PDR-001](product/PDR-001-non-custodial-model.md) | Non-custodial: Swissquote is a guardian, never a custodian | Accepted |
 | [PDR-002](product/PDR-002-passkeys-instead-of-seed-phrases.md) | Passkeys instead of seed phrases | Accepted |
-| [PDR-003](product/PDR-003-gasless-by-default.md) | Gasless by default: users never need ETH | Accepted, refined by PDR-015 |
-| [PDR-004](product/PDR-004-recovery-policy.md) | Recovery: Recovery Kit + Swissquote, 2 of 2, delay with owner veto | Accepted, amended by PDR-014 and PDR-015 |
+| [PDR-003](product/PDR-003-gasless-by-default.md) | Gasless by default: users never need ETH | Accepted, refined by PDR-015 and PDR-019 |
+| [PDR-004](product/PDR-004-recovery-policy.md) | Recovery: Recovery Kit + Swissquote, 2 of 2, delay with owner veto | Superseded by PDR-021 (target design; still in the code) |
 | [PDR-005](product/PDR-005-recovery-kit.md) | Recovery Kit: client-held offline factor, never stored by the app | Superseded by PDR-016 |
 | [PDR-006](product/PDR-006-identity-verification-before-guardian-approval.md) | Identity verification before Swissquote approves a recovery | Accepted |
 | [PDR-007](product/PDR-007-prototype-scope-real-vs-mocked.md) | Prototype scope: real on-chain, mocked banking | Accepted |
@@ -36,12 +36,14 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-011](product/PDR-011-vault-daily-limit.md) | Vault with a daily limit: protect funds, not only access | Superseded by PDR-014 |
 | [PDR-012](product/PDR-012-web-first-banking-ux.md) | Web-first, online-banking-grade UX (app shell, review before signing, security transparency) | Accepted |
 | [PDR-013](product/PDR-013-key-management-user-majority.md) | Key management: passkey + smart account, the user always holds the majority (comparison of MPC, passkeys, ERC-4337, seed, SLIP-39) | Accepted |
-| [PDR-014](product/PDR-014-separation-of-powers.md) | Separation of powers: Face ID spends up to a daily limit, 2 user factors for everything else | Accepted |
-| [PDR-015](product/PDR-015-open-wallet-and-levels.md) | Open wallet for everyone (level 0), the Swissquote link as the upgrade (level 1), acquisition funnel | Accepted |
+| [PDR-014](product/PDR-014-separation-of-powers.md) | Separation of powers: Face ID spends up to a daily limit, 2 user factors for everything else | Accepted, amended by PDR-018, PDR-020, PDR-021 |
+| [PDR-015](product/PDR-015-open-wallet-and-levels.md) | Open wallet for everyone (level 0), the Swissquote link as the upgrade (level 1), acquisition funnel | Accepted, amended by PDR-018, PDR-020, PDR-021; refined by PDR-019 |
 | [PDR-016](product/PDR-016-recovery-kit-encrypted-cloud-backup.md) | Recovery Kit as a passphrase-encrypted cloud backup | Accepted |
-| [PDR-017](product/PDR-017-theft-protection-hardware-key.md) | "Theft protection" offer: hardware key as third factor, guided "phone stolen" flow | Accepted |
-| [PDR-018](product/PDR-018-time-locked-eviction.md) | Time-locked eviction: the Kit locks a stolen phone out after 7 days (level 0) / 3 days (level 1), the thief cannot cancel | Proposed (amends PDR-014, PDR-015, PDR-017) |
-| [PDR-019](product/PDR-019-offer-tiers.md) | Offer in three tiers: free, linked client, Premium "Theft protection" (speed, comfort, insurance; never basic security) | Proposed (refines PDR-015, PDR-017) |
+| [PDR-017](product/PDR-017-theft-protection-hardware-key.md) | "Theft protection" offer: hardware key as third factor, guided "phone stolen" flow | Accepted, amended by PDR-018, PDR-020; refined by PDR-019 |
+| [PDR-018](product/PDR-018-time-locked-eviction.md) | Time-locked eviction: the Kit locks a stolen phone out after 7 days (level 0) / 3 days (level 1), the thief cannot cancel | Accepted (amends PDR-014, PDR-015, PDR-017) |
+| [PDR-019](product/PDR-019-offer-tiers.md) | Offer in three tiers: free, linked client, Premium "Theft protection" for linked clients (speed, comfort, insurance; never basic security); self-service hardware key at every level; security operations always sponsored | Accepted (refines PDR-003, PDR-015, PDR-017; prices to model) |
+| [PDR-020](product/PDR-020-daily-limit-chosen-by-user.md) | The daily limit is chosen by the user, same rules at every level (no limit per level, no limit perk) | Accepted |
+| [PDR-021](product/PDR-021-one-flow-lost-or-stolen-phone.md) | One flow for a lost or stolen phone: the Account eviction (replaces the Key Safe recovery) | Accepted |
 
 ## Architecture decisions
 
@@ -51,8 +53,8 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-002](architecture/ADR-002-passkey-signing-safe-webauthn.md) | Passkey signing through Safe's WebAuthn signer (shared signer → verifier proxy) | Accepted |
 | [ADR-003](architecture/ADR-003-network-base-sepolia.md) | Base Sepolia + Circle testnet USDC | Accepted |
 | [ADR-004](architecture/ADR-004-bundler-and-paymaster.md) | Candide public bundler + ERC-7677 paymaster | Accepted |
-| [ADR-005](architecture/ADR-005-social-recovery-module.md) | Candide Social Recovery Module **v0.0.1** | Accepted |
-| [ADR-006](architecture/ADR-006-recovery-target-verifier-proxy.md) | Recovery target = new passkey's verifier proxy, deployed in the request UserOp | Accepted |
+| [ADR-005](architecture/ADR-005-social-recovery-module.md) | Candide Social Recovery Module **v0.0.1** | Accepted, amended by ADR-019 |
+| [ADR-006](architecture/ADR-006-recovery-target-verifier-proxy.md) | Recovery target = new passkey's verifier proxy, deployed in the request UserOp | Superseded by ADR-019 (target design; still in the code) |
 | [ADR-007](architecture/ADR-007-swissquote-guardian-and-relayer.md) | Swissquote Guardian key + relayer Safe (mock HSM) | Accepted |
 | [ADR-008](architecture/ADR-008-mock-backend.md) | Mock backend: Next.js route handlers + JSON file store | Accepted |
 | [ADR-009](architecture/ADR-009-client-storage-public-data-only.md) | Client storage: public data only | Accepted, amended by ADR-015 and ADR-018 |
@@ -63,9 +65,9 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted |
 | [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted |
 | [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted |
-| [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Proposed (spike C1–C4 passed on 2026-10-10, see ADR-019) |
-| [ADR-018](architecture/ADR-018-recovery-kit-encryption-and-storage.md) | Recovery Kit: Ethereum keystore V3 via ethers, cloud + local encrypted copies | Accepted |
-| [ADR-019](architecture/ADR-019-account-eviction-module.md) | Account eviction: Candide recovery module on the Account, guardian = the Kit's second key | Proposed (amends ADR-017, ADR-018; spike C5) |
+| [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Accepted (spike C1–C4 passed on 2026-10-10), amended by ADR-019 |
+| [ADR-018](architecture/ADR-018-recovery-kit-encryption-and-storage.md) | Recovery Kit: Ethereum keystore V3 via ethers, cloud + local encrypted copies | Accepted, amended by ADR-019 |
+| [ADR-019](architecture/ADR-019-account-eviction-module.md) | Account eviction: Candide recovery module on the Account, guardian = the Kit's second key | Accepted (spike C5 passed; amends ADR-017, ADR-018) |
 
 ## Open questions (future records)
 

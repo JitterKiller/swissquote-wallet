@@ -1,6 +1,6 @@
 # ADR-006: Recovery target — the new passkey's verifier proxy, deployed in the request UserOp
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-019](ADR-019-account-eviction-module.md) in the target design (the eviction target is a new Key Safe). The current Key Safe recovery code still follows this record.
 - **Date:** 2026-10-10
 - **Related:** [ADR-002](ADR-002-passkey-signing-safe-webauthn.md), [ADR-005](ADR-005-social-recovery-module.md), [ADR-007](ADR-007-swissquote-guardian-and-relayer.md), [ADR-009](ADR-009-client-storage-public-data-only.md)
 

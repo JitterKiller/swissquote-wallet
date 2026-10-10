@@ -1,6 +1,6 @@
 # PDR-004: Recovery policy — Recovery Kit + Swissquote, 2 of 2, delay with owner veto
 
-- **Status:** Accepted, amended by [PDR-014](PDR-014-separation-of-powers.md) (this recovery now protects the Key Safe) and [PDR-015](PDR-015-open-wallet-and-levels.md) (level 0: Recovery Kit alone, 7-day delay)
+- **Status:** Superseded by [PDR-021](PDR-021-one-flow-lost-or-stolen-phone.md) in the target design (the Account eviction replaces it). The current code still runs this recovery on the Key Safe until the eviction UI ships. Earlier amendments: [PDR-014](PDR-014-separation-of-powers.md), [PDR-015](PDR-015-open-wallet-and-levels.md)
 - **Date:** 2026-10-10
 - **Related:** [PDR-001](PDR-001-non-custodial-model.md), [PDR-005](PDR-005-recovery-kit.md), [PDR-006](PDR-006-identity-verification-before-guardian-approval.md), [ADR-005](../architecture/ADR-005-social-recovery-module.md), [ADR-006](../architecture/ADR-006-recovery-target-verifier-proxy.md)
 

@@ -1,6 +1,6 @@
 # ADR-018: Recovery Kit encryption and storage — Ethereum keystore V3 via ethers, cloud + local copies
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-019](ADR-019-account-eviction-module.md) (the Kit file carries a second encrypted key, the guardian key)
 - **Date:** 2026-10-10
 - **Amends:** [ADR-009](ADR-009-client-storage-public-data-only.md) (one secret is now stored client-side, always encrypted)
 - **Related:** [PDR-016](../product/PDR-016-recovery-kit-encrypted-cloud-backup.md), [ADR-011](ADR-011-no-custom-cryptography.md), [ADR-017](ADR-017-two-safe-account.md)

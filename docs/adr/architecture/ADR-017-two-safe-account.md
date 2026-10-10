@@ -1,9 +1,9 @@
 # ADR-017: Two-Safe account — Account Safe (user factors, threshold 2) + Key Safe with a daily allowance
 
-- **Status:** Proposed (accepted once the spike below passes)
+- **Status:** Accepted (spike C1–C4 passed on 2026-10-10, results in ADR-019; amended by ADR-019)
 - **Date:** 2026-10-10
 - **Supersedes:** [ADR-013](ADR-013-vault-allowance-module.md)
-- **Related:** [PDR-013](../product/PDR-013-key-management-user-majority.md), [PDR-014](../product/PDR-014-separation-of-powers.md), [PDR-015](../product/PDR-015-open-wallet-and-levels.md), [PDR-017](../product/PDR-017-theft-protection-hardware-key.md), [ADR-001](ADR-001-safe-smart-account.md), [ADR-002](ADR-002-passkey-signing-safe-webauthn.md), [ADR-005](ADR-005-social-recovery-module.md), [ADR-007](ADR-007-swissquote-guardian-and-relayer.md), [ADR-011](ADR-011-no-custom-cryptography.md), [ADR-018](ADR-018-recovery-kit-encryption-and-storage.md)
+- **Related:** [PDR-013](../product/PDR-013-key-management-user-majority.md), [PDR-014](../product/PDR-014-separation-of-powers.md), [PDR-015](../product/PDR-015-open-wallet-and-levels.md), [PDR-017](../product/PDR-017-theft-protection-hardware-key.md), [ADR-001](ADR-001-safe-smart-account.md), [ADR-002](ADR-002-passkey-signing-safe-webauthn.md), [ADR-005](ADR-005-social-recovery-module.md), [ADR-007](ADR-007-swissquote-guardian-and-relayer.md), [ADR-011](ADR-011-no-custom-cryptography.md), [ADR-018](ADR-018-recovery-kit-encryption-and-storage.md), [ADR-019](ADR-019-account-eviction-module.md), [PDR-020](../product/PDR-020-daily-limit-chosen-by-user.md), [PDR-021](../product/PDR-021-one-flow-lost-or-stolen-phone.md)
 
 ## Context
 
@@ -24,16 +24,13 @@ Facts this design relies on:
 ```
 Account Safe (0xACC…) — holds ALL funds, public address (balance, activity, registry, @handle, receive QR)
   owners: [ Key Safe, Recovery Kit address, (hardware key verifier proxy) ]   threshold: 2
-  modules: Safe Allowance Module v1.0.0 → delegate Key Safe, USDC limit per day
-           (optional) Candide recovery module, After7Days → guardian: trusted contact
+  modules: Safe Allowance Module v1.0.0 → delegate Key Safe, USDC limit per day (chosen by the user, PDR-020)
+           Candide recovery module (eviction, ADR-019) → Kit guardian key (+ Swissquote at level 1, + optional trusted contact)
 Key Safe (0xKEY…) — the existing passkey Safe (ADR-001/002), holds no funds
-  owner: passkey verifier proxy   modules: Safe 4337, Candide recovery (ADR-005)
+  owner: passkey verifier proxy   modules: Safe 4337 (no recovery module: lost or stolen phone → Account eviction, PDR-021)
 ```
 
-- **Key Safe:** unchanged code path (`sendCalls` in `web/src/lib/wallet.ts`). It keeps its Candide recovery module:
-  - level 0: guardian Kit, `After7Days` (`0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2`);
-  - level 1: guardians Kit + Swissquote, `After3Days` (`0x38275826E1933303E508433dD5f289315Da2541c`);
-  - demo: `After3Minutes` for both.
+- **Key Safe:** unchanged code path (`sendCalls` in `web/src/lib/wallet.ts`). In the target design it has **no recovery module of its own**: a lost or stolen phone goes through the Account eviction (ADR-019, PDR-021). Until that UI ships, the current Key Safe recovery (ADR-005) stays in the code.
 - **Account Safe:** a plain Safe L2 v1.4.1 (no 4337 module), deployed through the Safe proxy factory at a deterministic address, with the Allowance Module enabled at setup.
 - **Spend up to the limit (passkey only):** a Key Safe UserOp calls `executeAllowanceTransfer(account, USDC, to, amount, paymentToken = 0x0, payment = 0, delegate = keySafe, signature = 0x)`.
 - **Above the limit, or administration** (limit, owners, guardians): a Key Safe UserOp calls `account.execTransaction(...)`. Signatures, sorted by owner address as Safe requires:
@@ -45,7 +42,7 @@ Key Safe (0xKEY…) — the existing passkey Safe (ADR-001/002), holds no funds
   2. `removeDelegate(keySafe, true)`;
   3. `addDelegate(newKeySafe)`;
   4. `setAllowance(newKeySafe, USDC, limit, 1440, 0)`.
-- **After a Key Safe recovery:** nothing changes on the Account (same Key Safe address).
+- **Lost or stolen phone without a hardware key:** time-locked eviction through the Account's recovery module (ADR-019).
 - **Setup:** one Key Safe UserOp right after the Kit is generated (still in memory):
   1. deploy the Account with owners [Key Safe, Kit], threshold 2, Allowance Module enabled;
   2. `account.execTransaction` (Kit + `v = 1`) running `addDelegate` + `setAllowance`.
@@ -53,11 +50,11 @@ Key Safe (0xKEY…) — the existing passkey Safe (ADR-001/002), holds no funds
   The exact factory, singleton and module-setup calls are settled in the spike.
 - **Code:**
   - `web/src/lib/account.ts` (new);
-  - `ALLOWANCE_MODULE_ADDRESS` and the default limits in `web/src/lib/config.ts`;
+  - `ALLOWANCE_MODULE_ADDRESS` and the suggested starting limit in `web/src/lib/config.ts` (the limit itself is chosen by the user, PDR-020);
   - balance, activity (ADR-015) and receive use the Account address;
   - Send splits by the remaining allowance.
 
-**Spike (2 hours max), on Base Sepolia:**
+**Spike (2 hours max), on Base Sepolia.** Result: C1–C4 passed on 2026-10-10 (`npm run spike:two-safe`, details in ADR-019).
 
 1. A Key Safe UserOp calling `executeAllowanceTransfer` with an empty signature succeeds.
 2. The same call above the remaining allowance reverts.
@@ -69,7 +66,7 @@ If 1 or 3 fails, this record becomes Deprecated and the current single-owner des
 ## Consequences
 
 - ✅ Only audited contracts: Safe, Allowance Module, Candide recovery module.
-- ✅ The passkey signing path, Key Safe recovery and its e2e tests are reused as they are.
+- ✅ The passkey signing path is reused as it is. The Key Safe recovery and its e2e test stay until the eviction UI ships (PDR-021).
 - ✅ "Swissquote is never an owner" can be checked by anyone by reading the Account's owners.
 - ⚠️ The Allowance Module was checked through its deployed bytecode only. The spike is the real check.
 - ⚠️ Always pass `payment = 0`: the module pays any payment to `tx.origin`, which is the bundler here.

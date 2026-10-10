@@ -19,7 +19,8 @@ Why things are built this way: see the decision records in **[docs/adr/](docs/ad
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity, security page, light/dark | ✅ |
 | Compliance: sanctions screening, simulation, dApp allowlist, high-value checks | ⏳ |
 | Transfer from Swissquote account, `@handle` transfers, third guardian | ⏳ |
-| Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a daily limit (PDR-014, ADR-017) | ⏳ |
+| Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ⏳ (spike ✅) |
+| One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019) | ⏳ (spike ✅) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018) | ⏳ |
 | Open wallet for everyone + Swissquote link as the upgrade (PDR-015) | ⏳ |
 | Theft protection: hardware key, guided "phone stolen" flow (PDR-017) | ⏳ |

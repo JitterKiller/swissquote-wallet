@@ -1,6 +1,6 @@
 # PDR-003: Gasless by default — users never need ETH
 
-- **Status:** Accepted, sponsorship policy refined by [PDR-015](PDR-015-open-wallet-and-levels.md) (level 0: 10 sponsored operations a month)
+- **Status:** Accepted, sponsorship policy refined by [PDR-015](PDR-015-open-wallet-and-levels.md) (level 0: 10 sponsored operations a month) and [PDR-019](PDR-019-offer-tiers.md) (security operations always sponsored, outside the quota)
 - **Date:** 2026-10-10
 - **Related:** [ADR-004](../architecture/ADR-004-bundler-and-paymaster.md)
 

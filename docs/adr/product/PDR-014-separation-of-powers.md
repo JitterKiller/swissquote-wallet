@@ -1,6 +1,6 @@
 # PDR-014: Separation of powers — the passkey is no longer root
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [PDR-018](PDR-018-time-locked-eviction.md) (the phone-theft tie is broken by a time-locked eviction), [PDR-020](PDR-020-daily-limit-chosen-by-user.md) (limit chosen by the user) and [PDR-021](PDR-021-one-flow-lost-or-stolen-phone.md) (one flow for a lost or stolen phone)
 - **Date:** 2026-10-10
 - **Supersedes:** [PDR-011](PDR-011-vault-daily-limit.md) (two pockets: the whole account is now protected)
 - **Amends:** [PDR-004](PDR-004-recovery-policy.md) (that recovery now protects the Key Safe), [PDR-009](PDR-009-feature-priorities.md) (build order below)
