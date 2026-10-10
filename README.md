@@ -89,6 +89,7 @@ npm run smoke          # simulated passkey → Safe → sponsored UserOps (no br
 npm run e2e            # real Chrome + virtual authenticator: create wallet in the UI, sign UserOps
 npm run e2e:recovery   # two devices: attacker refused, owner cancels, full recovery, old device revoked (~5 min)
 npm run screenshots    # captures every screen (desktop light/dark + mobile) into web/screenshots/
+npm run spike:two-safe # on-chain spike of the two-Safe account + time-locked eviction (ADR-017, ADR-019), ~5 min
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.

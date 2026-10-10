@@ -40,6 +40,8 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-015](product/PDR-015-open-wallet-and-levels.md) | Open wallet for everyone (level 0), the Swissquote link as the upgrade (level 1), acquisition funnel | Accepted |
 | [PDR-016](product/PDR-016-recovery-kit-encrypted-cloud-backup.md) | Recovery Kit as a passphrase-encrypted cloud backup | Accepted |
 | [PDR-017](product/PDR-017-theft-protection-hardware-key.md) | "Theft protection" offer: hardware key as third factor, guided "phone stolen" flow | Accepted |
+| [PDR-018](product/PDR-018-time-locked-eviction.md) | Time-locked eviction: the Kit locks a stolen phone out after 7 days (level 0) / 3 days (level 1), the thief cannot cancel | Proposed (amends PDR-014, PDR-015, PDR-017) |
+| [PDR-019](product/PDR-019-offer-tiers.md) | Offer in three tiers: free, linked client, Premium "Theft protection" (speed, comfort, insurance; never basic security) | Proposed (refines PDR-015, PDR-017) |
 
 ## Architecture decisions
 
@@ -61,8 +63,9 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted |
 | [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted |
 | [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted |
-| [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Proposed (spike pending) |
+| [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Proposed (spike C1–C4 passed on 2026-10-10, see ADR-019) |
 | [ADR-018](architecture/ADR-018-recovery-kit-encryption-and-storage.md) | Recovery Kit: Ethereum keystore V3 via ethers, cloud + local encrypted copies | Accepted |
+| [ADR-019](architecture/ADR-019-account-eviction-module.md) | Account eviction: Candide recovery module on the Account, guardian = the Kit's second key | Proposed (amends ADR-017, ADR-018; spike C5) |
 
 ## Open questions (future records)
 
