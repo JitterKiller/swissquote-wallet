@@ -12,7 +12,8 @@
     "e2e:recovery": "node scripts/e2e-recovery.mts",
     "screenshots": "node scripts/ui-screenshots.mts",
     "spike:two-safe": "node scripts/spike-two-safe.mts",
-    "check:account": "tsx scripts/check-account-lib.mts"
+    "check:account": "tsx scripts/check-account-lib.mts",
+    "spike:two-safe-variants": "tsx scripts/spike-two-safe-variants.mts"
   },
   "dependencies": {
     "abstractionkit": "^0.4.3",

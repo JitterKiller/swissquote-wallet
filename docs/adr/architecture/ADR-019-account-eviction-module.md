@@ -76,6 +76,19 @@ Things the run confirmed:
 - **Contract addresses.** The Account is a plain Safe L2 v1.4.1 (`0x29fcB43b…C762`), created through the v1.4.1 proxy factory (`0x4e1DCf7A…ec67`), with the modules enabled by `SafeModuleSetup.enableModules` (`0x2dd68b00…5b47`).
 - **The hardware key's verifier proxy needs no prior approval.** Its WebAuthn signature over the SafeTx EIP-712 digest is accepted as a `v = 0` contract signature.
 
+### Results addendum: variants (issue #27, 2026-10-10)
+
+`npm run spike:two-safe-variants`, everything through `web/src/lib/account.ts` (issue #8): **6/6 checks passed**.
+
+| # | Check | Result |
+|---|---|---|
+| V1a | **Default 2-owner Account** [Key Safe, Kit]: the Kit guardian key alone starts the eviction | ✅ [tx](https://sepolia.basescan.org/tx/0xe59d7e82b31a07b4b99353e05530898bf276fbf83dfc6c586f2b7dabfd6606be) |
+| V1b | The thief (Key Safe alone) tries to cancel | ✅ refused: `GS020`. Eviction still pending |
+| V1c | The owner cancels with Face ID + Kit | ✅ [tx](https://sepolia.basescan.org/tx/0x0afb4f6f48cefa0698401bca1dc87b67ef7a767f81173f88d7b591098b9d6656) |
+| V1d | After the delay, the relayer finalizes: owners = new Key Safe + Kit, threshold 2 | ✅ [tx](https://sepolia.basescan.org/tx/0xb3e936704249fc126aa30e5e49f4a4d4eb6683a6c827c128dd6f7782a7915b98) |
+| V1e | Handover (new phone + Kit, `handoverCall`): the old Key Safe is refused, the new phone spends | ✅ [handover](https://sepolia.basescan.org/tx/0xca4d0a113c70667613442fdc8a3135825732f514b883b33e7ae7fb9823e37e95), [new phone](https://sepolia.basescan.org/tx/0x2e238aed132c052d90811311f302ef59c2b97ec8430845aecb5e06e275706411) |
+| C4b | **Immediate eviction** (PDR-017) on [Key Safe, Kit, security key]: in ONE transaction, without the phone and without delay, the relayer swaps the Key Safe and moves the allowance (`replaceKeySafeCall`, MultiSendCallOnly), signed by Kit + security key. Old Key Safe refused, new phone spends | ✅ [eviction](https://sepolia.basescan.org/tx/0xa7e9d8de521f442e05aa48c1f859da2812b0cc656a5941c356cdd2532068db1f), [new phone](https://sepolia.basescan.org/tx/0xe1ac960b2c72d39fa0a752cc5e879f12c7de26e9973e2690ffa58e5db3837d84) |
+
 ## Consequences
 
 - ✅ Only audited contracts. It reuses the module, the EIP-712 guardian flow, the relayer and the recovery UI patterns already built for the Key Safe.
