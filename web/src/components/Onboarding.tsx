@@ -14,7 +14,13 @@ const PROMISES = [
   ['No network fees', 'Gas is covered for you. You never need to buy ETH.'],
 ] as const
 
-export default function Onboarding({ onCreated }: { onCreated: (wallet: StoredWallet) => void }) {
+export default function Onboarding({
+  onCreated,
+  onRecover,
+}: {
+  onCreated: (wallet: StoredWallet) => void
+  onRecover: () => void
+}) {
   const [name, setName] = useState('Alice')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -79,6 +85,10 @@ export default function Onboarding({ onCreated }: { onCreated: (wallet: StoredWa
           Your biometric data never leaves your device. Swissquote only receives your public key.
         </p>
       </Card>
+
+      <Button variant="secondary" onClick={onRecover}>
+        Lost your device? Recover your wallet
+      </Button>
     </>
   )
 }

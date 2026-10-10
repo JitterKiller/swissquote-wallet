@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# mock Swissquote backend data (guardian key, KYC sessions)
+/.data

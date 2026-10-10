@@ -5,17 +5,9 @@ import { isAddress, parseUnits } from 'viem'
 
 import { EXPLORER_URL, USDC_DECIMALS } from '@/lib/config'
 import { toPublicKey, type Activity, type StoredWallet } from '@/lib/storage'
-import { sendCalls, usdcTransfer, type SendStep } from '@/lib/wallet'
+import { SEND_STEP_LABEL, sendCalls, usdcTransfer, type SendStep } from '@/lib/wallet'
 
 import { Button, Card, errorMessage } from './ui'
-
-const STEP_LABEL: Record<SendStep, string> = {
-  preparing: 'Preparing transaction…',
-  sponsoring: 'Requesting gas sponsorship…',
-  signing: 'Confirm with your passkey…',
-  submitting: 'Submitting…',
-  confirming: 'Waiting for confirmation…',
-}
 
 export default function SendForm({
   wallet,
@@ -88,7 +80,7 @@ export default function SendForm({
           <span className="font-medium text-success">Free · sponsored by Swissquote</span>
         </div>
         <Button type="submit" className="w-full" disabled={busy || !!validationError}>
-          {busy ? STEP_LABEL[step] : 'Send with passkey'}
+          {busy ? SEND_STEP_LABEL[step] : 'Send with passkey'}
         </Button>
         {validationError && (to || amount) && <p className="text-xs text-muted">{validationError}</p>}
         {error && <p className="text-sm text-danger">{error}</p>}

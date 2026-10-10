@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 export function Shell({ children }: { children?: ReactNode }) {
   return (
@@ -54,8 +54,28 @@ export function shortAddress(address: string) {
 export function errorMessage(error: unknown) {
   if (error instanceof Error) {
     const text = `${error.name} ${error.message} ${String(error.cause ?? '')}`
-    if (/NotAllowedError|cancel|abort/i.test(text)) return 'Passkey prompt was cancelled.'
+    if (/NotAllowedError|not allowed|AbortError/i.test(text)) return 'Passkey prompt was cancelled.'
     return error.message
   }
   return String(error)
+}
+
+/** Current time, re-rendered every second (for countdowns). */
+export function useNow(intervalMs = 1000) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs)
+    return () => clearInterval(id)
+  }, [intervalMs])
+  return now
+}
+
+export function formatCountdown(seconds: number) {
+  if (seconds <= 0) return '0:00'
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+}
+
+export function Badge({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'mock' }) {
+  const styles = tone === 'mock' ? 'border-accent text-accent' : 'border-border text-muted'
+  return <span className={`rounded-full border px-2 py-0.5 text-xs ${styles}`}>{children}</span>
 }

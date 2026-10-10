@@ -58,6 +58,14 @@ export function usdcTransfer(to: `0x${string}`, amount: string): MetaTransaction
 
 export type SendStep = 'preparing' | 'sponsoring' | 'signing' | 'submitting' | 'confirming'
 
+export const SEND_STEP_LABEL: Record<SendStep, string> = {
+  preparing: 'Preparing transaction…',
+  sponsoring: 'Requesting gas sponsorship…',
+  signing: 'Confirm with your passkey…',
+  submitting: 'Submitting…',
+  confirming: 'Waiting for confirmation…',
+}
+
 /**
  * Build → sponsor (paymaster) → sign (passkey) → submit (bundler) → wait.
  * The user only sees one biometric prompt and never pays gas.

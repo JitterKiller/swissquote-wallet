@@ -4,18 +4,28 @@ import { useEffect, useState } from 'react'
 import { formatUnits } from 'viem'
 
 import { EXPLORER_URL, USDC_DECIMALS, USDC_FAUCET_URL } from '@/lib/config'
-import { loadActivity, saveActivity, type Activity, type StoredWallet } from '@/lib/storage'
+import { getRecoveryStatus, isPasskeyOwner, type RecoveryStatus } from '@/lib/recovery'
+import {
+  loadActivity,
+  saveActivity,
+  toPublicKey,
+  type Activity,
+  type StoredWallet,
+} from '@/lib/storage'
 import { getUsdcBalance, isDeployed } from '@/lib/wallet'
 
+import { RecoveryAlert, RevokedNotice, SecurityCard } from './SecurityPanel'
 import SendForm from './SendForm'
 import { Button, Card, shortAddress } from './ui'
 
 export default function Dashboard({
   wallet,
   onForget,
+  onSetupRecovery,
 }: {
   wallet: StoredWallet
   onForget: () => void
+  onSetupRecovery: () => void
 }) {
   const [balance, setBalance] = useState<bigint | null>(null)
   const [deployed, setDeployed] = useState<boolean | null>(null)
@@ -23,27 +33,39 @@ export default function Dashboard({
   const [activity, setActivity] = useState<Activity[]>(() => loadActivity())
   const [copied, setCopied] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [recovery, setRecovery] = useState<RecoveryStatus | null>(null)
+  const [isOwner, setIsOwner] = useState<boolean | null>(null)
 
-  // Poll on-chain state (balance + whether the Safe is deployed).
+  // Poll on-chain state: balance, deployment, guardians / pending recovery,
+  // and whether this device's passkey still owns the wallet.
   useEffect(() => {
     let cancelled = false
     const load = () =>
-      Promise.all([getUsdcBalance(wallet.address), isDeployed(wallet.address)])
-        .then(([usdc, live]) => {
+      Promise.all([
+        getUsdcBalance(wallet.address),
+        isDeployed(wallet.address),
+        getRecoveryStatus(wallet.address),
+        isPasskeyOwner(wallet.address, toPublicKey(wallet)),
+      ])
+        .then(([usdc, live, status, owner]) => {
           if (cancelled) return
           setBalance(usdc)
           setDeployed(live)
+          setRecovery(status)
+          setIsOwner(owner)
         })
         .catch(() => {
           // RPC hiccup: keep the last known values.
         })
     load()
-    const id = setInterval(load, 10_000)
+    const id = setInterval(load, 5_000)
     return () => {
       cancelled = true
       clearInterval(id)
     }
-  }, [wallet.address, refreshKey])
+  }, [wallet, refreshKey])
+
+  const refresh = () => setRefreshKey((k) => k + 1)
 
   async function copyAddress() {
     try {
@@ -57,11 +79,16 @@ export default function Dashboard({
     const next = [entry, ...activity].slice(0, 20)
     setActivity(next)
     saveActivity(next)
-    setRefreshKey((k) => k + 1)
+    refresh()
   }
+
+  if (isOwner === false) return <RevokedNotice onForget={onForget} />
 
   return (
     <>
+      {recovery?.pending && (
+        <RecoveryAlert wallet={wallet} pending={recovery.pending} onCancelled={refresh} />
+      )}
       <Card className="space-y-4">
         <div className="flex items-center justify-between text-sm text-muted">
           <span>Hi {wallet.name}</span>
@@ -96,6 +123,8 @@ export default function Dashboard({
               : 'activates with your first transaction'}
         </p>
       </Card>
+
+      <SecurityCard status={recovery} onSetup={onSetupRecovery} />
 
       <div className="grid grid-cols-2 gap-2">
         <Button variant={tab === 'receive' ? 'primary' : 'secondary'} onClick={() => setTab('receive')}>

@@ -23,10 +23,24 @@ export type Activity = {
   at: number
 }
 
+/**
+ * A recovery started on THIS (new) device: the new passkey must be persisted
+ * before anything is sent, otherwise a reload would lose its public key.
+ */
+export type LocalRecovery = {
+  wallet: `0x${string}`
+  name: string
+  credentialId: string
+  publicKey: { x: string; y: string }
+  newOwner: `0x${string}`
+  requestTx?: string
+}
+
 const WALLET_KEY = 'sq-wallet:v1'
 const ACTIVITY_KEY = 'sq-activity:v1'
+const RECOVERY_KEY = 'sq-recovery:v1'
 
-export function toPublicKey(stored: StoredWallet): WebauthnPublicKey {
+export function toPublicKey(stored: { publicKey: { x: string; y: string } }): WebauthnPublicKey {
   return { x: BigInt(stored.publicKey.x), y: BigInt(stored.publicKey.y) }
 }
 
@@ -57,9 +71,18 @@ export const saveWallet = (wallet: StoredWallet) => write(WALLET_KEY, wallet)
 export const loadActivity = () => read<Activity[]>(ACTIVITY_KEY) ?? []
 export const saveActivity = (activity: Activity[]) => write(ACTIVITY_KEY, activity)
 
+export const loadLocalRecovery = () => read<LocalRecovery>(RECOVERY_KEY)
+export const saveLocalRecovery = (recovery: LocalRecovery) => write(RECOVERY_KEY, recovery)
+export function clearLocalRecovery() {
+  try {
+    window.localStorage.removeItem(RECOVERY_KEY)
+  } catch {}
+}
+
 export function clearAll() {
   try {
     window.localStorage.removeItem(WALLET_KEY)
     window.localStorage.removeItem(ACTIVITY_KEY)
+    window.localStorage.removeItem(RECOVERY_KEY)
   } catch {}
 }

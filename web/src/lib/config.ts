@@ -1,3 +1,5 @@
+import { SocialRecoveryModuleGracePeriodSelector } from 'abstractionkit'
+
 // Network: Base Sepolia (testnet). Base supports the RIP-7212 P-256 precompile,
 // which keeps passkey signature verification cheap.
 export const CHAIN_ID = 84532n
@@ -17,3 +19,8 @@ export const USDC_DECIMALS = 6
 
 export const EXPLORER_URL = 'https://sepolia.basescan.org'
 export const USDC_FAUCET_URL = 'https://faucet.circle.com'
+
+// Candide Social Recovery Module. Each deployment has a fixed recovery delay:
+// 3 minutes for the demo; production would use After3Days or longer.
+export const RECOVERY_MODULE_ADDRESS = SocialRecoveryModuleGracePeriodSelector.After3Minutes
+export const RECOVERY_DELAY_LABEL = '3 minutes (demo)'
