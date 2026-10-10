@@ -6,6 +6,11 @@ export const CHAIN_ID = 84532n
 
 export const NODE_URL = process.env.NEXT_PUBLIC_NODE_URL ?? 'https://sepolia.base.org'
 
+// Transaction history (eth_getLogs): sepolia.base.org caps log queries at 200
+// blocks, publicnode allows 50k-block ranges.
+export const LOGS_NODE_URL =
+  process.env.NEXT_PUBLIC_LOGS_NODE_URL ?? 'https://base-sepolia-rpc.publicnode.com'
+
 // Candide public endpoints (no API key on testnets). The paymaster sponsors gas,
 // so wallets never need to hold ETH.
 export const BUNDLER_URL =
@@ -24,3 +29,4 @@ export const USDC_FAUCET_URL = 'https://faucet.circle.com'
 // 3 minutes for the demo; production would use After3Days or longer.
 export const RECOVERY_MODULE_ADDRESS = SocialRecoveryModuleGracePeriodSelector.After3Minutes
 export const RECOVERY_DELAY_LABEL = '3 minutes (demo)'
+export const RECOVERY_DELAY_SECONDS = 180

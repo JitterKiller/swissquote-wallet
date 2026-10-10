@@ -43,3 +43,6 @@ next-env.d.ts
 
 # mock Swissquote backend data (guardian key, KYC sessions)
 /.data
+
+# UI review screenshots (npm run screenshots)
+/screenshots

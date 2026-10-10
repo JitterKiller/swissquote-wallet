@@ -6,7 +6,7 @@
  *  2. Checks the stored public key maps to the displayed Safe address.
  *  3. Signs two UserOps with assertions produced by Chrome and sends them
  *     (sponsored): deployment, then a regular op on the deployed Safe.
- *  4. Reloads the app and checks it shows the account as active on-chain.
+ *  4. Opens the Security page and checks it shows the account as active on-chain.
  *
  * Prereqs: `npm run dev` running, Google Chrome installed.
  * Run:     node scripts/e2e-passkey.mts   (SCREENSHOTS=dir to save screenshots)
@@ -47,12 +47,12 @@ await cdp.send('WebAuthn.addVirtualAuthenticator', {
 
 try {
   // 1. Create the wallet through the UI.
-  await page.goto(APP_URL)
-  await page.getByRole('button', { name: 'Create wallet with passkey' }).waitFor()
+  await page.goto(APP_URL) // no wallet yet → redirected to /welcome
+  await page.getByLabel('Your name').fill('Alice')
   if (SCREENSHOTS) await page.screenshot({ path: `${SCREENSHOTS}/1-onboarding.png`, fullPage: true })
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
-  await page.getByText('Self-custody').waitFor({ timeout: 20_000 })
-  if (SCREENSHOTS) await page.screenshot({ path: `${SCREENSHOTS}/2-dashboard.png`, fullPage: true })
+  await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor({ timeout: 20_000 })
+  if (SCREENSHOTS) await page.screenshot({ path: `${SCREENSHOTS}/2-protect.png`, fullPage: true })
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('sq-wallet:v1')!))
   console.log('Wallet created in UI :', stored.address)
@@ -122,8 +122,8 @@ try {
   await send(new SafeAccount(stored.address), [noop(stored.address)])
 
   // 4. UI reflects the deployed account.
-  await page.reload()
-  await page.getByText('active on-chain').waitFor({ timeout: 20_000 })
+  await page.goto(`${APP_URL}/security`)
+  await page.getByText('Active on-chain').waitFor({ timeout: 20_000 })
   if (SCREENSHOTS) await page.screenshot({ path: `${SCREENSHOTS}/3-active.png`, fullPage: true })
   console.log('UI shows account active on-chain ✓')
 } finally {

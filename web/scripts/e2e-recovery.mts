@@ -57,8 +57,9 @@ const shot = async (page: Page, name: string) => {
 }
 
 async function startRecovery(page: Page, kitText: string) {
-  await page.getByLabel('Recovery Kit').fill(kitText)
+  await page.getByRole('textbox', { name: 'Recovery Kit' }).fill(kitText)
   await page.getByRole('button', { name: 'Continue' }).click()
+  await page.getByLabel('Name', { exact: true }).fill('Alice')
   await page.getByRole('button', { name: 'Create new passkey' }).click()
   await page.getByRole('button', { name: 'Start video identification' }).waitFor()
 }
@@ -71,6 +72,7 @@ try {
 
   // 1. Old device: create + protect.
   await A.goto(APP_URL)
+  await A.getByLabel('Your name').fill('Alice')
   await A.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await A.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
   const [download] = await Promise.all([
@@ -82,13 +84,15 @@ try {
   await A.getByRole('checkbox').check()
   await shot(A, 'r1-protect')
   await A.getByRole('button', { name: 'Activate protection' }).click()
-  await A.getByText('Protected', { exact: true }).waitFor()
+  await A.getByRole('heading', { name: 'Your wallet is protected' }).waitFor()
+  await A.getByRole('link', { name: 'Go to my wallet' }).click()
+  await A.getByText('Wallet protected').waitFor()
   log(`Wallet ${kit.wallet} created and protected (Recovery Kit + Swissquote, 2 of 2)`)
   await shot(A, 'r2-protected')
 
   // 2. New device: attacker path refused at identity verification.
   await B.goto(APP_URL)
-  await B.getByRole('button', { name: /Recover your wallet/ }).click()
+  await B.getByRole('link', { name: /Recover your wallet/ }).click()
   await startRecovery(B, kitText)
   await B.getByRole('button', { name: 'Demo: simulate an attacker' }).click()
   await B.getByText(/Identity verification failed/).waitFor()
@@ -118,8 +122,7 @@ try {
   log('Second recovery requested, waiting for the delay…')
   await B.getByRole('button', { name: 'Finalize recovery' }).waitFor({ timeout: 300_000 })
   await B.getByRole('button', { name: 'Finalize recovery' }).click()
-  await B.getByText('Self-custody').waitFor()
-  await B.getByText('Protected', { exact: true }).waitFor()
+  await B.getByText('Wallet protected').waitFor()
   log('Recovery finalized: new device owns the wallet, guardians still in place ✓')
   await shot(B, 'r6-recovered')
 

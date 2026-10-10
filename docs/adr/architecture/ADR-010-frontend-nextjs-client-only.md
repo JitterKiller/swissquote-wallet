@@ -1,6 +1,6 @@
 # ADR-010: Frontend — Next.js 16, client-only wallet UI, Tailwind v4
 
-- **Status:** Accepted
+- **Status:** Partially superseded by [ADR-014](ADR-014-routing-and-wallet-state.md) (routing and state: `ClientApp` / `WalletApp` are gone). The Next 16 + Tailwind v4 choice still holds.
 - **Date:** 2026-10-10
 - **Related:** [ADR-008](ADR-008-mock-backend.md)
 

@@ -13,14 +13,8 @@ export type StoredWallet = {
   publicKey: { x: string; y: string }
   address: `0x${string}`
   createdAt: number
-}
-
-export type Activity = {
-  kind: 'send'
-  to: string
-  amount: string
-  txHash: string
-  at: number
+  /** Block at creation (decimal string): start of the on-chain history scan. */
+  createdBlock?: string
 }
 
 /**
@@ -37,7 +31,6 @@ export type LocalRecovery = {
 }
 
 const WALLET_KEY = 'sq-wallet:v1'
-const ACTIVITY_KEY = 'sq-activity:v1'
 const RECOVERY_KEY = 'sq-recovery:v1'
 
 export function toPublicKey(stored: { publicKey: { x: string; y: string } }): WebauthnPublicKey {
@@ -68,9 +61,6 @@ function write(key: string, value: unknown) {
 export const loadWallet = () => read<StoredWallet>(WALLET_KEY)
 export const saveWallet = (wallet: StoredWallet) => write(WALLET_KEY, wallet)
 
-export const loadActivity = () => read<Activity[]>(ACTIVITY_KEY) ?? []
-export const saveActivity = (activity: Activity[]) => write(ACTIVITY_KEY, activity)
-
 export const loadLocalRecovery = () => read<LocalRecovery>(RECOVERY_KEY)
 export const saveLocalRecovery = (recovery: LocalRecovery) => write(RECOVERY_KEY, recovery)
 export function clearLocalRecovery() {
@@ -82,7 +72,6 @@ export function clearLocalRecovery() {
 export function clearAll() {
   try {
     window.localStorage.removeItem(WALLET_KEY)
-    window.localStorage.removeItem(ACTIVITY_KEY)
     window.localStorage.removeItem(RECOVERY_KEY)
   } catch {}
 }

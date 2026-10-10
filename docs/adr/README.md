@@ -30,6 +30,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-009](product/PDR-009-feature-priorities.md) | Feature priorities and build order for the rest of the hackathon | Accepted |
 | [PDR-010](product/PDR-010-handle-transfers-verified-payee.md) | `@handle` transfers between Swissquote clients, with verified payee and privacy by design | Accepted |
 | [PDR-011](product/PDR-011-vault-daily-limit.md) | Vault with a daily limit: protect funds, not only access | Accepted |
+| [PDR-012](product/PDR-012-web-first-banking-ux.md) | Web-first, online-banking-grade UX (app shell, review before signing, security transparency) | Accepted |
 
 ## Architecture decisions
 
@@ -43,11 +44,14 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-006](architecture/ADR-006-recovery-target-verifier-proxy.md) | Recovery target = new passkey's verifier proxy, deployed in the request UserOp | Accepted |
 | [ADR-007](architecture/ADR-007-swissquote-guardian-and-relayer.md) | Swissquote Guardian key + relayer Safe (mock HSM) | Accepted |
 | [ADR-008](architecture/ADR-008-mock-backend.md) | Mock backend: Next.js route handlers + JSON file store | Accepted |
-| [ADR-009](architecture/ADR-009-client-storage-public-data-only.md) | Client storage: public data only | Accepted |
-| [ADR-010](architecture/ADR-010-frontend-nextjs-client-only.md) | Next.js 16, client-only wallet UI, Tailwind v4 | Accepted |
+| [ADR-009](architecture/ADR-009-client-storage-public-data-only.md) | Client storage: public data only | Accepted, amended by ADR-015 |
+| [ADR-010](architecture/ADR-010-frontend-nextjs-client-only.md) | Next.js 16, client-only wallet UI, Tailwind v4 | Partially superseded by ADR-014 |
 | [ADR-011](architecture/ADR-011-no-custom-cryptography.md) | No custom cryptography | Accepted |
 | [ADR-012](architecture/ADR-012-testing-real-chain-real-webauthn.md) | Testing on the real chain with real Chrome WebAuthn | Accepted |
 | [ADR-013](architecture/ADR-013-vault-allowance-module.md) | Vault: second Safe + Safe Allowance Module, the Spending Safe as delegate | Proposed (spike pending) |
+| [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted |
+| [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted |
+| [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted |
 
 ## Open questions (future records)
 
@@ -58,13 +62,13 @@ A product decision usually has one or more architecture decisions implementing i
 | Wallet registry + proof of ownership (EIP-1271 signed message) | PDR + ADR | Needed for FINMA travel-rule transfers between the Swissquote account and the wallet, and for `@handle` registration (PDR-010). Build step 1 in PDR-009 |
 | Mock "transfer from my Swissquote account" | PDR | Avoids the faucet during the demo. Build step 2 in PDR-009 |
 | Routing a `@handle` payment to the recipient's Swissquote account when they have no wallet | PDR | Needs legal validation: FINMA Guidance 02/2019 restricts transfers with external wallets to the client's own wallets (PDR-010) |
-| Demo domain | ADR | Passkeys are bound to their domain (rpId) |
+| Demo domain + deployment | ADR | Passkeys are bound to their domain (rpId). Needs HTTPS for a demo on a phone |
 | React Native app | ADR | Associated domains to share passkeys with the web app |
 | Bitcoin | PDR | Roadmap story for the pitch |
 
 ## How to add or change a decision
 
-1. Copy [`_template.md`](_template.md) into `product/` or `architecture/`, using the next number in that folder: `PDR-009-short-title.md`, `ADR-013-short-title.md`.
+1. Copy [`_template.md`](_template.md) into `product/` or `architecture/`, using the next free number in that folder (e.g. `PDR-0xx-short-title.md`, `ADR-0xx-short-title.md`).
 2. Fill in Context / Decision / Consequences / Alternatives, and link the related records.
 3. Add a row to the matching table above.
 4. **Never rewrite an accepted record.** To change a decision, write a new record, then set the old one's status to `Superseded by ADR-0xx`.

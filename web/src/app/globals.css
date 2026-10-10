@@ -1,41 +1,78 @@
 @import "tailwindcss";
 
+/* Design tokens. Light by default, dark follows the OS setting. */
 :root {
-  --background: #f5f5f3;
+  --background: #f4f3ef;
   --surface: #ffffff;
-  --foreground: #15171b;
-  --muted: #6b7079;
-  --border: #e4e4e0;
-  --accent: #f0661a;
+  --surface-2: #f8f7f4;
+  --foreground: #121418;
+  --muted: #696d75;
+  --border: #e5e3dd;
+  --accent: #f26722;
+  --accent-hover: #df5a17;
   --accent-fg: #ffffff;
-  --success: #12805c;
-  --danger: #c2332f;
+  --accent-soft: #fdeee5;
+  --success: #11805b;
+  --success-soft: #e5f4ec;
+  --danger: #c7372f;
+  --danger-soft: #fbeae9;
+  --warning: #a2660f;
+  --warning-soft: #fcf2df;
+  --hero: #15171c;
+  --hero-2: #23262d;
+  --hero-fg: #f6f5f3;
+  --hero-muted: #a1a5ad;
+  --card-shadow: 0 1px 2px rgb(18 20 24 / 0.04), 0 8px 24px -12px rgb(18 20 24 / 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0e0f11;
-    --surface: #17191c;
-    --foreground: #ececec;
-    --muted: #9a9fa8;
-    --border: #2a2d32;
-    --accent: #ff7a2e;
+    --background: #0b0c0f;
+    --surface: #14161a;
+    --surface-2: #1a1d22;
+    --foreground: #f0f0f1;
+    --muted: #979ba4;
+    --border: #262930;
+    --accent: #ff7a33;
+    --accent-hover: #ff8d4f;
     --accent-fg: #ffffff;
-    --success: #3fbf8f;
-    --danger: #ef6b66;
+    --accent-soft: rgb(255 122 51 / 0.13);
+    --success: #3cc28f;
+    --success-soft: rgb(60 194 143 / 0.12);
+    --danger: #f2675f;
+    --danger-soft: rgb(242 103 95 / 0.12);
+    --warning: #e3a547;
+    --warning-soft: rgb(227 165 71 / 0.12);
+    --hero: #1a1d23;
+    --hero-2: #262a31;
+    --hero-fg: #f6f5f3;
+    --hero-muted: #a1a5ad;
+    --card-shadow: none;
   }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-hero: var(--hero);
+  --color-hero-2: var(--hero-2);
+  --color-hero-fg: var(--hero-fg);
+  --color-hero-muted: var(--hero-muted);
+  --shadow-card: var(--card-shadow);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -44,4 +81,23 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* Keyboard focus ring. Text fields have their own (border + soft ring). */
+:focus-visible:not(input, textarea) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

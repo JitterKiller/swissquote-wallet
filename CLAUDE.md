@@ -11,6 +11,7 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - No custom cryptography. Never persist secrets client-side (the Recovery Kit key is never stored by the app).
 - Swissquote must never gain unilateral power over client funds (PDR-001).
 - Mark mocked parts as MOCK (code comment + UI badge) and keep the README's "Real vs mocked" table current.
+- UI: pages are thin files in `web/src/app/(wallet)` and `(onboarding)` rendering views from `web/src/components/views`. Shared state comes from `useWallet()` / `useLoadedWallet()` (`WalletProvider`). Use the kit in `web/src/components/ui` and the tokens in `globals.css`, never raw colors.
 - User transactions go through `sendCalls` in `web/src/lib/wallet.ts` (sponsored + passkey-signed). Server-only code stays in `web/src/server/`.
 
 ## Commands (from `web/`)
@@ -18,3 +19,4 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - `npm run dev`: app + mock backend on http://localhost:3000
 - `npm run lint` and `npx tsc --noEmit`
 - `npm run smoke`, `npm run e2e`, `npm run e2e:recovery` (the e2e scripts need `npm run dev` and Google Chrome)
+- `npm run screenshots`: captures every screen (desktop light/dark + mobile) into `web/screenshots/` for UI review

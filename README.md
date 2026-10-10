@@ -16,6 +16,7 @@ Why things are built this way: see the decision records in **[docs/adr/](docs/ad
 | Attacker path refused (identity check fails), owner can cancel during the delay | ✅ |
 | Old device revoked after recovery | ✅ |
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
+| Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity, security page, light/dark | ✅ |
 | Compliance: sanctions screening, simulation, dApp allowlist, high-value checks | ⏳ |
 | Transfer from Swissquote account, `@handle` transfers, third guardian | ⏳ |
 | Vault with a daily limit (second Safe + Safe Allowance Module) | ⏳ |
@@ -59,7 +60,7 @@ Why things are built this way: see the decision records in **[docs/adr/](docs/ad
 
 ## Stack
 
-- **Next.js 16** (App Router, client-only wallet UI + route handlers for the mock backend), Tailwind CSS
+- **Next.js 16** (App Router with route groups, client-only wallet UI + route handlers for the mock backend), Tailwind CSS v4 with design tokens, lucide-react icons, sonner toasts, react-qr-code
 - **abstractionkit** (Candide): Safe accounts, WebAuthn signer, paymaster, Social Recovery Module
 - **ox**: WebAuthn ceremonies · **viem**: chain reads, ABI encoding, EIP-712
 - **Network**: Base Sepolia (RIP-7212 P-256 precompile), Circle testnet USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
@@ -84,6 +85,7 @@ npm run dev        # http://localhost:3000 (app + mock backend)
 npm run smoke          # simulated passkey → Safe → sponsored UserOps (no browser)
 npm run e2e            # real Chrome + virtual authenticator: create wallet in the UI, sign UserOps
 npm run e2e:recovery   # two devices: attacker refused, owner cancels, full recovery, old device revoked (~5 min)
+npm run screenshots    # captures every screen (desktop light/dark + mobile) into web/screenshots/
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.
@@ -109,9 +111,14 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 docs/adr/           decision records: product/ (PDR-*) and architecture/ (ADR-*), index in README.md
 CLAUDE.md           context for AI assistants (imports docs/adr/README.md)
 web/
-  src/lib/          config, passkey, wallet (Safe + UserOps), recovery, recoveryKit, storage, api
-  src/components/   Onboarding, RecoverySetup, RecoverFlow, Dashboard, SecurityPanel, SendForm, UI
-  src/server/       mock Swissquote backend: guardian key + relayer, JSON store, notifications
-  src/app/api/      route handlers: guardian, kyc, recovery, recovery/finalize
-  scripts/          smoke + e2e tests
+  src/app/(wallet)/       /, /send, /receive, /activity, /security   (AppShell: sidebar + guards)
+  src/app/(onboarding)/   /welcome, /welcome/protect, /recover       (OnboardingShell)
+  src/app/api/            mock backend route handlers: guardian, kyc, recovery, recovery/finalize
+  src/components/views/   one view per page (Overview, Send, Receive, Activity, Security, Create, Protect, Recover)
+  src/components/shell/   AppShell, OnboardingShell, security banners, logo
+  src/components/ui/      design-system kit (button, card, feedback, field, stepper, address, page)
+  src/components/providers/WalletProvider.tsx   wallet + on-chain state shared by all pages
+  src/lib/                config, passkey, wallet (Safe + UserOps), recovery, recoveryKit, activity, storage, format
+  src/server/             mock Swissquote backend: guardian key + relayer, JSON store, notifications
+  scripts/                smoke + e2e tests, UI screenshots
 ```
