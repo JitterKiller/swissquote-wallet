@@ -6,6 +6,10 @@ Why the project is built the way it is. Read the relevant record **before** chan
 
 A **Safe smart account** (ERC-4337) on **Base Sepolia**, owned by a **passkey** (Face ID / Touch ID). Gas is always **sponsored**, so users never hold ETH. **Recovery** needs two guardians, the client's **Recovery Kit** and the **Swissquote Guardian** (which approves only after identity verification). After their approval comes a **delay**, during which the current owner can **cancel**. When the delay ends, the owner is replaced by a new passkey: same address, same funds. Swissquote alone can never move funds or recover a wallet. Banking, KYC and the HSM are **mocked** in a small backend inside the Next.js app.
 
+## Target design (decided, being built)
+
+**The user always holds the majority, Swissquote never does** (PDR-013). Funds move to an **Account Safe** whose owners are only the user's factors: the **Key Safe** (today's passkey Safe, which holds no funds), the **Recovery Kit** (a passphrase-encrypted cloud backup, PDR-016) and, optionally, a **hardware key** (PDR-017). Threshold 2. Face ID alone can only spend up to a **daily limit**; anything else needs 2 factors, so a thief with an unlocked phone cannot empty the account or block anything on it (PDR-014, ADR-017). The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Swissquote is **never an owner**.
+
 ## Two kinds of records
 
 | Folder | Prefix | Answers | Examples |
@@ -21,16 +25,21 @@ A product decision usually has one or more architecture decisions implementing i
 |---|---|---|
 | [PDR-001](product/PDR-001-non-custodial-model.md) | Non-custodial: Swissquote is a guardian, never a custodian | Accepted |
 | [PDR-002](product/PDR-002-passkeys-instead-of-seed-phrases.md) | Passkeys instead of seed phrases | Accepted |
-| [PDR-003](product/PDR-003-gasless-by-default.md) | Gasless by default: users never need ETH | Accepted |
-| [PDR-004](product/PDR-004-recovery-policy.md) | Recovery: Recovery Kit + Swissquote, 2 of 2, delay with owner veto | Accepted |
-| [PDR-005](product/PDR-005-recovery-kit.md) | Recovery Kit: client-held offline factor, never stored by the app | Accepted |
+| [PDR-003](product/PDR-003-gasless-by-default.md) | Gasless by default: users never need ETH | Accepted, refined by PDR-015 |
+| [PDR-004](product/PDR-004-recovery-policy.md) | Recovery: Recovery Kit + Swissquote, 2 of 2, delay with owner veto | Accepted, amended by PDR-014 and PDR-015 |
+| [PDR-005](product/PDR-005-recovery-kit.md) | Recovery Kit: client-held offline factor, never stored by the app | Superseded by PDR-016 |
 | [PDR-006](product/PDR-006-identity-verification-before-guardian-approval.md) | Identity verification before Swissquote approves a recovery | Accepted |
 | [PDR-007](product/PDR-007-prototype-scope-real-vs-mocked.md) | Prototype scope: real on-chain, mocked banking | Accepted |
 | [PDR-008](product/PDR-008-english-ui-copy.md) | English UI copy and documentation | Accepted |
-| [PDR-009](product/PDR-009-feature-priorities.md) | Feature priorities and build order for the rest of the hackathon | Accepted |
+| [PDR-009](product/PDR-009-feature-priorities.md) | Feature priorities and build order for the rest of the hackathon | Accepted, build order amended by PDR-014 |
 | [PDR-010](product/PDR-010-handle-transfers-verified-payee.md) | `@handle` transfers between Swissquote clients, with verified payee and privacy by design | Accepted |
-| [PDR-011](product/PDR-011-vault-daily-limit.md) | Vault with a daily limit: protect funds, not only access | Accepted |
+| [PDR-011](product/PDR-011-vault-daily-limit.md) | Vault with a daily limit: protect funds, not only access | Superseded by PDR-014 |
 | [PDR-012](product/PDR-012-web-first-banking-ux.md) | Web-first, online-banking-grade UX (app shell, review before signing, security transparency) | Accepted |
+| [PDR-013](product/PDR-013-key-management-user-majority.md) | Key management: passkey + smart account, the user always holds the majority (comparison of MPC, passkeys, ERC-4337, seed, SLIP-39) | Accepted |
+| [PDR-014](product/PDR-014-separation-of-powers.md) | Separation of powers: Face ID spends up to a daily limit, 2 user factors for everything else | Accepted |
+| [PDR-015](product/PDR-015-open-wallet-and-levels.md) | Open wallet for everyone (level 0), the Swissquote link as the upgrade (level 1), acquisition funnel | Accepted |
+| [PDR-016](product/PDR-016-recovery-kit-encrypted-cloud-backup.md) | Recovery Kit as a passphrase-encrypted cloud backup | Accepted |
+| [PDR-017](product/PDR-017-theft-protection-hardware-key.md) | "Theft protection" offer: hardware key as third factor, guided "phone stolen" flow | Accepted |
 
 ## Architecture decisions
 
@@ -44,27 +53,33 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-006](architecture/ADR-006-recovery-target-verifier-proxy.md) | Recovery target = new passkey's verifier proxy, deployed in the request UserOp | Accepted |
 | [ADR-007](architecture/ADR-007-swissquote-guardian-and-relayer.md) | Swissquote Guardian key + relayer Safe (mock HSM) | Accepted |
 | [ADR-008](architecture/ADR-008-mock-backend.md) | Mock backend: Next.js route handlers + JSON file store | Accepted |
-| [ADR-009](architecture/ADR-009-client-storage-public-data-only.md) | Client storage: public data only | Accepted, amended by ADR-015 |
+| [ADR-009](architecture/ADR-009-client-storage-public-data-only.md) | Client storage: public data only | Accepted, amended by ADR-015 and ADR-018 |
 | [ADR-010](architecture/ADR-010-frontend-nextjs-client-only.md) | Next.js 16, client-only wallet UI, Tailwind v4 | Partially superseded by ADR-014 |
 | [ADR-011](architecture/ADR-011-no-custom-cryptography.md) | No custom cryptography | Accepted |
 | [ADR-012](architecture/ADR-012-testing-real-chain-real-webauthn.md) | Testing on the real chain with real Chrome WebAuthn | Accepted |
-| [ADR-013](architecture/ADR-013-vault-allowance-module.md) | Vault: second Safe + Safe Allowance Module, the Spending Safe as delegate | Proposed (spike pending) |
+| [ADR-013](architecture/ADR-013-vault-allowance-module.md) | Vault: second Safe + Safe Allowance Module, the Spending Safe as delegate | Superseded by ADR-017 |
 | [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted |
 | [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted |
 | [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted |
+| [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Proposed (spike pending) |
+| [ADR-018](architecture/ADR-018-recovery-kit-encryption-and-storage.md) | Recovery Kit: Ethereum keystore V3 via ethers, cloud + local encrypted copies | Accepted |
 
 ## Open questions (future records)
 
 | Topic | Kind | Notes |
 |---|---|---|
-| Third guardian (trusted contact or YubiKey passkey), making recovery 2 of 3 | PDR + ADR | So that losing the Recovery Kit is not fatal. A trusted contact can also serve inheritance (Swissquote checks the certificate of inheritance instead of liveness). Build step 6 in PDR-009 |
-| Compliance layer: SECO/OFAC sanctions screening, transaction simulation, approved-dApp list, high-value checks | PDR + ADR | Off-chain check or on-chain Safe guard? Must stay friction, not a veto (PDR-001). Idea: the Swissquote paymaster refuses to sponsor transfers to sanctioned addresses. Build step 4 in PDR-009 |
-| Wallet registry + proof of ownership (EIP-1271 signed message) | PDR + ADR | Needed for FINMA travel-rule transfers between the Swissquote account and the wallet, and for `@handle` registration (PDR-010). Build step 1 in PDR-009 |
-| Mock "transfer from my Swissquote account" | PDR | Avoids the faucet during the demo. Build step 2 in PDR-009 |
+| Trusted contact as an Account guardian (arbiter), and inheritance | PDR + ADR | Breaks the phone-theft tie and the lost-Kit case without a hardware key (PDR-014). Inheritance: Swissquote checks the certificate of inheritance. Build step 8 in PDR-014 |
+| Compliance layer: SECO/OFAC sanctions screening, transaction simulation, approved-dApp list, high-value checks | PDR + ADR | Off-chain check or on-chain Safe guard? Must stay friction, not a veto (PDR-001). Idea: the Swissquote paymaster refuses to sponsor transfers to sanctioned addresses. Build step 6 in PDR-014 |
+| Wallet registry + proof of ownership (EIP-1271 signed message) | PDR + ADR | Needed for FINMA travel-rule transfers between the Swissquote account and the wallet, and for `@handle` registration (PDR-010). Must point to the Account address (ADR-017). Build step 2 in PDR-014 |
+| Mock "transfer from my Swissquote account" | PDR | Avoids the faucet during the demo. Build step 3 in PDR-014 |
 | Routing a `@handle` payment to the recipient's Swissquote account when they have no wallet | PDR | Needs legal validation: FINMA Guidance 02/2019 restricts transfers with external wallets to the client's own wallets (PDR-010) |
 | Demo domain + deployment | ADR | Passkeys are bound to their domain (rpId). Needs HTTPS for a demo on a phone |
 | React Native app | ADR | Associated domains to share passkeys with the web app |
-| Bitcoin | PDR | Roadmap story for the pitch |
+| Bitcoin implementation | ADR | Rule decided in PDR-013: native 2-of-3 multisig with a timelocked recovery path (miniscript), user majority. Pitch slide only |
+| Cut the daily allowance automatically when a recovery starts | ADR | Bitkey does it. Here it needs a custom contract (PDR-014) |
+| Rotating a lost Kit without a hardware key | PDR + ADR | Needs 2 factors. Today only the slow exit through the daily limit remains (PDR-014) |
+| Kit unlocked by a short PIN through distributed, guess-limited storage (Juicebox / TOPRF) | PDR + ADR | Roadmap (PDR-016) |
+| Insurance partner for the capped theft loss | PDR | PDR-017 |
 
 ## How to add or change a decision
 

@@ -1,6 +1,6 @@
 # PDR-011: Vault with a daily limit — protect funds, not only access
 
-- **Status:** Accepted
+- **Status:** Superseded by [PDR-014](PDR-014-separation-of-powers.md)
 - **Date:** 2026-10-10
 - **Related:** [PDR-001](PDR-001-non-custodial-model.md), [PDR-004](PDR-004-recovery-policy.md), [PDR-005](PDR-005-recovery-kit.md), [PDR-009](PDR-009-feature-priorities.md), [ADR-013](../architecture/ADR-013-vault-allowance-module.md)
 

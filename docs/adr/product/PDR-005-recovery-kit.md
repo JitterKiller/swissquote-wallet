@@ -1,6 +1,6 @@
 # PDR-005: Recovery Kit — a client-held offline factor, never stored by the app
 
-- **Status:** Accepted
+- **Status:** Superseded by [PDR-016](PDR-016-recovery-kit-encrypted-cloud-backup.md)
 - **Date:** 2026-10-10
 - **Related:** [PDR-004](PDR-004-recovery-policy.md), [ADR-009](../architecture/ADR-009-client-storage-public-data-only.md)
 

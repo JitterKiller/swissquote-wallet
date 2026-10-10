@@ -1,6 +1,6 @@
 # ADR-009: Client storage — public data only
 
-- **Status:** Accepted, amended by [ADR-015](ADR-015-activity-from-chain-logs.md) (`sq-activity:v1` removed, `createdBlock` added)
+- **Status:** Accepted, amended by [ADR-015](ADR-015-activity-from-chain-logs.md) (`sq-activity:v1` removed, `createdBlock` added) and [ADR-018](ADR-018-recovery-kit-encryption-and-storage.md) (encrypted Recovery Kit copy stored locally)
 - **Date:** 2026-10-10
 - **Related:** [PDR-005](../product/PDR-005-recovery-kit.md), [ADR-006](ADR-006-recovery-target-verifier-proxy.md)
 

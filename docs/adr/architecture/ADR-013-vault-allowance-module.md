@@ -1,6 +1,6 @@
 # ADR-013: Vault — a second Safe with the Safe Allowance Module, the Spending Safe as delegate
 
-- **Status:** Proposed (accepted once the spike below passes)
+- **Status:** Superseded by [ADR-017](ADR-017-two-safe-account.md)
 - **Date:** 2026-10-10
 - **Related:** [PDR-011](../product/PDR-011-vault-daily-limit.md), [ADR-001](ADR-001-safe-smart-account.md), [ADR-004](ADR-004-bundler-and-paymaster.md), [ADR-006](ADR-006-recovery-target-verifier-proxy.md), [ADR-011](ADR-011-no-custom-cryptography.md)
 

@@ -1,6 +1,6 @@
 # PDR-009: Feature priorities for the rest of the hackathon
 
-- **Status:** Accepted
+- **Status:** Accepted, build order amended by [PDR-014](PDR-014-separation-of-powers.md)
 - **Date:** 2026-10-10
 - **Related:** [PDR-010](PDR-010-handle-transfers-verified-payee.md), [PDR-011](PDR-011-vault-daily-limit.md), [ADR-013](../architecture/ADR-013-vault-allowance-module.md)
 
