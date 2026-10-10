@@ -4,7 +4,7 @@
  *  F1  #12 Face ID alone within the daily allowance (lib/spend limitSpendCalls).
  *  F2  #12 Above what is left today, Face ID alone is refused.
  *  F3  #12 Above the limit with the Kit: one 2-factor Account transaction (kitSpendCalls).
- *  F4  #13 New daily limit with phone + Kit (limitChangeCalls).
+ *  F4  #13 New daily limit with phone + Kit (limitChangeCalls); the limit refills at 00:00 UTC.
  *  F5  #16 Eviction started from a "new phone" (lib/eviction startEviction → /api/eviction); the thief
  *          holding only the old phone cannot cancel (GS020); phone + Kit cancel (cancelEvictionCalls).
  *  F6  #15 Eviction again, delay, finalize (finalizeEviction), handover by the new phone + Kit
@@ -114,16 +114,18 @@ async function main() {
   // F4: new limit with phone + Kit.
   const f4 = await keySafeSend(a.phone, await limitChangeCalls({ account: a.account, keySafe: a.phone.keySafe, dailyLimit: 250n * unit, kit: a.kit, token }))
   state = await readAccount(a.account, { keySafe: a.phone.keySafe, token })
-  record('F4', state.allowance?.amount === 250n * unit, `daily limit now ${state.allowance?.amount ? state.allowance.amount / unit : '?'} → ${txLink(f4)}`)
+  const midnight = state.allowance?.resetsAt !== null && state.allowance?.resetsAt !== undefined && state.allowance.resetsAt % 86_400_000 === 0
+  record('F4', state.allowance?.amount === 250n * unit && midnight,
+    `daily limit now ${state.allowance?.amount ? state.allowance.amount / unit : '?'}, resets ${state.allowance?.resetsAt ? new Date(state.allowance.resetsAt).toISOString() : '?'} (00:00 UTC) → ${txLink(f4)}`)
 
   // F5: eviction from a new phone; the thief alone cannot cancel; phone + Kit can.
   const newPhone = newPasskey()
   const started = await startEviction({ account: a.account, oldKeySafe: a.phone.keySafe, newKeySafe: newPhone.keySafe, guardian: a.kitGuardian, post, token })
   state = await readAccount(a.account, { keySafe: a.phone.keySafe, token })
-  const module = state.evictionModule as Address
-  const thiefCall = cancelEvictionCall(module)
+  const recoveryModule = state.evictionModule as Address
+  const thiefCall = cancelEvictionCall(recoveryModule)
   const thiefCancel = await fails(() => keySafeSend(a.phone, [accountExecCall(a.account, thiefCall, encodeSafeSignatures([senderSignature(a.phone.keySafe)]))]))
-  const f5 = await keySafeSend(a.phone, await cancelEvictionCalls({ account: a.account, keySafe: a.phone.keySafe, evictionModule: module, kit: a.kit }))
+  const f5 = await keySafeSend(a.phone, await cancelEvictionCalls({ account: a.account, keySafe: a.phone.keySafe, evictionModule: recoveryModule, kit: a.kit }))
   const afterCancel = await readAccount(a.account, { token })
   record('F5', state.pendingEviction !== null && thiefCancel && afterCancel.pendingEviction === null,
     `eviction started (level ${started.level}) → ${txLink(started.txHash)}; phone alone cannot cancel; phone + Kit cancelled → ${txLink(f5)}`)

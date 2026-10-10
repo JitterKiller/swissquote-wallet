@@ -51,7 +51,7 @@ export const MULTISEND_CALL_ONLY_141 = '0x9641d764fc13c8B624c04430C7356C1C7C8102
 
 // Safe Allowance Module v1.0.0: the Key Safe's daily allowance on the Account.
 export const ALLOWANCE_MODULE_ADDRESS = '0x691f59471Bfd2B7d639DCF74671a2d648ED1E331' as const
-export const ALLOWANCE_RESET_MINUTES = 1440n // resets at 00:00 UTC (reset base 0)
+export const ALLOWANCE_RESET_MINUTES = 1440n // daily; the reset base is the last 00:00 UTC (account.ts)
 export const SUGGESTED_DAILY_LIMIT = 500n * 10n ** BigInt(USDC_DECIMALS) // PDR-020, chosen by the user
 
 /** 0 = everyone (Kit guardian alone), 1 = linked Swissquote client (+ Swissquote). */

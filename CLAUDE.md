@@ -1,4 +1,4 @@
-# Swissquote Wallet — notes for AI assistants
+# SQure (by Swissquote) — notes for AI assistants
 
 Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian recovery). The app lives in `web/`.
 

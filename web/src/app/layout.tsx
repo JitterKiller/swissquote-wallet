@@ -17,8 +17,8 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Swissquote Wallet", template: "%s · Swissquote Wallet" },
-  description: "Self-custody wallet prototype: passkeys, gasless transfers, guardian recovery.",
+  title: { default: "SQure", template: "%s · SQure" },
+  description: "SQure by Swissquote: your keys, Swiss security. A self-custody wallet prototype.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

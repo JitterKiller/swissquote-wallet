@@ -39,7 +39,7 @@ The user always holds the majority and Swissquote is never an owner (PDR-013), c
 
 ## Brand Commitments
 
-- Name: **Swissquote Wallet**. Line in use: "Your keys. Your crypto. One tap from Swissquote."
+- Name: **SQure** (by Swissquote), the "SQ" carried by the orange square. Line: "Your keys. Swiss security." (PDR-026; formerly "Swissquote Wallet").
 - A **Swissquote-inspired prototype**: the Swissquote name, the current orange and the SQ monogram already in the app, no official Swissquote assets. Keep the existing design system (ADR-016).
 - Voice (from the shipped copy and PDR-008): plain English, calm and precise like a Swiss bank, honest about what is real and what is mocked.
 - Craft references chosen by the team (visual direction round, 2026-10-10): **base.org** for the technical fintech register (one saturated committed colour, live chain facts, generative motion) and **Phantom** for warmth. Swissquote orange takes the place of Base blue.

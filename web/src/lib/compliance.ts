@@ -3,6 +3,7 @@ import { BaseError, decodeFunctionData, erc20Abi, formatUnits, getAddress, parse
 
 import { api } from './api'
 import { ALLOWANCE_MODULE_ADDRESS, USDC_ADDRESS, USDC_DECIMALS } from './config'
+import { formatUsdc } from './format'
 import { publicClient } from './wallet'
 
 /**
@@ -39,12 +40,12 @@ export function describeCall(call: MetaTransaction): string {
   try {
     if (getAddress(call.to) === getAddress(USDC_ADDRESS)) {
       const { functionName, args } = decodeFunctionData({ abi: erc20Abi, data: call.data as `0x${string}` })
-      if (functionName === 'transfer') return `Send ${formatUnits(args[1], USDC_DECIMALS)} USDC to ${args[0]}`
-      if (functionName === 'approve') return `Allow ${args[0]} to spend ${formatUnits(args[1], USDC_DECIMALS)} USDC`
+      if (functionName === 'transfer') return `Send ${formatUsdc(args[1])} USDC to ${args[0]}`
+      if (functionName === 'approve') return `Allow ${args[0]} to spend ${formatUsdc(args[1])} USDC`
     }
     if (getAddress(call.to) === getAddress(ALLOWANCE_MODULE_ADDRESS)) {
       const { args } = decodeFunctionData({ abi: allowanceAbi, data: call.data as `0x${string}` })
-      return `Send ${formatUnits(args[3], USDC_DECIMALS)} USDC to ${args[2]} from today's limit`
+      return `Send ${formatUsdc(args[3])} USDC to ${args[2]} from today's limit`
     }
   } catch {
     // fall through

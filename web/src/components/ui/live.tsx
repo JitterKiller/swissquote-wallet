@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { currentBlock } from '@/lib/activity'
 
 /** Latest Base Sepolia block, polled every few seconds. `live` turns false after a missed poll. */
-export function useBlockNumber(intervalMs = 4_000) {
+export function useBlockNumber(intervalMs = 8_000) {
   const [state, setState] = useState<{ block: bigint | null; live: boolean }>({ block: null, live: false })
   useEffect(() => {
     let cancelled = false

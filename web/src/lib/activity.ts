@@ -1,15 +1,23 @@
 import { createPublicClient, http, parseAbiItem } from 'viem'
 import { baseSepolia } from 'viem/chains'
 
-import { LOGS_NODE_URL, USDC_ADDRESS } from './config'
+import { ALLOWANCE_MODULE_ADDRESS, LOGS_NODE_URL, USDC_ADDRESS } from './config'
 
 /**
  * Transaction history read from the chain: USDC Transfer events to/from the
  * wallet. No indexer needed. Timestamps are derived from block numbers (Base
  * produces a block every 2 seconds), which avoids one RPC call per block.
+ *
+ * For an Account, each outgoing transfer also says which factors approved it:
+ * a payment within today's limit is executed by the Allowance Module (Face ID
+ * alone, one ExecuteAllowanceTransfer event in the same transaction); any other
+ * transfer out of the Account needs its 2 of 2 (Face ID + the Kit).
  */
 
 const TRANSFER = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)')
+const ALLOWANCE_TRANSFER = parseAbiItem(
+  'event ExecuteAllowanceTransfer(address indexed safe, address delegate, address token, address to, uint96 value, uint16 nonce)',
+)
 const client = createPublicClient({ chain: baseSepolia, transport: http(LOGS_NODE_URL) })
 
 const MAX_RANGE = 49_000n // RPC limit is 50k blocks per eth_getLogs
@@ -24,11 +32,14 @@ export type Transfer = {
   txHash: `0x${string}`
   blockNumber: bigint
   timestamp: number // ms
+  /** Outgoing only: Face ID alone, or Face ID + the Kit. */
+  via?: 'face-id' | 'face-id+kit'
 }
 
 export const currentBlock = () => client.getBlockNumber()
 
-export async function fetchTransfers(address: `0x${string}`, fromBlock: bigint) {
+/** `kind`: an Account (two routes out) or the phone's Key Safe (Face ID only). */
+export async function fetchTransfers(address: `0x${string}`, fromBlock: bigint, kind: 'account' | 'key-safe' = 'key-safe') {
   const latest = await client.getBlock()
   const toBlock = latest.number
   const ranges: [bigint, bigint][] = []
@@ -36,12 +47,22 @@ export async function fetchTransfers(address: `0x${string}`, fromBlock: bigint) 
     ranges.push([start, start + MAX_RANGE < toBlock ? start + MAX_RANGE : toBlock])
   }
 
-  const logs = await Promise.all(
-    ranges.flatMap(([from, to]) => [
-      client.getLogs({ address: USDC_ADDRESS, event: TRANSFER, args: { from: address }, fromBlock: from, toBlock: to }),
-      client.getLogs({ address: USDC_ADDRESS, event: TRANSFER, args: { to: address }, fromBlock: from, toBlock: to }),
-    ]),
-  )
+  const [logs, limitLogs] = await Promise.all([
+    Promise.all(
+      ranges.flatMap(([from, to]) => [
+        client.getLogs({ address: USDC_ADDRESS, event: TRANSFER, args: { from: address }, fromBlock: from, toBlock: to }),
+        client.getLogs({ address: USDC_ADDRESS, event: TRANSFER, args: { to: address }, fromBlock: from, toBlock: to }),
+      ]),
+    ),
+    kind === 'account'
+      ? Promise.all(
+          ranges.map(([from, to]) =>
+            client.getLogs({ address: ALLOWANCE_MODULE_ADDRESS, event: ALLOWANCE_TRANSFER, args: { safe: address }, fromBlock: from, toBlock: to }),
+          ),
+        )
+      : [],
+  ])
+  const withinLimit = new Set(limitLogs.flat().map((log) => log.transactionHash))
 
   const me = address.toLowerCase()
   const byId = new Map<string, Transfer>()
@@ -58,6 +79,7 @@ export async function fetchTransfers(address: `0x${string}`, fromBlock: bigint) 
       txHash: log.transactionHash,
       blockNumber: log.blockNumber,
       timestamp: (Number(latest.timestamp) - Number(toBlock - log.blockNumber) * BLOCK_TIME_S) * 1000,
+      via: outgoing ? (kind === 'account' && !withinLimit.has(log.transactionHash) ? 'face-id+kit' : 'face-id') : undefined,
     })
   }
   return { transfers: [...byId.values()], toBlock }

@@ -1,253 +1,163 @@
 'use client'
 
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  Check,
-  ChevronRight,
-  Clock,
-  Landmark,
-  Lock,
-  Repeat,
-  ShieldAlert,
-  ShieldCheck,
-  type LucideIcon,
-} from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, Sprout } from 'lucide-react'
 import Link from 'next/link'
 
+import { AllowanceMeter } from '@/components/account/AllowanceMeter'
+import { CustodyCard } from '@/components/account/CustodyCard'
+import { EarnCard } from '@/components/account/EarnCard'
+import { SwissquoteCard } from '@/components/account/SwissquoteCard'
+import { SweepNotice } from '@/components/account/SweepNotice'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
-import { ButtonLink } from '@/components/ui/button'
-import { Card, CardBody, CardHeader } from '@/components/ui/card'
-import { Badge, EmptyState, Skeleton } from '@/components/ui/feedback'
+import { ButtonLink, buttonSizeClasses } from '@/components/ui/button'
+import { Badge, Skeleton } from '@/components/ui/feedback'
+import { useBlockNumber } from '@/components/ui/live'
 import { PageHeader } from '@/components/ui/page'
-import { RECOVERY_DELAY_LABEL } from '@/lib/config'
 import { formatUsdc, greeting } from '@/lib/format'
 
-import { TransferRow, TransferRowsSkeleton } from './TransferRow'
+import { ApprovalLegend, TransferRow, TransferRowsSkeleton } from './TransferRow'
 
+/**
+ * Overview (issue #11, surface brief web-src-components-views-overviewview-tsx): the Account's
+ * balance and today's Face ID budget first, then who holds the keys, activity, Earn and the
+ * Swissquote account. One DOM: two columns on desktop, the brief's reading order on mobile.
+ */
 export function OverviewView() {
   const { wallet } = useLoadedWallet()
   return (
     <div className="space-y-6">
-      <PageHeader title={`${greeting()}, ${wallet.name}`} description="Your self-custody wallet at a glance." />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-        <div className="space-y-6">
-          <BalanceCard />
-          <AssetsCard />
+      <PageHeader title={`${greeting()}, ${wallet.name}`} />
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:items-start">
+        <div className="contents lg:block lg:space-y-6">
+          <div className="order-1">
+            <AccountPlate />
+          </div>
+          <div className="order-2 empty:hidden">
+            <SweepNotice />
+          </div>
+          <div className="order-4">
+            <ActivitySection />
+          </div>
         </div>
-        <div className="space-y-6">
-          <SecurityStatusCard />
-          <RecentActivityCard />
+        <div className="contents lg:block lg:space-y-6">
+          <div className="order-3">
+            <CustodyCard />
+          </div>
+          {wallet.account && (
+            <div className="order-5">
+              <EarnCard account={wallet.account} />
+            </div>
+          )}
+          <div className="order-6">
+            <SwissquoteCard wallet={wallet} />
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function BalanceCard() {
+/** The Account as an ink plate: it is live onchain (DESIGN.md, Ink Plate Rule). */
+function AccountPlate() {
   const { wallet, chain } = useLoadedWallet()
+  const { live } = useBlockNumber()
+  const address = wallet.account ?? wallet.address
+  const allowance = chain.account?.allowance ?? null
+
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-hero p-6 text-hero-fg shadow-card sm:p-8">
-      <div aria-hidden className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-accent/30 blur-3xl" />
-      <div className="relative flex flex-wrap items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-1.5 text-sm text-hero-muted">
-          <Lock className="h-3.5 w-3.5" /> Self-custody · only you can move these funds
-        </span>
-        <span className="hidden sm:inline-flex">
-          <AddressPill address={wallet.account ?? wallet.address} tone="hero" />
-        </span>
-      </div>
-      <div className="relative mt-8">
-        <p className="text-sm text-hero-muted">Total balance</p>
-        {chain.balance === null ? (
-          <Skeleton className="mt-2 h-12 w-48 bg-white/10" />
-        ) : (
-          <p className="mt-1 text-5xl font-semibold tracking-tight tabular-nums">${formatUsdc(chain.balance)}</p>
-        )}
-        <p className="mt-2 text-sm text-hero-muted">
-          {chain.balance === null ? '—' : `${formatUsdc(chain.balance)} USDC`} · Base Sepolia
+    <section className="rounded-2xl border border-hero-2 bg-hero p-5 text-hero-fg sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="token flex items-center gap-2 text-hero-muted">
+          <span className={`h-1.5 w-1.5 ${live ? 'bg-success' : 'bg-hero-muted'}`} aria-hidden />
+          {wallet.account ? 'Account · live onchain' : 'Wallet · this phone'}
         </p>
+        {/* On phones the top bar already carries the address. */}
+        <span className="hidden sm:inline-flex">
+          <AddressPill address={address} tone="hero" />
+        </span>
       </div>
-      <div className="relative mt-8 grid max-w-md grid-cols-4 gap-2">
-        <QuickAction href="/send" icon={ArrowUpRight} label="Send" primary />
-        <QuickAction href="/receive" icon={ArrowDownLeft} label="Receive" />
-        <QuickAction icon={Repeat} label="Swap" />
-        <QuickAction icon={Landmark} label="Top up" />
+
+      <p className="mt-6 text-sm text-hero-muted">Balance</p>
+      {chain.balance === null ? (
+        <Skeleton className="mt-2 h-12 w-56 bg-hero-2" />
+      ) : (
+        <p className="mt-1 font-mono text-5xl font-semibold tabular-nums tracking-[-0.04em] sm:text-6xl">
+          {formatUsdc(chain.balance)} <span className="font-sans text-xl font-normal tracking-normal text-hero-muted">USDC</span>
+        </p>
+      )}
+      {chain.balance === 0n && (
+        <p className="mt-2 text-sm text-hero-muted">
+          Add USDC: share your address from{' '}
+          <Link href="/receive" className="text-hero-fg underline underline-offset-4">
+            Receive
+          </Link>{' '}
+          or move money from your{' '}
+          <Link href="/swissquote" className="text-hero-fg underline underline-offset-4">
+            Swissquote account
+          </Link>
+          .
+        </p>
+      )}
+
+      {allowance ? (
+        <div className="mt-6">
+          <AllowanceMeter allowance={allowance} />
+        </div>
+      ) : wallet.account ? (
+        <Skeleton className="mt-6 h-16 w-full bg-hero-2" />
+      ) : null}
+
+      <div className="mt-6 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+        <ButtonLink href="/send" size="action">
+          <ArrowUpRight className="h-5 w-5" /> Send
+        </ButtonLink>
+        <ButtonLink href="/receive" size="action" variant="hero">
+          <ArrowDownLeft className="h-5 w-5" /> Receive
+        </ButtonLink>
+        {/* Earn opens with the approved dApps screen (#25); until then it says so at every width. */}
+        <span
+          aria-disabled="true"
+          className={`inline-flex cursor-not-allowed items-center justify-center font-medium text-hero-muted ring-1 ring-inset ring-hero-2 [&_svg]:shrink-0 ${buttonSizeClasses('action')}`}
+        >
+          <Sprout className="h-5 w-5" />
+          <span className="inline-flex items-center gap-1.5">
+            Earn <Badge tone="hero">Soon</Badge>
+          </span>
+        </span>
       </div>
     </section>
   )
 }
 
-function QuickAction({
-  href,
-  icon: Icon,
-  label,
-  primary,
-}: {
-  href?: string
-  icon: LucideIcon
-  label: string
-  primary?: boolean
-}) {
-  const circle = `grid h-12 w-12 place-items-center rounded-full transition ${
-    primary ? 'bg-accent text-accent-fg group-hover:bg-accent-hover' : 'bg-white/10 text-hero-fg group-hover:bg-white/15'
-  }`
-  if (!href) {
-    return (
-      <span className="flex cursor-not-allowed flex-col items-center gap-2 opacity-50" title="Coming soon">
-        <span className={circle}>
-          <Icon className="h-5 w-5" />
-        </span>
-        <span className="text-xs">{label}</span>
-      </span>
-    )
-  }
-  return (
-    <Link href={href} className="group flex flex-col items-center gap-2">
-      <span className={circle}>
-        <Icon className="h-5 w-5" />
-      </span>
-      <span className="text-xs">{label}</span>
-    </Link>
-  )
-}
-
-function AssetsCard() {
-  const { chain } = useLoadedWallet()
-  return (
-    <Card>
-      <CardHeader title="Assets" description="Held in your smart account on Base Sepolia." />
-      <CardBody className="pt-3">
-        <ul className="divide-y divide-border">
-          <li className="flex items-center gap-3 py-3">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#2775ca] text-sm font-bold text-white">$</span>
-            <div className="flex-1">
-              <p className="text-sm font-medium">USD Coin</p>
-              <p className="text-xs text-muted">USDC</p>
-            </div>
-            <div className="text-right">
-              {chain.balance === null ? (
-                <Skeleton className="h-4 w-20" />
-              ) : (
-                <>
-                  <p className="text-sm font-semibold tabular-nums">{formatUsdc(chain.balance)} USDC</p>
-                  <p className="text-xs text-muted tabular-nums">${formatUsdc(chain.balance)}</p>
-                </>
-              )}
-            </div>
-          </li>
-          <li className="flex items-center gap-3 py-3">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-surface-2 text-sm font-semibold text-muted">
-              Ξ
-            </span>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Ether</p>
-              <p className="text-xs text-muted">Not needed: network fees are covered</p>
-            </div>
-            <p className="text-sm font-semibold tabular-nums text-muted">0.00 ETH</p>
-          </li>
-        </ul>
-      </CardBody>
-    </Card>
-  )
-}
-
-function SecurityStatusCard() {
-  const { chain } = useLoadedWallet()
-  const status = chain.recovery
-  const protectedWallet = !!status && status.guardians.length > 0
-
-  if (status === null) {
-    return (
-      <Card>
-        <CardBody className="space-y-3">
-          <Skeleton className="h-5 w-40" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
-        </CardBody>
-      </Card>
-    )
-  }
-
-  if (!protectedWallet) {
-    return (
-      <Card className="border-warning/40">
-        <CardHeader
-          icon={<ShieldAlert className="h-[18px] w-[18px] text-warning" />}
-          title="Recovery not set up"
-          description="If you lose this device, you lose access to your wallet."
-        />
-        <CardBody>
-          <ButtonLink href="/welcome/protect" className="w-full">
-            Set up recovery
-          </ButtonLink>
-        </CardBody>
-      </Card>
-    )
-  }
-
-  const facts = [
-    'Passkey on this device',
-    `Recovery Kit + Swissquote (${status.threshold} of ${status.guardians.length})`,
-    `${RECOVERY_DELAY_LABEL} delay, cancellable by you`,
-  ]
-  return (
-    <Card>
-      <CardHeader
-        icon={<ShieldCheck className="h-[18px] w-[18px] text-success" />}
-        title="Wallet protected"
-        description="Recovery is set up. Swissquote can never act alone."
-        action={<Badge tone="success">Protected</Badge>}
-      />
-      <CardBody className="space-y-2.5 pt-4">
-        {facts.map((fact) => (
-          <p key={fact} className="flex items-center gap-2 text-sm">
-            <Check className="h-4 w-4 text-success" /> {fact}
-          </p>
-        ))}
-        <Link href="/security" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-accent-ink">
-          Manage security <ChevronRight className="h-4 w-4" />
-        </Link>
-      </CardBody>
-    </Card>
-  )
-}
-
-function RecentActivityCard() {
+function ActivitySection() {
   const { transfers } = useLoadedWallet()
   return (
-    <Card>
-      <CardHeader
-        title="Recent activity"
-        action={
-          <Link href="/activity" className="text-sm font-medium text-accent-ink">
-            View all
-          </Link>
-        }
-      />
-      <CardBody className="pt-2">
+    <section className="rounded-2xl border border-border">
+      <div className="flex items-baseline justify-between gap-3 px-5 pt-5">
+        <h2 className="font-semibold">Activity</h2>
+        <Link href="/activity" className="inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
+          View all <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+      <div className="px-5 pb-2 pt-1">
         {transfers === null ? (
           <TransferRowsSkeleton />
         ) : transfers.length === 0 ? (
-          <EmptyState
-            icon={<Clock className="h-5 w-5" />}
-            title="No transactions yet"
-            description="Receive USDC to get started."
-            action={
-              <ButtonLink href="/receive" variant="secondary" size="sm">
-                Receive USDC
-              </ButtonLink>
-            }
-          />
+          <p className="py-6 text-sm text-muted">
+            No transfers yet. Payments in and out of your Account will show here, read from the chain.
+          </p>
         ) : (
-          <ul className="divide-y divide-border">
-            {transfers.slice(0, 5).map((t) => (
-              <TransferRow key={t.id} transfer={t} />
-            ))}
-          </ul>
+          <>
+            <ApprovalLegend transfers={transfers.slice(0, 5)} />
+            <ul className="divide-y divide-border">
+              {transfers.slice(0, 5).map((t) => (
+                <TransferRow key={t.id} transfer={t} />
+              ))}
+            </ul>
+          </>
         )}
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   )
 }

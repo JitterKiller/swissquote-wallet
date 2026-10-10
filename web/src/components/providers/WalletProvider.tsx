@@ -23,6 +23,9 @@ export type ChainState = {
   /** Key Safe (the passkey Safe) deployed. */
   deployed: boolean | null
   recovery: RecoveryStatus | null
+  /** The passkey still owns the Key Safe (false after a legacy recovery elsewhere). */
+  passkeyOwner: boolean | null
+  /** Derived: passkey owns the Key Safe and the Key Safe still owns the Account (#16). */
   isOwner: boolean | null
   /** Account owners, allowance left today, pending eviction (null before protection). */
   account: AccountState | null
@@ -49,12 +52,19 @@ const EMPTY_CHAIN: ChainState = {
   keySafeBalance: null,
   deployed: null,
   recovery: null,
+  passkeyOwner: null,
   isOwner: null,
   account: null,
 }
 
 /** Chain state and history are keyed by wallet + Account, so protecting a wallet never shows stale data. */
 const keyOf = (wallet: StoredWallet) => `${wallet.address}:${wallet.account ?? ''}`
+
+/** Revoked if the passkey lost the Key Safe (legacy recovery) or the Key Safe lost the Account (eviction). */
+function withOwner(state: ChainState, wallet: StoredWallet): ChainState {
+  const isOwner = state.passkeyOwner === null ? null : state.passkeyOwner && !isEvicted(state.account, wallet.address)
+  return { ...state, isOwner }
+}
 
 const WalletContext = createContext<WalletContextValue | null>(null)
 
@@ -72,33 +82,33 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wallet) return
     let cancelled = false
     const account = wallet.account
-    const load = () =>
-      Promise.all([
-        getUsdcBalance(account ?? wallet.address),
-        account ? getUsdcBalance(wallet.address) : Promise.resolve(null),
-        isDeployed(wallet.address),
-        getRecoveryStatus(wallet.address),
-        isPasskeyOwner(wallet.address, toPublicKey(wallet)),
-        account ? readAccount(account, { keySafe: wallet.address }) : Promise.resolve(null),
-      ])
-        .then(([balance, keySafeBalance, deployed, recovery, isOwner, accountState]) => {
-          if (!cancelled) {
-            // Revoked if the passkey lost the Key Safe (legacy recovery) or the Key Safe lost the Account (eviction, #16).
-            const owner = isOwner && !isEvicted(accountState, wallet.address)
-            setChainState({
-              address: keyOf(wallet),
-              state: { balance, keySafeBalance, deployed, recovery, isOwner: owner, account: accountState },
-            })
-          }
-        })
+    const key = keyOf(wallet)
+    const merge = (partial: Partial<ChainState>) =>
+      setChainState((prev) => ({ address: key, state: { ...(prev?.address === key ? prev.state : EMPTY_CHAIN), ...partial } }))
+    // Three tracks so a slow or rate-limited read never hides the others; the balance comes first.
+    const loadFunds = () =>
+      Promise.all([getUsdcBalance(account ?? wallet.address), account ? getUsdcBalance(wallet.address) : Promise.resolve(null)])
+        .then(([balance, keySafeBalance]) => !cancelled && merge({ balance, keySafeBalance }))
         .catch(() => {
           // RPC hiccup: keep the last known values.
         })
-    load()
-    const id = setInterval(load, 5_000)
+    const loadAccount = () =>
+      account
+        ? readAccount(account, { keySafe: wallet.address })
+            .then((state) => !cancelled && merge({ account: state }))
+            .catch(() => {})
+        : Promise.resolve()
+    const loadDevice = () =>
+      Promise.all([isDeployed(wallet.address), getRecoveryStatus(wallet.address), isPasskeyOwner(wallet.address, toPublicKey(wallet))])
+        .then(([deployed, recovery, passkeyOwner]) => !cancelled && merge({ deployed, recovery, passkeyOwner }))
+        .catch(() => {})
+    loadFunds()
+    loadAccount()
+    loadDevice()
+    const timers = [setInterval(loadFunds, 6_000), setInterval(loadAccount, 10_000), setInterval(loadDevice, 20_000)]
     return () => {
       cancelled = true
-      clearInterval(id)
+      timers.forEach(clearInterval)
     }
   }, [wallet, refreshKey])
 
@@ -111,7 +121,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       try {
         const from =
           cursor ?? (wallet.createdBlock ? BigInt(wallet.createdBlock) : (await currentBlock()) - DEFAULT_LOOKBACK_BLOCKS)
-        const { transfers, toBlock } = await fetchTransfers(wallet.account ?? wallet.address, from)
+        const { transfers, toBlock } = await fetchTransfers(
+          wallet.account ?? wallet.address,
+          from,
+          wallet.account ? 'account' : 'key-safe',
+        )
         if (cancelled) return
         cursor = toBlock + 1n
         items = mergeTransfers(items, transfers)
@@ -149,7 +163,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setWallet,
       forget,
       refresh,
-      chain: chainState && wallet && chainState.address === keyOf(wallet) ? chainState.state : EMPTY_CHAIN,
+      chain: chainState && wallet && chainState.address === keyOf(wallet) ? withOwner(chainState.state, wallet) : EMPTY_CHAIN,
       transfers: history && wallet && history.address === keyOf(wallet) ? history.items : null,
     }),
     [ready, wallet, setWallet, forget, refresh, chainState, history],

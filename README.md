@@ -1,4 +1,6 @@
-# Swissquote Wallet — self-custody, bank-grade
+# SQure — Your keys. Swiss security.
+
+*SQure by Swissquote* (formerly "Swissquote Wallet", PDR-026): self-custody, bank-grade.
 
 Prototype for the **Swissquote Wallet Challenge** (BSA Hackathon): a self-custody wallet Swissquote could launch for its clients. The client holds the keys, Swissquote can never move the funds on its own, and the experience stays one tap from the Swissquote account.
 
@@ -18,13 +20,13 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Attacker path refused (identity check fails), owner can cancel during the delay | ✅ |
 | Old device revoked after recovery | ✅ |
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
-| Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity, security page, light/dark | ✅ |
-| Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022); send-flow integration in #12 | ✅ |
+| Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity with the factors that approved each payment (ADR-029), security page, light/dark | ✅ |
+| Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022), on the Send review (#12) | ✅ |
 | Approved dApps, built natively: Aave v3 and Compound III with USDC, 2 factors, sponsored only when approved (PDR-025, ADR-028); UI pending | ✅ (logic) |
-| `@handle` directory: verified payee before Face ID, visibility, contacts, payment request link + QR (PDR-010, ADR-024); send-flow integration in #12 | ✅ |
+| `@handle` directory: verified payee before Face ID, visibility, contacts, payment request link + QR (PDR-010, ADR-024), in the Send recipient field (#12) | ✅ |
 | Transfers between the Swissquote account and the wallet, both directions, travel rule filled in (PDR-024, ADR-025); demo treasury to fund once | ✅ |
 | Third guardian (trusted contact) | ⏳ |
-| Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ⏳ (Account created at onboarding ✅ #10; balance and send on the Account: #11, #12) |
+| Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ✅ (Account created at onboarding #10; Overview with today's Face ID budget #11; Send: Face ID alone within the limit, Kit passphrase + Face ID above it #12) |
 | One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019) | ⏳ (spike ✅) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step | ✅ ("test your Kit" reminder ⏳) |
 | Open wallet for everyone + Swissquote link as the upgrade (PDR-015) | ⏳ |

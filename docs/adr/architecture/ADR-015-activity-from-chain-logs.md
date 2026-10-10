@@ -1,6 +1,6 @@
 # ADR-015: Activity history read from on-chain USDC Transfer logs
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-029](ADR-029-approval-route-from-chain-events.md)
 - **Date:** 2026-10-10
 - **Amends:** [ADR-009](ADR-009-client-storage-public-data-only.md) (the local `sq-activity:v1` log is removed; `createdBlock` is added to the stored wallet)
 - **Related:** [PDR-012](../product/PDR-012-web-first-banking-ux.md), [ADR-014](ADR-014-routing-and-wallet-state.md)

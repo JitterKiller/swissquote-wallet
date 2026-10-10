@@ -48,6 +48,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-023](product/PDR-023-compliance-as-friction.md) | Compliance as friction: sanctions screening, readable preview with simulation, high-value and look-alike checks | Accepted |
 | [PDR-024](product/PDR-024-swissquote-account-transfers.md) | Transfers between the Swissquote account and the wallet: one tap each way, deposits auto-credited from the linked wallet, travel rule filled in | Accepted |
 | [PDR-025](product/PDR-025-approved-dapps.md) | Compliant dApp interaction: a short list of approved dApps (Aave v3, Compound III) built natively, 2 factors, preview and screening, sponsored only when approved | Accepted |
+| [PDR-026](product/PDR-026-product-name-squre.md) | Product name: SQure (by Swissquote), "Your keys. Swiss security." | Accepted |
 
 ## Architecture decisions
 
@@ -67,7 +68,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-012](architecture/ADR-012-testing-real-chain-real-webauthn.md) | Testing on the real chain with real Chrome WebAuthn | Accepted |
 | [ADR-013](architecture/ADR-013-vault-allowance-module.md) | Vault: second Safe + Safe Allowance Module, the Spending Safe as delegate | Superseded by ADR-017 |
 | [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted |
-| [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted |
+| [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted, amended by ADR-029 |
 | [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted, amended by ADR-027 |
 | [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Accepted (spike C1–C4 passed on 2026-10-10), amended by ADR-019 |
 | [ADR-018](architecture/ADR-018-recovery-kit-encryption-and-storage.md) | Recovery Kit: Ethereum keystore V3 via ethers, cloud + local encrypted copies | Accepted, amended by ADR-019 |
@@ -81,6 +82,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-026](architecture/ADR-026-transitional-legacy-key-safe-recovery.md) | Transitional: the protect flow keeps the legacy Key Safe recovery (same Kit guardian key) until the eviction flow ships | Accepted (temporary, #33) |
 | [ADR-027](architecture/ADR-027-visual-world-swiss-onchain-fintech.md) | Visual world: Swiss onchain fintech (white, ink, one Swissquote orange, sealed ink plates), recorded in DESIGN.md through impeccable | Accepted |
 | [ADR-028](architecture/ADR-028-approved-dapps-native-integration.md) | Approved dApps: native call builders (`lib/dapps.ts`), 2-factor Account transactions, paymaster allowlist | Accepted |
+| [ADR-029](architecture/ADR-029-approval-route-from-chain-events.md) | Activity shows which factors approved each payment (Face ID alone vs Face ID + Kit), read from the Allowance Module's `ExecuteAllowanceTransfer` events | Accepted |
 
 ## Open questions (future records)
 

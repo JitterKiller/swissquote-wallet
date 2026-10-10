@@ -1,5 +1,5 @@
 ---
-name: Swissquote Wallet
+name: SQure
 description: A Swiss onchain fintech wallet. White and ink, one saturated Swissquote orange, live chain facts, and a sealed ink plate for every commit.
 colors:
   background: "#ffffff"
@@ -113,6 +113,18 @@ components:
     rounded: "{rounded.xl}"
     height: "44px"
     padding: "0 16px"
+  button-hero:
+    backgroundColor: "{colors.hero-2}"
+    textColor: "{colors.hero-fg}"
+    rounded: "{rounded.xl}"
+    height: "48px"
+    padding: "0 20px"
+  button-action:
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.accent-fg}"
+    rounded: "{rounded.xl}"
+    height: "64px"
+    padding: "0 8px"
   button-danger:
     backgroundColor: "{colors.danger}"
     textColor: "{colors.hero-fg}"
@@ -145,6 +157,11 @@ components:
     textColor: "{colors.accent-ink}"
     rounded: "{rounded.lg}"
     padding: "2px 6px"
+  badge-hero:
+    backgroundColor: "{colors.hero-2}"
+    textColor: "{colors.hero-muted}"
+    rounded: "{rounded.lg}"
+    padding: "2px 6px"
   card:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.2xl}"
@@ -159,6 +176,26 @@ components:
     textColor: "{colors.hero-fg}"
     rounded: "{rounded.2xl}"
     padding: "24px"
+  allowance-cell:
+    backgroundColor: "{colors.accent}"
+    rounded: "{rounded.cell}"
+    height: "24px"
+  allowance-cell-empty:
+    backgroundColor: "{colors.hero-2}"
+    rounded: "{rounded.cell}"
+    height: "24px"
+  allowance-cell-pending:
+    backgroundColor: "{colors.accent-soft}"
+    rounded: "{rounded.cell}"
+    height: "12px"
+  allowance-cell-sm:
+    backgroundColor: "{colors.accent}"
+    rounded: "{rounded.cell}"
+    height: "12px"
+  factor-square:
+    size: "10px"
+  factor-square-sm:
+    size: "8px"
   logo-mark:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.accent-fg}"
@@ -166,7 +203,7 @@ components:
     size: "32px"
 ---
 
-# Design System: Swissquote Wallet
+# Design System: SQure
 
 ## Overview
 
@@ -183,7 +220,8 @@ The system refuses both the purple-gradient crypto wallet and the beige private-
 - Hanken Grotesk for UI and display, tight and large; JetBrains Mono strictly for figures, addresses and status tokens.
 - Crisp corners (6 to 10px), hairline borders, flat surfaces: no shadows.
 - A generative square field of orange cells on ink as the world's signature motion.
-- Ink plates with crosshairs and a turning seal for everything Face ID signs.
+- Ink plates with crosshairs and a turning seal for everything Face ID signs; the Account itself is an ink plate because it is live onchain.
+- Today's Face ID budget drawn as a row of ten square allowance cells that drain through the day and refill at 00:00 UTC.
 - Light by default; dark follows the OS.
 
 ## Colors
@@ -214,7 +252,7 @@ Dark mode (OS setting) swaps the ground to near-black (#0c0c0c, surfaces #151515
 
 **The One Committed Colour Rule.** Swissquote orange is the only brand hue. Green, red and amber are signals, never decoration, and there is no second accent.
 
-**The Factor Code Rule.** The user's three factors keep one code on every screen: the phone (Face ID) is an orange-filled square, the cloud account an ink-outlined square, the Kit passphrase an ink-filled square. No other colours encode factors.
+**The Factor Code Rule.** The user's three factors keep one code on every screen: the phone (Face ID) is an orange-filled square, the cloud account an ink-outlined square, the Kit passphrase an ink-filled square. On an ink plate, ink translates to Plate White (filled Kit, outlined cloud); orange stays orange. No other colours encode factors, and the Swissquote guardian never gets a square because it is never an owner.
 
 ## Typography
 
@@ -232,10 +270,14 @@ Dark mode (OS setting) swaps the ground to near-black (#0c0c0c, surfaces #151515
 - **Body small** (400 or 500, 0.875rem): field labels (500), list rows, plate rows, alerts. Hints and errors drop to 0.75rem.
 - **Figure XL** (JetBrains Mono 600, 3rem, tabular): the amount being chosen, inside the amount field. The loss bound sits one step down at 2.25rem with its unit in the grotesk.
 - **Figure** (JetBrains Mono 400, 1.25rem, tabular): the live strip's facts (fee, block, status).
-- **Token** (JetBrains Mono 500, 11px, 0.12em, uppercase): stepper labels, the token bar, a plate's title, units inside fields ("USDC / DAY"), file metadata.
+- **Token** (JetBrains Mono 500, 11px, 0.12em, uppercase): stepper labels, the token bar, a plate's title, units inside fields ("USDC / DAY"), file metadata, and short verifiable status ("2 of 2 · yours", "Account · live onchain").
+- **Balance** (JetBrains Mono 600, 3rem on phones and 3.75rem from 640px, tabular, -0.04em): the Account balance on its plate, and the amount on a review plate (2.25 to 3rem), with "USDC" in the grotesk beside it.
+- **Route note** (Hanken Grotesk 500, 0.875rem, with a 600 lead such as "Needs your Kit:" or "Face ID alone:"): a sentence that says which factors a payment needs, preceded by its approval squares. Only the figures inside it are mono. It replaced an uppercase mono token that was illegible on a projector: guidance a user must read is a sentence, never a token.
 
 ### Named Rules
 **The Mono-Is-Data Rule.** JetBrains Mono is reserved for figures, addresses, units and verifiable status. If the text is not a number, an address, a unit or a chain fact, it is set in Hanken Grotesk.
+
+**The Two Decimals Rule.** Every displayed USDC amount shows exactly two decimals (formatUsdc): balances, limits, rows, review plates, notes. Rounded short forms are for input defaults, not for display.
 
 **The Tight Display Rule.** Titles are semibold at 1.05 line-height with negative tracking (-0.03 to -0.035em). Display size is for the one title per screen.
 
@@ -256,7 +298,7 @@ The system is flat. The card shadow token is deliberately `none`, and no compone
 
 ## Shapes
 
-Rectangles are crisp: 6px for small controls (small buttons, chips, badges, the logo mark, stepper squares), 8px for buttons and inputs, 10px for cards, plates and the apricot field, 12px at most. Data cells go sharper still: day squares at 3px, strength-meter bars at 2px, block-field cells and factor codes square. Status markers in the token bar and live strip are small squares, not dots. The one deliberate circle is the Swissquote seal: an orange disc with mono ink type set on a ring around the SQ mark. Crosshairs (14px, 1px ink strokes) register plates at the top-left and bottom-right corners, overhanging by 7px.
+Rectangles are crisp: 6px for small controls (small buttons, chips, badges, the logo mark, stepper squares), 8px for buttons and inputs, 10px for cards, plates and the apricot field, 12px at most. Data cells go sharper still: day squares and allowance cells at 3px, strength-meter bars at 2px, block-field cells and factor codes square. Status markers in the token bar and live strip are small squares, not dots. The one deliberate circle is the Swissquote seal: an orange disc with mono ink type set on a ring around the SQ mark. Crosshairs (14px, 1px ink strokes) register plates at the top-left and bottom-right corners, overhanging by 7px.
 
 ### Named Rules
 **The Crisp Corner Rule.** Nothing rectangular exceeds 12px radius. The seal is the only circle in the world's vocabulary.
@@ -271,13 +313,16 @@ Crisp, solid, decisive.
 - **Secondary:** white with a hairline border, Stone Wash on hover. Used after an action is done ("Downloaded · download again").
 - **Ghost:** no border, Stone Wash on hover.
 - **Danger:** Signal Red fill, white text.
+- **Hero:** the secondary action on an ink plate: Plate Rule fill, Plate White text, Plate White at 15% on hover. The primary on a plate stays orange.
+- **Action size:** the plate's main actions (Send, Receive, Earn). On phones a 64px tile in a three-column grid, 20px icon over the label; from 640px the 48px large button with the icon beside the label. A disabled action keeps the same size as a Plate Rule outline in Plate Grey with a "Soon" badge.
+- **Icons** inside buttons never shrink.
 
 ### Chips (presets)
 - **Style:** 36px mono figures on white with a hairline border, 6px corners; the suggested value carries a small "suggested" in the grotesk.
 - **State:** selected is an orange fill with ink text and no border (the Ink-On-Orange Rule), with the same 0.97 press.
 
 ### Badges
-Small 6px tags, 12px medium text: neutral (Stone Wash with a hairline), accent (Apricot with Ember Ink), success, danger, warning on their soft grounds. Warning marks DEMO and MOCK states.
+Small 6px tags, 12px medium text: neutral (Stone Wash with a hairline), accent (Apricot with Ember Ink), success, danger, warning on their soft grounds, and hero (Plate Rule with Plate Grey, no border), the neutral badge on an ink plate. Warning marks DEMO and MOCK states. "Soon" is always the neutral badge (hero tone on a plate), in the sidebar, on plates and on cards, never a mono token.
 
 ### Cards / Containers
 - **Corner Style:** 10px.
@@ -298,6 +343,18 @@ A row of 24px squares (6px corners) joined by hairlines: done is ink with a chec
 ### Ink Plate (signature)
 The commit surface. Plate Ink ground, Plate Rule border, 10px corners, 20 to 24px padding, crosshairs at two corners, a 120px seal overhanging the top edge by 56px at the right. Its title is a token in Plate Grey; its content is a definition list of rows (label in Plate Grey left, fact in Plate White right, hairline rules between). Addresses inside it use the hero-toned address chip.
 
+### Account Plate (signature)
+The Account as a live object, under the Ink Plate Rule. Header: a token in Plate Grey ("Account · live onchain") led by a 6px live square (Ledger Green when the chain answers, Plate Grey otherwise), and the hero-toned address pill at the right from 640px (on phones the top bar carries the address). Then the balance in the Balance figure, the allowance cells at the large size, and the action row: Send (primary), Receive (hero), Earn. Padding 20px, 24px from 640px. No seal: the seal stays on commit plates.
+
+### Allowance Cells (signature)
+Today's Face ID budget as ten square cells (3px corners), lit orange from the left for what Face ID can still spend; the rest are empty (Plate Rule on a plate; Stone Wash with a hairline inset ring on white). Two tones (hero on an ink plate, light on white cards) and two sizes (24px tall with 6px gaps on the Account plate; 12px with 4px gaps in the Send rail). Above the row a 14px label ("Face ID can still spend today") and "Resets in" with a mono duration; below it the remaining and the limit as mono figures with "USDC left". In Send the cells preview the amount being typed: cells a Face ID payment will use turn outlined (Apricot fill, or Plate Rule on a plate, with a 1px inset orange ring) and the line reads "left after this payment"; a payment that needs the Kit leaves the cells untouched and adds a sentence led by an ink factor square. When a payment lands, cells drain from the right with a 30ms stagger over 300ms.
+
+### Factor Squares
+The single implementation of the Factor Code Rule: a square of 10px (8px in dense rows and legends), with the hero tone on plates. Approval squares show which factors approved a payment: orange alone for Face ID alone, orange then ink for Face ID + Kit. They appear on outgoing activity rows (with a legend above the list), in a review plate's Approval row, and before the Send route note.
+
+### Custody Strip
+A white card that says who can move the money: "Wallet protected" as the title with a mono "2 of 2 · yours" token at the right, then factor rows under a hairline (factor square, name in 500, one muted line of what it can do): This phone, Recovery Kit, and, for linked clients only, Swissquote as guardian with an empty square column. It closes with an Ember Ink link to Security and a muted outbound link to Basescan.
+
 ### Seal (signature)
 120px orange disc; the ring text "SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY" in 9-unit mono semibold ink, fitted exactly to the ring, turning once every 28s (still under reduced motion); "SQ" centred in 700 grotesk. Appears only on plates.
 
@@ -312,7 +369,7 @@ A canvas of 14px square cells with 4px gaps on the ink panel. Unlit cells are Pl
 An apricot field: a 14px sentence, the worst case as a 36px mono figure with its unit, and one 28px square per day of exposure (the first day solid orange, the rest orange at 45%), numbered in 11px mono.
 
 ### Motion
-Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale from 0.9 over 320ms, both on cubic-bezier(0.23, 1, 0.32, 1). State changes run 150 to 200ms. Reduced motion collapses all of it.
+Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale from 0.9 over 320ms, both on cubic-bezier(0.23, 1, 0.32, 1). State changes run 150 to 200ms. Allowance cells change over 300ms, draining from the right with a 30ms stagger. Reduced motion collapses all of it.
 
 ## Do's and Don'ts
 
@@ -322,6 +379,9 @@ Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale fro
 - **Do** put everything Face ID signs on an ink plate, with crosshairs and the seal, as the last block before the action.
 - **Do** keep live chain facts (fee, block, live status) visible in the shell: the live strip on desktop, the token bar on phones.
 - **Do** use the Factor Code Rule squares whenever the phone, the cloud account and the Kit appear together.
+- **Do** draw today's Face ID budget as the ten allowance cells, with the remaining, the limit and the reset time beside them.
+- **Do** show every displayed USDC amount with two decimals.
+- **Do** say which factors a payment needs in a sentence with approval squares, mono only for the figures.
 - **Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours.
 
 ### Don't:
@@ -331,3 +391,5 @@ Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale fro
 - **Don't** use JetBrains Mono or uppercase tokens as a decorative kicker above a headline; tokens label data.
 - **Don't** round rectangles beyond 12px or turn markers into pills; the seal is the only circle.
 - **Don't** place the seal anywhere but on a commit plate, and never more than one per screen.
+- **Don't** give the Swissquote guardian a factor square; it is never an owner.
+- **Don't** set "Soon" or other non-data labels as mono tokens; use the kit's neutral badge.

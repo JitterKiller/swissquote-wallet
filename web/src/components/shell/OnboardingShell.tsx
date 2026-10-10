@@ -15,7 +15,7 @@ export function OnboardingShell({ children }: { children: ReactNode }) {
           <BlockField />
         </div>
         <h1 className="max-w-lg text-4xl font-semibold leading-[1.05] tracking-[-0.03em] xl:text-5xl">
-          Your keys. Your crypto. One tap from Swissquote.
+          Your keys. Swiss security.
         </h1>
         <p className="mt-4 max-w-lg text-hero-muted">
           A self-custody wallet with the security of a Swiss bank. No seed phrase, no network fees, and Swissquote never

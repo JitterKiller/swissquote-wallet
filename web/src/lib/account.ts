@@ -74,6 +74,12 @@ const SENTINEL_OWNERS = '0x0000000000000000000000000000000000000001' as const
 const RECOVERY_MODULES = Object.values(SocialRecoveryModuleGracePeriodSelector).map((a) => a.toLowerCase())
 
 const allowanceModule = new AllowanceModule(ALLOWANCE_MODULE_ADDRESS)
+
+/**
+ * The allowance's reset base, in minutes: the last 00:00 UTC. With base 0 the module would count
+ * 24 h from the setup minute instead; with this base the daily limit refills at 00:00 UTC.
+ */
+const lastUtcMidnightMin = () => BigInt(Math.floor(Date.now() / 86_400_000) * 1440)
 const evictionModule = (module: Address) => new SocialRecoveryModule(module)
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -173,7 +179,7 @@ export async function accountSetupCalls(
   const configure = batchCalls([
     { to: account, data: encodeFunctionData({ abi: safeAbi, functionName: 'enableModule', args: [ACCOUNT_RECOVERY_MODULE[level]] }) },
     asCall(allowanceModule.createAddDelegateMetaTransaction(keySafe)),
-    asCall(allowanceModule.createBaseSetAllowanceMetaTransaction(keySafe, token, dailyLimit, ALLOWANCE_RESET_MINUTES, 0n)),
+    asCall(allowanceModule.createBaseSetAllowanceMetaTransaction(keySafe, token, dailyLimit, ALLOWANCE_RESET_MINUTES, lastUtcMidnightMin())),
     asCall(recovery.createAddGuardianWithThresholdMetaTransaction(kitGuardian, 1n)),
     ...(level === 1 && swissquoteGuardian ? [asCall(recovery.createAddGuardianWithThresholdMetaTransaction(swissquoteGuardian, 2n))] : []),
   ])
@@ -449,7 +455,7 @@ export function setDailyLimitCall({
   token?: Address
 }): AccountCall {
   if (dailyLimit <= 0n || dailyLimit >= 2n ** 96n) throw new Error('Invalid daily limit')
-  return asCall(allowanceModule.createBaseSetAllowanceMetaTransaction(keySafe, token, dailyLimit, ALLOWANCE_RESET_MINUTES, 0n))
+  return asCall(allowanceModule.createBaseSetAllowanceMetaTransaction(keySafe, token, dailyLimit, ALLOWANCE_RESET_MINUTES, lastUtcMidnightMin()))
 }
 
 /**
@@ -515,7 +521,7 @@ function allowanceMoveCalls(oldKeySafe: Address, newKeySafe: Address, dailyLimit
   return [
     asCall(allowanceModule.createRemoveDelegateMetaTransaction(oldKeySafe, true)),
     asCall(allowanceModule.createAddDelegateMetaTransaction(newKeySafe)),
-    asCall(allowanceModule.createBaseSetAllowanceMetaTransaction(newKeySafe, token, dailyLimit, ALLOWANCE_RESET_MINUTES, 0n)),
+    asCall(allowanceModule.createBaseSetAllowanceMetaTransaction(newKeySafe, token, dailyLimit, ALLOWANCE_RESET_MINUTES, lastUtcMidnightMin())),
   ]
 }
 

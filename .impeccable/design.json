@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-10T21:21:59+00:00",
-  "title": "Design System: Swissquote Wallet",
+  "generatedAt": "2026-10-11T12:00:00+00:00",
+  "title": "Design System: SQure",
   "extensions": {
     "colorMeta": {
       "accent": {
@@ -369,7 +369,7 @@
       },
       "token": {
         "displayName": "Token",
-        "purpose": "Uppercase mono labels for data: stepper, token bar, plate titles, units."
+        "purpose": "Uppercase mono labels for data and short verifiable status: stepper, token bar, plate titles, units, \"2 of 2 · yours\"."
       }
     },
     "shadows": [
@@ -409,6 +409,11 @@
         "name": "seal-turn",
         "value": "28s linear infinite rotation",
         "purpose": "The seal ring text on commit plates."
+      },
+      {
+        "name": "allowance-drain",
+        "value": "300ms background-color and box-shadow, 30ms stagger from the right",
+        "purpose": "Allowance cells emptying when a payment lands or previewing a typed amount."
       },
       {
         "name": "block-field",
@@ -508,6 +513,30 @@
       "description": "Three verifiable chain facts in mono figures on the ink panel.",
       "html": "<dl class=\"ds-live\"><div><dt>Network fee</dt><dd>0.00</dd></div><div><dt>Base Sepolia block</dt><dd>47,949,336</dd></div><div><dt>Status</dt><dd><i></i>Live</dd></div></dl>",
       "css": ".ds-live{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:0;padding:16px 24px;border-top:1px solid var(--hero-2, #232323);background:var(--hero, #171717);color:var(--hero-fg, #fafafa);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-live dt{font-size:12px;color:var(--hero-muted, #a3a3a3);} .ds-live dd{margin:4px 0 0;display:flex;align-items:center;gap:8px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:20px;font-variant-numeric:tabular-nums;} .ds-live i{display:block;width:10px;height:10px;background:var(--success, #0f7a55);}"
+    },
+    {
+      "name": "Allowance Cells",
+      "kind": "custom",
+      "refersTo": "allowance-cell",
+      "description": "Today's Face ID budget as ten square cells on the Account plate; lit orange for what Face ID can still spend, refilling at 00:00 UTC.",
+      "html": "<div class=\"ds-allow\"><div class=\"ds-allow-head\"><span>Face ID can still spend today</span><span>Resets in <b>6 h 12 min</b></span></div><div class=\"ds-cells\"><span class=\"ds-cell ds-lit\"></span><span class=\"ds-cell ds-lit\"></span><span class=\"ds-cell ds-lit\"></span><span class=\"ds-cell ds-lit\"></span><span class=\"ds-cell ds-lit\"></span><span class=\"ds-cell ds-lit\"></span><span class=\"ds-cell\"></span><span class=\"ds-cell\"></span><span class=\"ds-cell\"></span><span class=\"ds-cell\"></span></div><p class=\"ds-allow-foot\"><b>300.00</b><span> of </span><i>500.00</i><span> USDC left</span></p></div>",
+      "css": ".ds-allow{background:var(--hero, #171717);color:var(--hero-fg, #fafafa);padding:24px;border-radius:10px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-allow-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--hero-muted, #a3a3a3);} .ds-allow-head span:last-child{font-size:12px;} .ds-allow-head b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-cells{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:8px;} .ds-cell{height:24px;border-radius:3px;background:var(--hero-2, #232323);transition:background-color 300ms,box-shadow 300ms;} .ds-cell.ds-lit{background:var(--accent, #ff5f0f);} .ds-cells:hover .ds-cell.ds-lit:nth-child(n+5){background:var(--hero-2, #232323);box-shadow:inset 0 0 0 1px var(--accent, #ff5f0f);} .ds-allow-foot{margin:8px 0 0;font-size:16px;} .ds-allow-foot b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:600;font-variant-numeric:tabular-nums;} .ds-allow-foot i{font-style:normal;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-variant-numeric:tabular-nums;} .ds-allow-foot span{color:var(--hero-muted, #a3a3a3);}"
+    },
+    {
+      "name": "Factor Squares and Route Note",
+      "kind": "custom",
+      "refersTo": "factor-square",
+      "description": "The Factor Code Rule as squares (phone orange, Kit ink, cloud outline) and the Send route note: a sentence with approval squares, mono only for figures.",
+      "html": "<div class=\"ds-factors\"><p class=\"ds-legend\"><span><i class=\"ds-sq ds-phone\"></i>Face ID alone</span><span><i class=\"ds-sq ds-phone\"></i><i class=\"ds-sq ds-kit\"></i>Face ID + Kit</span><span><i class=\"ds-sq ds-cloud\"></i>Cloud account</span></p><p class=\"ds-route\"><span class=\"ds-pair\"><i class=\"ds-sq ds-phone\"></i><i class=\"ds-sq ds-kit\"></i></span><span><b>Needs your Kit:</b> <span class=\"ds-fig\">800.00</span> is above the <span class=\"ds-fig\">300.00</span> Face ID can still spend today.</span></p></div>",
+      "css": ".ds-factors{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-legend{display:flex;gap:16px;margin:0 0 16px;font-size:12px;color:var(--muted, #6b6b6b);} .ds-legend span{display:inline-flex;align-items:center;gap:6px;} .ds-legend .ds-sq{width:8px;height:8px;margin-right:-2px;} .ds-sq{display:inline-block;flex:none;width:10px;height:10px;} .ds-phone{background:var(--accent, #ff5f0f);} .ds-kit{background:var(--foreground, #171717);} .ds-cloud{box-shadow:inset 0 0 0 1px var(--foreground, #171717);} .ds-route{display:flex;gap:10px;margin:0;font-size:14px;font-weight:500;} .ds-pair{display:inline-flex;gap:4px;margin-top:5px;} .ds-route b{font-weight:600;} .ds-fig{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-variant-numeric:tabular-nums;}"
+    },
+    {
+      "name": "Custody Strip",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Who can move the money: a status token, factor rows with squares (Swissquote guardian without one), links to Security and Basescan.",
+      "html": "<section class=\"ds-custody\"><div class=\"ds-cust-head\"><h2>Wallet protected</h2><span class=\"ds-tok\">2 of 2 · yours</span></div><ul><li><i class=\"ds-sq ds-phone\"></i><span><b>This phone</b><em>Face ID, up to <span class=\"ds-fig\">500.00</span> USDC a day</em></span></li><li><i class=\"ds-sq ds-kit\"></i><span><b>Recovery Kit</b><em>With the phone for anything above. Locks out a lost phone after 3 days</em></span></li><li><i></i><span><b>Swissquote</b><em>Guardian: checks your identity before a lock-out. Never an owner</em></span></li></ul><div class=\"ds-cust-links\"><a href=\"#\">Who can do what ›</a><a href=\"#\" class=\"ds-out\">Check the owners on Basescan ↗</a></div></section>",
+      "css": ".ds-custody{border:1px solid var(--border, #e7e5e4);border-radius:10px;padding:20px;background:var(--surface, #ffffff);color:var(--foreground, #171717);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-cust-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;} .ds-cust-head h2{margin:0;font-size:16px;font-weight:600;} .ds-tok{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted, #6b6b6b);} .ds-custody ul{list-style:none;margin:12px 0 0;padding:0;border-top:1px solid var(--border, #e7e5e4);} .ds-custody li{display:grid;grid-template-columns:10px 1fr;column-gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--border, #e7e5e4);font-size:14px;} .ds-custody b{font-weight:500;} .ds-custody em{display:block;font-style:normal;color:var(--muted, #6b6b6b);} .ds-sq{display:inline-block;width:10px;height:10px;} .ds-phone{background:var(--accent, #ff5f0f);} .ds-kit{background:var(--foreground, #171717);} .ds-fig{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-variant-numeric:tabular-nums;} .ds-cust-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:12px;font-size:14px;} .ds-cust-links a{color:var(--accent-ink, #c2410c);font-weight:500;text-decoration:none;} .ds-cust-links a:hover{text-decoration:underline;} .ds-cust-links a.ds-out{color:var(--muted, #6b6b6b);font-weight:400;} .ds-cust-links a.ds-out:hover{color:var(--foreground, #171717);text-decoration:none;} .ds-cust-links a:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;}"
     }
   ],
   "narrative": {
@@ -518,7 +547,8 @@
       "Hanken Grotesk for UI and display, tight and large; JetBrains Mono strictly for figures, addresses and status tokens.",
       "Crisp corners (6 to 10px), hairline borders, flat surfaces: no shadows.",
       "A generative square field of orange cells on ink as the world's signature motion.",
-      "Ink plates with crosshairs and a turning seal for everything Face ID signs.",
+      "Ink plates with crosshairs and a turning seal for everything Face ID signs; the Account itself is an ink plate because it is live onchain.",
+      "Today's Face ID budget drawn as a row of ten square allowance cells that drain through the day and refill at 00:00 UTC.",
       "Light by default; dark follows the OS."
     ],
     "rules": [
@@ -534,12 +564,17 @@
       },
       {
         "name": "The Factor Code Rule",
-        "body": "The user's three factors keep one code on every screen: the phone (Face ID) is an orange-filled square, the cloud account an ink-outlined square, the Kit passphrase an ink-filled square. No other colours encode factors.",
+        "body": "The user's three factors keep one code on every screen: the phone (Face ID) is an orange-filled square, the cloud account an ink-outlined square, the Kit passphrase an ink-filled square. On an ink plate, ink translates to Plate White (filled Kit, outlined cloud); orange stays orange. No other colours encode factors, and the Swissquote guardian never gets a square because it is never an owner.",
         "section": "colors"
       },
       {
         "name": "The Mono-Is-Data Rule",
         "body": "JetBrains Mono is reserved for figures, addresses, units and verifiable status. If the text is not a number, an address, a unit or a chain fact, it is set in Hanken Grotesk.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two Decimals Rule",
+        "body": "Every displayed USDC amount shows exactly two decimals (formatUsdc): balances, limits, rows, review plates, notes. Rounded short forms are for input defaults, not for display.",
         "section": "typography"
       },
       {
@@ -569,6 +604,9 @@
       "**Do** put everything Face ID signs on an ink plate, with crosshairs and the seal, as the last block before the action.",
       "**Do** keep live chain facts (fee, block, live status) visible in the shell: the live strip on desktop, the token bar on phones.",
       "**Do** use the Factor Code Rule squares whenever the phone, the cloud account and the Kit appear together.",
+      "**Do** draw today's Face ID budget as the ten allowance cells, with the remaining, the limit and the reset time beside them.",
+      "**Do** show every displayed USDC amount with two decimals.",
+      "**Do** say which factors a payment needs in a sentence with approval squares, mono only for the figures.",
       "**Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours."
     ],
     "donts": [
@@ -577,7 +615,9 @@
       "**Don't** introduce a second accent, purple gradients, or a beige private-bank palette.",
       "**Don't** use JetBrains Mono or uppercase tokens as a decorative kicker above a headline; tokens label data.",
       "**Don't** round rectangles beyond 12px or turn markers into pills; the seal is the only circle.",
-      "**Don't** place the seal anywhere but on a commit plate, and never more than one per screen."
+      "**Don't** place the seal anywhere but on a commit plate, and never more than one per screen.",
+      "**Don't** give the Swissquote guardian a factor square; it is never an owner.",
+      "**Don't** set \"Soon\" or other non-data labels as mono tokens; use the kit's neutral badge."
     ]
   }
 }

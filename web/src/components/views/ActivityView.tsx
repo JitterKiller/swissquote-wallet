@@ -11,7 +11,7 @@ import { PageHeader } from '@/components/ui/page'
 import type { Transfer } from '@/lib/activity'
 import { formatDay } from '@/lib/format'
 
-import { TransferRow, TransferRowsSkeleton } from './TransferRow'
+import { ApprovalLegend, TransferRow, TransferRowsSkeleton } from './TransferRow'
 
 type Filter = 'all' | 'in' | 'out'
 
@@ -66,6 +66,7 @@ export function ActivityView() {
             />
           ) : (
             <div className="space-y-6">
+              <ApprovalLegend transfers={visible} />
               {groupByDay(visible).map(([day, items]) => (
                 <section key={day}>
                   <h2 className="text-xs font-medium uppercase tracking-wide text-muted">{day}</h2>

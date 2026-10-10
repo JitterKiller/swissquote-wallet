@@ -21,7 +21,7 @@ export type Passkey = {
 export async function createPasskey(userName: string): Promise<Passkey> {
   const credential = await WebAuthnP256.createCredential({
     name: userName,
-    rp: { id: window.location.hostname, name: 'Swissquote Wallet' },
+    rp: { id: window.location.hostname, name: 'SQure' },
     authenticatorSelection: {
       residentKey: 'required',
       userVerification: 'required',

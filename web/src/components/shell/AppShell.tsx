@@ -17,13 +17,17 @@ import { useEffect, type ReactNode } from 'react'
 
 import { useWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
-import { Skeleton } from '@/components/ui/feedback'
+import { Badge, Skeleton } from '@/components/ui/feedback'
+import { TokenBar } from '@/components/ui/live'
 import { loadLocalRecovery } from '@/lib/storage'
 
 import { Logo } from './Logo'
 import { RecoveryAlert, RevokedScreen } from './SecurityBanners'
 
 type NavItem = { href: string; label: string; icon: LucideIcon; soon?: boolean }
+
+// The phone's tab bar keeps the five daily jobs; the rest stays one tap away on the Overview.
+const MOBILE_TABS = ['/', '/send', '/receive', '/activity', '/security']
 
 const NAV: NavItem[] = [
   { href: '/', label: 'Overview', icon: House },
@@ -60,6 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   const initials = wallet.name.trim().slice(0, 2).toUpperCase() || 'SQ'
+  const levelLabel = !wallet.account ? 'Not protected yet' : wallet.level === 1 ? 'Swissquote client · level 1' : 'Free · level 0'
 
   return (
     <div className="min-h-dvh lg:pl-64">
@@ -73,25 +78,22 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} />
           ))}
         </nav>
-        <div className="mt-auto space-y-3">
-          <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-xs text-muted">
-            <span className="h-2 w-2 rounded-full bg-success" />
-            Base Sepolia · Testnet
-          </div>
+        <div className="mt-auto space-y-4">
+          <TokenBar tokens={[]} className="px-2" />
           <div className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-xs font-semibold text-accent-ink">
               {initials}
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{wallet.name}</p>
-              <p className="text-xs text-muted">Self-custody wallet</p>
+              <p className="truncate text-xs text-muted">{levelLabel}</p>
             </div>
           </div>
         </div>
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/90 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
         <Logo />
         <AddressPill address={wallet.account ?? wallet.address} />
       </header>
@@ -107,20 +109,20 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile tab bar */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
         aria-label="Main"
       >
-        {NAV.filter((item) => !item.soon).map((item) => {
+        {NAV.filter((item) => MOBILE_TABS.includes(item.href)).map((item) => {
           const active = isActive(pathname, item.href)
           const Icon = item.icon
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? 'text-accent-ink' : 'text-muted'}`}
+              className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? 'font-semibold text-foreground' : 'text-muted'}`}
               aria-current={active ? 'page' : undefined}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className={`h-5 w-5 ${active ? 'text-accent-ink' : ''}`} />
               {item.label}
             </Link>
           )
@@ -138,12 +140,10 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon
   if (item.soon) {
     return (
-      <span className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted/70">
+      <span className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted">
         <Icon className="h-[18px] w-[18px]" />
         {item.label}
-        <span className="ml-auto rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
-          Soon
-        </span>
+        <Badge className="ml-auto">Soon</Badge>
       </span>
     )
   }
@@ -151,11 +151,11 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
     <Link
       href={item.href}
       aria-current={active ? 'page' : undefined}
-      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-        active ? 'bg-accent-soft font-medium text-accent-ink' : 'text-muted hover:bg-surface-2 hover:text-foreground'
+      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+        active ? 'bg-surface-2 font-medium text-foreground' : 'text-muted hover:bg-surface-2 hover:text-foreground'
       }`}
     >
-      <Icon className="h-[18px] w-[18px]" />
+      <Icon className={`h-[18px] w-[18px] ${active ? 'text-accent-ink' : ''}`} />
       {item.label}
     </Link>
   )

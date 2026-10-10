@@ -56,10 +56,10 @@ export function ExplorerLink({ path, label = 'View on explorer', className = '' 
 export function AddressPill({ address, tone = 'default' }: { address: string; tone?: 'default' | 'hero' }) {
   const styles =
     tone === 'hero'
-      ? 'bg-white/8 text-hero-fg [&_button]:text-hero-muted [&_a]:text-hero-muted [&_button:hover]:text-hero-fg [&_a:hover]:text-hero-fg'
+      ? 'bg-hero-2 text-hero-fg [&_button]:text-hero-muted [&_a]:text-hero-muted [&_button:hover]:text-hero-fg [&_a:hover]:text-hero-fg'
       : 'bg-surface-2 text-foreground'
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full py-1 pl-3 pr-1.5 font-mono text-xs ${styles}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-md py-1 pl-2.5 pr-1 font-mono text-xs ${styles}`}>
       {shortAddress(address)}
       <CopyButton value={address} label="Copy address" />
       <ExplorerLink path={`address/${address}`} />

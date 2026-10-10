@@ -1,7 +1,7 @@
 import { CircleCheck, Info, LoaderCircle, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-type Tone = 'neutral' | 'accent' | 'success' | 'danger' | 'warning'
+type Tone = 'neutral' | 'accent' | 'success' | 'danger' | 'warning' | 'hero'
 
 const BADGE_TONES: Record<Tone, string> = {
   neutral: 'bg-surface-2 text-muted border-border',
@@ -9,6 +9,8 @@ const BADGE_TONES: Record<Tone, string> = {
   success: 'bg-success-soft text-success border-transparent',
   danger: 'bg-danger-soft text-danger border-transparent',
   warning: 'bg-warning-soft text-warning border-transparent',
+  // The neutral badge on an ink plate.
+  hero: 'bg-hero-2 text-hero-muted border-transparent',
 }
 
 export function Badge({
@@ -29,7 +31,7 @@ export function Badge({
   )
 }
 
-const ALERT_TONES: Record<Exclude<Tone, 'neutral' | 'accent'> | 'info', string> = {
+const ALERT_TONES: Record<Exclude<Tone, 'neutral' | 'accent' | 'hero'> | 'info', string> = {
   info: 'bg-surface-2 border-border text-foreground',
   success: 'bg-success-soft border-transparent text-foreground',
   danger: 'bg-danger-soft border-transparent text-foreground',
