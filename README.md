@@ -83,6 +83,15 @@ npm run dev        # http://localhost:3000 (app + mock backend)
 - Get test USDC from the [Circle faucet](https://faucet.circle.com) (Base Sepolia → paste the wallet address).
 - Team: share `SWISSQUOTE_GUARDIAN_PRIVATE_KEY` in `web/.env.local` (see `web/.env.example`), otherwise each machine has its own Swissquote Guardian.
 
+## Deploy (Vercel + Upstash, ADR-020)
+
+1. Vercel → Add New → Project → import this repo → **Root Directory `web`** → Deploy.
+2. Project → Storage → Marketplace → **Upstash Redis** (free) → connect it to the project (all environments).
+3. Settings → Environment Variables → `SWISSQUOTE_GUARDIAN_PRIVATE_KEY` (Production + Preview) = the team's shared key.
+4. Redeploy, then open `/api/health`: expect `"ok": true, "store": "upstash-redis", "guardianFromEnv": true`.
+
+Passkeys are bound to the domain: create demo wallets **on the production URL**. Wallets made on `localhost` or a preview URL do not work there.
+
 ## Tests
 
 ```bash
@@ -103,6 +112,7 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 
 | Endpoint | Role |
 |---|---|
+| `GET /api/health` | Deployment check: store kind, write/read round trip, guardian + relayer (ADR-020) |
 | `GET /api/guardian` | Swissquote Guardian + relayer addresses |
 | `POST /api/kyc` | Identity verification session (MOCK outcome) |
 | `POST /api/recovery` | Checks KYC + Kit signature, co-signs, relays `multiConfirmRecovery` |

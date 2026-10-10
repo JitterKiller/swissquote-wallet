@@ -3,7 +3,7 @@ import { isAddress } from 'viem'
 import { finalizeEvictionCall, readAccount } from '@/lib/account'
 import { publicClient } from '@/lib/wallet'
 import { relay } from '@/server/guardian'
-import { notifyClient, updateDb } from '@/server/store'
+import { getEviction, notifyClient, saveEviction } from '@/server/store'
 
 /**
  * Finalize an eviction once the on-chain delay is over (ADR-019). The module lets anyone
@@ -22,14 +22,9 @@ export async function POST(request: Request) {
     if (executeAfter > now) return fail(`The delay is not over yet (${executeAfter - now} s left)`, 409)
 
     const finalizeTx = await relay([finalizeEvictionCall(account, state.evictionModule)])
-    updateDb((db) => {
-      const record = db.evictions[account.toLowerCase()]
-      if (record) {
-        record.status = 'finalized'
-        record.finalizeTx = finalizeTx
-      }
-    })
-    notifyClient(account, 'Your phone was replaced. The old phone is no longer an owner of your Account.')
+    const record = await getEviction(account)
+    if (record) await saveEviction({ ...record, status: 'finalized', finalizeTx })
+    await notifyClient(account, 'Your phone was replaced. The old phone is no longer an owner of your Account.')
     return Response.json({ txHash: finalizeTx, owners: (await readAccount(account)).owners })
   } catch (error) {
     console.error(error)

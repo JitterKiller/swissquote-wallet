@@ -13,6 +13,8 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - Mark mocked parts as MOCK (code comment + UI badge) and keep the README's "Real vs mocked" table current.
 - UI: pages are thin files in `web/src/app/(wallet)` and `(onboarding)` rendering views from `web/src/components/views`. Shared state comes from `useWallet()` / `useLoadedWallet()` (`WalletProvider`). Use the kit in `web/src/components/ui` and the tokens in `globals.css`, never raw colors.
 - User transactions go through `sendCalls` in `web/src/lib/wallet.ts` (sponsored + passkey-signed). Server-only code stays in `web/src/server/`.
+- Backend data goes through `store()` in `web/src/server/store.ts` (async, one record per key; Upstash Redis when deployed, JSON file locally, ADR-020). Never write files from route handlers.
+- Passkeys are bound to the domain: wallets created on localhost or a preview URL do not work on the production demo domain (ADR-020).
 
 ## Commands (from `web/`)
 

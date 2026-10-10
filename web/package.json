@@ -18,6 +18,7 @@
     "check:eviction-api": "tsx scripts/check-eviction-api.mts"
   },
   "dependencies": {
+    "@upstash/redis": "^1.39.0",
     "abstractionkit": "^0.4.3",
     "ethers": "^6.17.0",
     "lucide-react": "^1.55.0",

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     const txHash = await relay([recoveryModule.createFinalizeRecoveryMetaTransaction(wallet)])
-    notifyClient(wallet, 'Your wallet was recovered to a new device. The previous passkey was removed.')
+    await notifyClient(wallet, 'Your wallet was recovered to a new device. The previous passkey was removed.')
     return Response.json({ txHash })
   } catch (error) {
     console.error(error)

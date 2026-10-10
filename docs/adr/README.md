@@ -44,6 +44,8 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-019](product/PDR-019-offer-tiers.md) | Offer in three tiers: free, linked client, Premium "Theft protection" for linked clients (speed, comfort, insurance; never basic security); self-service hardware key at every level; security operations always sponsored | Accepted (refines PDR-003, PDR-015, PDR-017; prices to model) |
 | [PDR-020](product/PDR-020-daily-limit-chosen-by-user.md) | The daily limit is chosen by the user, same rules at every level (no limit per level, no limit perk) | Accepted |
 | [PDR-021](product/PDR-021-one-flow-lost-or-stolen-phone.md) | One flow for a lost or stolen phone: the Account eviction (replaces the Key Safe recovery) | Accepted |
+| [PDR-022](product/PDR-022-wallet-registry-ownership-proof.md) | Wallet registry for linked clients; proof of ownership = one Face ID on an EIP-712 statement (FINMA travel rule) | Accepted |
+| [PDR-023](product/PDR-023-compliance-as-friction.md) | Compliance as friction: sanctions screening, readable preview with simulation, high-value and look-alike checks | Accepted |
 
 ## Architecture decisions
 
@@ -56,7 +58,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-005](architecture/ADR-005-social-recovery-module.md) | Candide Social Recovery Module **v0.0.1** | Accepted, amended by ADR-019 |
 | [ADR-006](architecture/ADR-006-recovery-target-verifier-proxy.md) | Recovery target = new passkey's verifier proxy, deployed in the request UserOp | Superseded by ADR-019 (target design; still in the code) |
 | [ADR-007](architecture/ADR-007-swissquote-guardian-and-relayer.md) | Swissquote Guardian key + relayer Safe (mock HSM) | Accepted |
-| [ADR-008](architecture/ADR-008-mock-backend.md) | Mock backend: Next.js route handlers + JSON file store | Accepted |
+| [ADR-008](architecture/ADR-008-mock-backend.md) | Mock backend: Next.js route handlers + JSON file store | Accepted, amended by ADR-020 |
 | [ADR-009](architecture/ADR-009-client-storage-public-data-only.md) | Client storage: public data only | Accepted, amended by ADR-015 and ADR-018 |
 | [ADR-010](architecture/ADR-010-frontend-nextjs-client-only.md) | Next.js 16, client-only wallet UI, Tailwind v4 | Partially superseded by ADR-014 |
 | [ADR-011](architecture/ADR-011-no-custom-cryptography.md) | No custom cryptography | Accepted |
@@ -68,17 +70,18 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Accepted (spike C1–C4 passed on 2026-10-10), amended by ADR-019 |
 | [ADR-018](architecture/ADR-018-recovery-kit-encryption-and-storage.md) | Recovery Kit: Ethereum keystore V3 via ethers, cloud + local encrypted copies | Accepted, amended by ADR-019 |
 | [ADR-019](architecture/ADR-019-account-eviction-module.md) | Account eviction: Candide recovery module on the Account, guardian = the Kit's second key | Accepted (spike C5 passed; amends ADR-017, ADR-018) |
+| [ADR-020](architecture/ADR-020-deployment-vercel-upstash.md) | Deployment: Vercel + Upstash Redis behind an async `store()`, one fixed demo domain (passkey rpId) | Accepted |
+| [ADR-021](architecture/ADR-021-wallet-registry.md) | Wallet registry: passkey-signed EIP-712 statement, verified with ox + on-chain owner checks | Accepted |
+| [ADR-022](architecture/ADR-022-compliance-checks.md) | Compliance checks: server screening (mock list + optional Chainalysis), client preview, look-alike and high-value warnings | Accepted |
 
 ## Open questions (future records)
 
 | Topic | Kind | Notes |
 |---|---|---|
 | Trusted contact as an Account guardian (arbiter), and inheritance | PDR + ADR | Breaks the phone-theft tie and the lost-Kit case without a hardware key (PDR-014). Inheritance: Swissquote checks the certificate of inheritance. Build step 8 in PDR-014 |
-| Compliance layer: SECO/OFAC sanctions screening, transaction simulation, approved-dApp list, high-value checks | PDR + ADR | Off-chain check or on-chain Safe guard? Must stay friction, not a veto (PDR-001). Idea: the Swissquote paymaster refuses to sponsor transfers to sanctioned addresses. Build step 6 in PDR-014 |
-| Wallet registry + proof of ownership (EIP-1271 signed message) | PDR + ADR | Needed for FINMA travel-rule transfers between the Swissquote account and the wallet, and for `@handle` registration (PDR-010). Must point to the Account address (ADR-017). Build step 2 in PDR-014 |
+| Approved-dApp list (compliant dApp interaction) | PDR + ADR | Screening, preview and high-value checks are decided (PDR-023); the dApp allowlist is issue #25 |
 | Mock "transfer from my Swissquote account" | PDR | Avoids the faucet during the demo. Build step 3 in PDR-014 |
 | Routing a `@handle` payment to the recipient's Swissquote account when they have no wallet | PDR | Needs legal validation: FINMA Guidance 02/2019 restricts transfers with external wallets to the client's own wallets (PDR-010) |
-| Demo domain + deployment | ADR | Passkeys are bound to their domain (rpId). Needs HTTPS for a demo on a phone |
 | React Native app | ADR | Associated domains to share passkeys with the web app |
 | Bitcoin implementation | ADR | Rule decided in PDR-013: native 2-of-3 multisig with a timelocked recovery path (miniscript), user majority. Pitch slide only |
 | Cut the daily allowance automatically when a recovery starts | ADR | Bitkey does it. Here it needs a custom contract (PDR-014) |

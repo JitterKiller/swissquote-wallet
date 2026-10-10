@@ -8,30 +8,31 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import { BUNDLER_URL, CHAIN_ID, NODE_URL, PAYMASTER_URL } from '@/lib/config'
 import { isDeployed } from '@/lib/wallet'
 
-import { readDb, updateDb } from './store'
+import { store } from './store'
 
 /**
  * Swissquote Guardian (MOCK HSM).
  *
  * In production this key lives in an HSM and only signs after the identity
- * checks pass. Here it comes from SWISSQUOTE_GUARDIAN_PRIVATE_KEY or is
- * generated once and kept in `.data/db.json`. It must stay stable: wallets
- * register its address as a guardian.
+ * checks pass. Here it comes from SWISSQUOTE_GUARDIAN_PRIVATE_KEY (always set it
+ * on Vercel, ADR-020) or is generated once and kept in the store. It must stay
+ * stable: wallets register its address as a guardian.
  */
-function guardianKey(): `0x${string}` {
+let cachedKey: `0x${string}` | undefined
+
+async function guardianKey(): Promise<`0x${string}`> {
   const fromEnv = process.env.SWISSQUOTE_GUARDIAN_PRIVATE_KEY as `0x${string}` | undefined
   if (fromEnv) return fromEnv
-  const existing = readDb().guardianKey
-  if (existing) return existing
-  const created = generatePrivateKey()
-  updateDb((db) => {
-    db.guardianKey = created
-  })
-  return created
+  if (cachedKey) return cachedKey
+  // setIfAbsent: two first requests racing still end up with one key.
+  await store().setIfAbsent('config', 'guardianKey', generatePrivateKey())
+  cachedKey = (await store().get<`0x${string}`>('config', 'guardianKey')) ?? undefined
+  if (!cachedKey) throw new Error('Guardian key unavailable')
+  return cachedKey
 }
 
-export function guardianAccount() {
-  return privateKeyToAccount(guardianKey())
+export async function guardianAccount() {
+  return privateKeyToAccount(await guardianKey())
 }
 
 /**
@@ -39,13 +40,13 @@ export function guardianAccount() {
  * recovery transactions (anyone may call the module with valid guardian
  * signatures) through sponsored UserOps, so there is no ETH to manage.
  */
-export function relayerAddress() {
-  return SafeAccount.createAccountAddress([guardianAccount().address])
+export async function relayerAddress() {
+  return SafeAccount.createAccountAddress([(await guardianAccount()).address])
 }
 
 export async function relay(calls: MetaTransaction[]): Promise<string> {
-  const owner = guardianAccount()
-  const address = relayerAddress() as `0x${string}`
+  const owner = await guardianAccount()
+  const address = (await relayerAddress()) as `0x${string}`
   const account = (await isDeployed(address))
     ? new SafeAccount(address)
     : SafeAccount.initializeNewAccount([owner.address])
@@ -54,7 +55,7 @@ export async function relay(calls: MetaTransaction[]): Promise<string> {
   userOp = (
     await new Erc7677Paymaster(PAYMASTER_URL).createPaymasterUserOperation(account, userOp, BUNDLER_URL)
   ).userOperation
-  userOp.signature = account.signUserOperation(userOp, [guardianKey()], CHAIN_ID)
+  userOp.signature = account.signUserOperation(userOp, [await guardianKey()], CHAIN_ID)
 
   const receipt = await (await account.sendUserOperation(userOp, BUNDLER_URL)).included()
   if (!receipt) throw new Error('Relayer: timed out waiting for inclusion')

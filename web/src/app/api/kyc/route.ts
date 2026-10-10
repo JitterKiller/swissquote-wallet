@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { isAddress } from 'viem'
 
-import { notifyClient, updateDb, type KycSession } from '@/server/store'
+import { notifyClient, saveKycSession, type KycSession } from '@/server/store'
 
 /**
  * MOCK identity verification before the Swissquote Guardian signs a recovery.
@@ -24,12 +24,10 @@ export async function POST(request: Request) {
     createdAt: Date.now(),
     used: false,
   }
-  updateDb((db) => {
-    db.kycSessions[session.id] = session
-  })
+  await saveKycSession(session)
 
   if (session.status === 'failed') {
-    notifyClient(
+    await notifyClient(
       wallet,
       'A recovery attempt on your wallet failed identity verification. Your funds are safe.',
     )

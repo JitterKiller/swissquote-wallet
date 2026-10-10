@@ -2,7 +2,7 @@ import { isAddress, isHex, recoverTypedDataAddress, type Address, type Hex } fro
 
 import { evictionTypedData, readAccount, startEvictionCall } from '@/lib/account'
 import { guardianAccount, relay } from '@/server/guardian'
-import { notifyClient, readDb, updateDb } from '@/server/store'
+import { getKycSession, notifyClient, saveEviction, saveKycSession, type KycSession } from '@/server/store'
 
 const KYC_SESSION_TTL_MS = 15 * 60 * 1000
 
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     // The guardian signature must come from a guardian of this Account (not Swissquote).
     const typedData = await evictionTypedData(account, state.evictionModule, newOwners as Address[])
     const signer = await recoverTypedDataAddress({ ...typedData, signature: guardianSignature as Hex })
-    const swissquote = guardianAccount()
+    const swissquote = await guardianAccount()
     const guardians = state.guardians.map((g) => g.toLowerCase())
     if (!guardians.includes(signer.toLowerCase()) || signer.toLowerCase() === swissquote.address.toLowerCase()) {
       return fail('The signature is not from a guardian of this Account', 403)
@@ -59,9 +59,9 @@ export async function POST(request: Request) {
 
     const level: 0 | 1 = guardians.includes(swissquote.address.toLowerCase()) ? 1 : 0
     const signatures = [{ signer: signer as string, signature: guardianSignature as string }]
-    let sessionId: string | null = null
+    let verifiedSession: KycSession | null = null
     if (level === 1) {
-      const session = kycSessionId ? readDb().kycSessions[kycSessionId] : undefined
+      const session = kycSessionId ? await getKycSession(kycSessionId) : null
       if (
         !session ||
         session.wallet !== account.toLowerCase() ||
@@ -71,27 +71,25 @@ export async function POST(request: Request) {
       ) {
         return fail('Identity verification required', 403)
       }
-      sessionId = session.id
+      verifiedSession = session
       signatures.push({ signer: swissquote.address, signature: await swissquote.signTypedData(typedData) })
     }
     if (signatures.length < state.guardianThreshold) return fail('Not enough guardian approvals', 403)
 
     const startTx = await relay([startEvictionCall(account, state.evictionModule, newOwners as Address[], signatures)])
     const executeAfter = (await readAccount(account)).pendingEviction?.executeAfter ?? 0
-    updateDb((db) => {
-      if (sessionId) db.kycSessions[sessionId].used = true
-      db.evictions[account.toLowerCase()] = {
-        account,
-        level,
-        oldKeySafe: keySafe,
-        newOwners,
-        startTx,
-        executeAfter,
-        status: 'pending',
-        startedAt: Date.now(),
-      }
+    if (verifiedSession) await saveKycSession({ ...verifiedSession, used: true })
+    await saveEviction({
+      account,
+      level,
+      oldKeySafe: keySafe,
+      newOwners,
+      startTx,
+      executeAfter,
+      status: 'pending',
+      startedAt: Date.now(),
     })
-    notifyClient(
+    await notifyClient(
       account,
       `A replacement of your phone started. It takes effect at ${new Date(executeAfter * 1000).toISOString()}. ` +
         'If this was not you, cancel it now with Face ID + your Kit passphrase.',

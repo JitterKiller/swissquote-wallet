@@ -8,7 +8,7 @@ import {
   recoveryTypedData,
 } from '@/lib/recovery'
 import { guardianAccount, relay } from '@/server/guardian'
-import { notifyClient, readDb, updateDb } from '@/server/store'
+import { getKycSession, notifyClient, saveKycSession } from '@/server/store'
 
 const KYC_SESSION_TTL_MS = 15 * 60 * 1000
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     }
 
     // 1. Identity verification (mock KYC session).
-    const session = kycSessionId ? readDb().kycSessions[kycSessionId] : undefined
+    const session = kycSessionId ? await getKycSession(kycSessionId) : null
     if (
       !session ||
       session.wallet !== wallet.toLowerCase() ||
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     }
 
     // 2. On-chain guardian setup and no pending recovery.
-    const guardian = guardianAccount()
+    const guardian = await guardianAccount()
     const status = await getRecoveryStatus(wallet)
     const guardians = status.guardians.map((g) => g.toLowerCase())
     if (!guardians.includes(guardian.address.toLowerCase())) {
@@ -90,10 +90,8 @@ export async function POST(request: Request) {
       ),
     ])
 
-    updateDb((db) => {
-      db.kycSessions[session.id].used = true
-    })
-    notifyClient(
+    await saveKycSession({ ...session, used: true })
+    await notifyClient(
       wallet,
       'A recovery of your wallet to a new device was requested. If this was not you, cancel it from your current device.',
     )

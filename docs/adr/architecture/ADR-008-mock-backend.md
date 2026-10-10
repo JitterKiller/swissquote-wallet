@@ -1,6 +1,6 @@
 # ADR-008: Mock backend — Next.js route handlers + JSON file store
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-020](ADR-020-deployment-vercel-upstash.md) (store behind an async interface: Upstash Redis when deployed, JSON file locally)
 - **Date:** 2026-10-10
 - **Related:** [PDR-007](../product/PDR-007-prototype-scope-real-vs-mocked.md), [ADR-007](ADR-007-swissquote-guardian-and-relayer.md), [ADR-010](ADR-010-frontend-nextjs-client-only.md)
 
