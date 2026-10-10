@@ -20,7 +20,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity, security page, light/dark | ✅ |
 | Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022); send-flow integration in #12 | ✅ |
-| Approved-dApp list (#25) | ⏳ |
+| Approved dApps, built natively: Aave v3 and Compound III with USDC, 2 factors, sponsored only when approved (PDR-025, ADR-028); UI pending | ✅ (logic) |
 | `@handle` directory: verified payee before Face ID, visibility, contacts, payment request link + QR (PDR-010, ADR-024); send-flow integration in #12 | ✅ |
 | Transfers between the Swissquote account and the wallet, both directions, travel rule filled in (PDR-024, ADR-025); demo treasury to fund once | ✅ |
 | Third guardian (trusted contact) | ⏳ |
@@ -111,6 +111,8 @@ npm run spike:two-safe-variants # 2-owner eviction + immediate eviction with Kit
 npm run check:account  # lib/account.ts: setup + C1–C4 on Base Sepolia (~1 min)
 npm run check:kit      # Kit v3 encryption, local (~5 s)
 npm run check:eviction-api # /api/eviction endpoints over HTTP, needs npm run dev (~4 min)
+npm run check:target-flows # client logic: spend within/above the limit, new limit, eviction cancel + finalize + handover, level upgrade (needs npm run dev, ~5 min)
+npm run check:dapps    # approved dApps with real USDC: Aave and Compound deposit/withdraw with 2 factors, paymaster allowlist (needs npm run dev + funded treasury, ~2 min)
 npm run check:registry # wallet registry: valid proof, replay, other passkey, other origin, foreign Key Safe (needs npm run dev)
 npm run check:sponsorship # sponsorship policy: quota, security ops, mixed batches, sanctions, linked client, stolen report (needs npm run dev)
 npm run check:handles  # @handles: uniqueness, reserved names, verified name, hidden = missing, contacts, rate limit (needs npm run dev)
@@ -148,7 +150,7 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 
 | Real (on-chain / standard) | Mocked (documented) |
 |---|---|
-| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Account Safe (Allowance Module, eviction module), Recovery Kit encryption (keystore V3), Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC) |
+| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Account Safe (Allowance Module, eviction module), approved dApps (Aave v3, Compound III on Base Sepolia), Recovery Kit encryption (keystore V3), Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC) |
 
 ## Repo layout
 

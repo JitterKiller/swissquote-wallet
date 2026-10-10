@@ -1,6 +1,6 @@
 # ADR-023: Sponsorship policy — an ERC-7677 paymaster proxy in front of Candide
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-028](ADR-028-approved-dapps-native-integration.md) (only approved dApp contracts are sponsored)
 - **Date:** 2026-10-10
 - **Amends:** [ADR-004](ADR-004-bundler-and-paymaster.md) (wallet UserOps now reach the paymaster through Swissquote's policy)
 - **Related:** [PDR-003](../product/PDR-003-gasless-by-default.md), [PDR-015](../product/PDR-015-open-wallet-and-levels.md), [PDR-017](../product/PDR-017-theft-protection-hardware-key.md), [PDR-019](../product/PDR-019-offer-tiers.md), [PDR-023](../product/PDR-023-compliance-as-friction.md), [ADR-020](ADR-020-deployment-vercel-upstash.md), [ADR-021](ADR-021-wallet-registry.md), [ADR-022](ADR-022-compliance-checks.md), issue #23

@@ -15,6 +15,7 @@ import {
 } from 'viem'
 
 import { ALLOWANCE_MODULE_ADDRESS, SAFE_PROXY_FACTORY_141 } from '@/lib/config'
+import { isApprovedContract } from '@/lib/dapps'
 
 import { isSanctioned } from './compliance'
 import { getWalletByAccount, getWalletByKeySafe } from './registry'
@@ -64,7 +65,8 @@ const innerAbi = parseAbi([
 ])
 
 type Call = { self: Address; to: Address; value: bigint; data: Hex }
-type Classified = { security: boolean; counterparties: Address[] }
+// contracts: dApp contracts called or approved (PDR-025): only approved ones are sponsored.
+type Classified = { security: boolean; counterparties: Address[]; contracts: Address[] }
 
 /** MultiSend packed encoding: operation (1) · to (20) · value (32) · data length (32) · data. */
 function unpackMultiSend(self: Address, packed: Hex): Call[] {
@@ -83,17 +85,18 @@ function unpackMultiSend(self: Address, packed: Hex): Call[] {
 }
 
 function classify(call: Call, depth = 0): Classified {
-  if (depth > 4) return { security: false, counterparties: [call.to] }
+  if (depth > 4) return { security: false, counterparties: [call.to], contracts: [call.to] }
   const to = call.to.toLowerCase()
   const selector = call.data.length >= 10 ? call.data.slice(0, 10) : '0x'
   const merge = (parts: Classified[]): Classified => ({
     security: parts.length > 0 && parts.every((p) => p.security),
     counterparties: parts.flatMap((p) => p.counterparties),
+    contracts: parts.flatMap((p) => p.contracts),
   })
 
-  if (RECOVERY_MODULES.includes(to) || SETUP_CONTRACTS.includes(to)) return { security: true, counterparties: [] }
+  if (RECOVERY_MODULES.includes(to) || SETUP_CONTRACTS.includes(to)) return { security: true, counterparties: [], contracts: [] }
   if (to === call.self.toLowerCase() && SAFE_ADMIN_SELECTORS.includes(selector)) {
-    return { security: true, counterparties: [] }
+    return { security: true, counterparties: [], contracts: [] }
   }
 
   try {
@@ -104,17 +107,19 @@ function classify(call: Call, depth = 0): Classified {
       case 'execTransaction': // a 2-factor Account transaction (ADR-017): look inside, from the Account
         return classify({ self: call.to, to: args[0], value: args[1], data: args[2] }, depth + 1)
       case 'executeAllowanceTransfer':
-        return { security: false, counterparties: [args[2]] }
+        return { security: false, counterparties: [args[2]], contracts: [] }
       case 'transfer':
-        return { security: false, counterparties: [args[0]] }
+        return { security: false, counterparties: [args[0]], contracts: [] }
       case 'approve':
-        return { security: false, counterparties: [args[0], call.to] }
+        return { security: false, counterparties: [args[0], call.to], contracts: [args[0]] }
     }
   } catch {
     // Not one of the calls above: a generic contract call.
   }
-  if (to === ALLOWANCE_MODULE_ADDRESS.toLowerCase()) return { security: true, counterparties: [] } // limit settings
-  return { security: false, counterparties: [call.to] }
+  if (to === ALLOWANCE_MODULE_ADDRESS.toLowerCase()) return { security: true, counterparties: [], contracts: [] } // limit settings
+  // A call to the sender itself (no-op, Safe admin already handled) is not a dApp.
+  if (to === call.self.toLowerCase()) return { security: false, counterparties: [], contracts: [] }
+  return { security: false, counterparties: [call.to], contracts: [call.to] }
 }
 
 export type RpcUserOperation = { sender?: string; factory?: string | null; initCode?: string; callData?: string }
@@ -126,12 +131,12 @@ export function classifyUserOperation(userOp: RpcUserOperation): Classified {
   const { args } = decodeFunctionData({ abi: executorAbi, data: (userOp.callData ?? '0x') as Hex })
   const [to, value, data] = args
   const inner = classify({ self: sender, to, value, data })
-  return deploys && inner.counterparties.length === 0 ? { security: true, counterparties: [] } : inner
+  return deploys && inner.counterparties.length === 0 ? { security: true, counterparties: [], contracts: [] } : inner
 }
 
 export type Decision =
   | { sponsored: true; kind: 'security' | 'quota' | 'linked'; used?: number }
-  | { sponsored: false; reason: 'reported-stolen' | 'sanctioned' | 'quota' | 'invalid'; message: string }
+  | { sponsored: false; reason: 'reported-stolen' | 'sanctioned' | 'unapproved-dapp' | 'quota' | 'invalid'; message: string }
 
 const monthKey = (sender: string) => `sponsor:${sender.toLowerCase()}:${new Date().toISOString().slice(0, 7)}`
 
@@ -167,6 +172,16 @@ export async function decide(userOp: RpcUserOperation, final: boolean): Promise<
         reason: 'sanctioned',
         message: `Swissquote does not facilitate transfers to ${counterparty}: the address is on a sanctions list.`,
       }
+    }
+  }
+
+  // Approved dApps only (PDR-025, ADR-028): friction, not veto, the client can still pay gas.
+  const unapproved = classified.contracts.find((contract) => !isApprovedContract(contract))
+  if (unapproved) {
+    return {
+      sponsored: false,
+      reason: 'unapproved-dapp',
+      message: `Swissquote only sponsors approved dApps, and ${unapproved} is not on the list. You can still send this operation and pay the network fee yourself.`,
     }
   }
 

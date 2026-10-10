@@ -47,6 +47,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-022](product/PDR-022-wallet-registry-ownership-proof.md) | Wallet registry for linked clients; proof of ownership = one Face ID on an EIP-712 statement (FINMA travel rule) | Accepted |
 | [PDR-023](product/PDR-023-compliance-as-friction.md) | Compliance as friction: sanctions screening, readable preview with simulation, high-value and look-alike checks | Accepted |
 | [PDR-024](product/PDR-024-swissquote-account-transfers.md) | Transfers between the Swissquote account and the wallet: one tap each way, deposits auto-credited from the linked wallet, travel rule filled in | Accepted |
+| [PDR-025](product/PDR-025-approved-dapps.md) | Compliant dApp interaction: a short list of approved dApps (Aave v3, Compound III) built natively, 2 factors, preview and screening, sponsored only when approved | Accepted |
 
 ## Architecture decisions
 
@@ -74,18 +75,18 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-020](architecture/ADR-020-deployment-vercel-upstash.md) | Deployment: Vercel + Upstash Redis behind an async `store()`, one fixed demo domain (passkey rpId) | Accepted |
 | [ADR-021](architecture/ADR-021-wallet-registry.md) | Wallet registry: passkey-signed EIP-712 statement, verified with ox + on-chain owner checks | Accepted |
 | [ADR-022](architecture/ADR-022-compliance-checks.md) | Compliance checks: server screening (mock list + optional Chainalysis), client preview, look-alike and high-value warnings | Accepted |
-| [ADR-023](architecture/ADR-023-sponsorship-policy-proxy.md) | Sponsorship policy: ERC-7677 paymaster proxy (quota, security operations, sanctions, stolen-device reports) | Accepted |
+| [ADR-023](architecture/ADR-023-sponsorship-policy-proxy.md) | Sponsorship policy: ERC-7677 paymaster proxy (quota, security operations, sanctions, stolen-device reports) | Accepted, amended by ADR-028 |
 | [ADR-024](architecture/ADR-024-handle-directory.md) | `@handle` directory: exact-match resolution for linked clients, visibility and contacts, `RecipientField`, MOCK session | Accepted |
 | [ADR-025](architecture/ADR-025-swissquote-transfers.md) | Swissquote account transfers: treasury = relayer Safe, deposits verified from on-chain logs, MOCK balances | Accepted |
 | [ADR-026](architecture/ADR-026-transitional-legacy-key-safe-recovery.md) | Transitional: the protect flow keeps the legacy Key Safe recovery (same Kit guardian key) until the eviction flow ships | Accepted (temporary, #33) |
 | [ADR-027](architecture/ADR-027-visual-world-swiss-onchain-fintech.md) | Visual world: Swiss onchain fintech (white, ink, one Swissquote orange, sealed ink plates), recorded in DESIGN.md through impeccable | Accepted |
+| [ADR-028](architecture/ADR-028-approved-dapps-native-integration.md) | Approved dApps: native call builders (`lib/dapps.ts`), 2-factor Account transactions, paymaster allowlist | Accepted |
 
 ## Open questions (future records)
 
 | Topic | Kind | Notes |
 |---|---|---|
 | Trusted contact as an Account guardian (arbiter), and inheritance | PDR + ADR | Breaks the phone-theft tie and the lost-Kit case without a hardware key (PDR-014). Inheritance: Swissquote checks the certificate of inheritance. Build step 8 in PDR-014 |
-| Approved-dApp list (compliant dApp interaction) | PDR + ADR | Screening, preview and high-value checks are decided (PDR-023); the dApp allowlist is issue #25 |
 | Routing a `@handle` payment to the recipient's Swissquote account when they have no wallet | PDR | Needs legal validation: FINMA Guidance 02/2019 restricts transfers with external wallets to the client's own wallets (PDR-010) |
 | React Native app | ADR | Associated domains to share passkeys with the web app |
 | Bitcoin implementation | ADR | Rule decided in PDR-013: native 2-of-3 multisig with a timelocked recovery path (miniscript), user majority. Pitch slide only |
