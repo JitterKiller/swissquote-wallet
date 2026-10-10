@@ -2,8 +2,9 @@
  * End-to-end recovery test in real Chrome, two "devices" (two browser
  * contexts, each with its own virtual authenticator = its own passkey).
  *
- *  1. Old device: create wallet, download Recovery Kit, activate protection.
- *  2. New device: Recovery Kit + new passkey; attacker identity check is refused.
+ *  1. Old device: create wallet, Kit passphrase, download and test the Recovery Kit,
+ *     daily limit, activate protection (Account + legacy Key Safe recovery, ADR-026).
+ *  2. New device: Recovery Kit + passphrase + new passkey; attacker identity check is refused.
  *  3. New device: legitimate identity check → recovery starts (on-chain delay).
  *  4. Old device: sees the alert and cancels → new device sees "cancelled".
  *  5. New device: starts over, waits the delay, finalizes → owns the wallet.
@@ -56,38 +57,58 @@ const shot = async (page: Page, name: string) => {
   if (SCREENSHOTS) await page.screenshot({ path: `${SCREENSHOTS}/${name}.png`, fullPage: true })
 }
 
+const PASSPHRASE = 'orange glacier violin 42'
+
+/** Protect flow: passphrase → download → test → daily limit → activate. Returns the Kit file. */
+async function protect(page: Page) {
+  await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
+  await page.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
+  await page.getByLabel('Confirm passphrase', { exact: true }).fill(PASSPHRASE)
+  await shot(page, 'r1-protect')
+  await page.getByRole('button', { name: 'Create my Recovery Kit' }).click()
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Download Recovery Kit' }).click(),
+  ])
+  const kitPath = await download.path()
+  await page.getByRole('button', { name: 'I saved it, continue' }).click()
+  await page.getByLabel('Recovery Kit file').setInputFiles(kitPath)
+  await page.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
+  await page.getByRole('button', { name: 'Test my Kit' }).click()
+  await page.getByRole('heading', { name: 'Choose your daily limit' }).waitFor()
+  await shot(page, 'r1b-limit')
+  await page.getByRole('button', { name: 'Activate protection' }).click()
+  await page.getByRole('heading', { name: 'Your wallet is protected' }).waitFor()
+  return fs.readFileSync(kitPath, 'utf8')
+}
+
 async function startRecovery(page: Page, kitText: string) {
   await page.getByRole('textbox', { name: 'Recovery Kit' }).fill(kitText)
+  await page.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
   await page.getByRole('button', { name: 'Continue' }).click()
   await page.getByLabel('Name', { exact: true }).fill('Alice')
   await page.getByRole('button', { name: 'Create new passkey' }).click()
   await page.getByRole('button', { name: 'Start video identification' }).waitFor()
 }
 
+const pages: Page[] = []
 try {
   const oldDevice = await device()
   const newDevice = await device()
   const A = oldDevice.page
   const B = newDevice.page
+  pages.push(A, B)
 
   // 1. Old device: create + protect.
   await A.goto(APP_URL)
   await A.getByLabel('Your name').fill('Alice')
   await A.getByRole('button', { name: 'Create wallet with passkey' }).click()
-  await A.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
-  const [download] = await Promise.all([
-    A.waitForEvent('download'),
-    A.getByRole('button', { name: 'Download Recovery Kit' }).click(),
-  ])
-  const kitText = fs.readFileSync(await download.path(), 'utf8')
+  const kitText = await protect(A)
   const kit = JSON.parse(kitText)
-  await A.getByRole('checkbox').check()
-  await shot(A, 'r1-protect')
-  await A.getByRole('button', { name: 'Activate protection' }).click()
-  await A.getByRole('heading', { name: 'Your wallet is protected' }).waitFor()
+  log(`Account ${kit.account} created (owners: Key Safe ${kit.keySafe} + Kit, threshold 2)`)
   await A.getByRole('link', { name: 'Go to my wallet' }).click()
   await A.getByText('Wallet protected').waitFor()
-  log(`Wallet ${kit.wallet} created and protected (Recovery Kit + Swissquote, 2 of 2)`)
+  log(`Key Safe ${kit.keySafe} protected (Recovery Kit + Swissquote, 2 of 2)`)
   await shot(A, 'r2-protected')
 
   // 2. New device: attacker path refused at identity verification.
@@ -128,7 +149,8 @@ try {
 
   // 6a. New passkey signs a UserOp on the recovered wallet.
   const stored = await B.evaluate(() => JSON.parse(localStorage.getItem('sq-wallet:v1')!))
-  if (stored.address.toLowerCase() !== kit.wallet.toLowerCase()) throw new Error('Recovered a different wallet')
+  if (stored.address.toLowerCase() !== kit.keySafe.toLowerCase()) throw new Error('Recovered a different wallet')
+  if (stored.account?.toLowerCase() !== kit.account.toLowerCase()) throw new Error('The Account was not restored')
   const publicKey = { x: BigInt(stored.publicKey.x), y: BigInt(stored.publicKey.y) }
   const account = new SafeAccount(stored.address)
   let userOp = await account.createUserOperation(
@@ -185,6 +207,10 @@ try {
   await A.getByText('This device no longer controls this wallet').waitFor()
   log('Old device shows it lost control of the wallet ✓')
   await shot(A, 'r7-revoked')
+} catch (error) {
+  // What each device showed when it failed.
+  await Promise.all(pages.map((page, i) => shot(page, `failure-${i === 0 ? 'old' : 'new'}-device`).catch(() => {})))
+  throw error
 } finally {
   await browser.close()
 }

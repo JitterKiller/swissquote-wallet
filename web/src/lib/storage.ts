@@ -1,5 +1,6 @@
 import type { WebauthnPublicKey } from 'abstractionkit'
 
+import type { Level } from './config'
 import type { RecoveryKitV3 } from './recoveryKit'
 
 /**
@@ -17,6 +18,11 @@ export type StoredWallet = {
   createdAt: number
   /** Block at creation (decimal string): start of the on-chain history scan. */
   createdBlock?: string
+  /** The Account Safe holding the funds (ADR-017), set once protection is activated. */
+  account?: `0x${string}`
+  level?: Level
+  /** Daily limit chosen at setup, USDC base units (decimal string). The chain is the source of truth. */
+  dailyLimit?: string
 }
 
 /**
@@ -30,6 +36,8 @@ export type LocalRecovery = {
   publicKey: { x: string; y: string }
   newOwner: `0x${string}`
   requestTx?: string
+  /** The Account of a v3 Kit, restored once the recovery completes. */
+  account?: `0x${string}`
 }
 
 const WALLET_KEY = 'sq-wallet:v1'

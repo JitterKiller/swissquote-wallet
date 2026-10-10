@@ -116,6 +116,27 @@ export function passphraseIssue(passphrase: string): string | null {
   return null
 }
 
+export type PassphraseStrength = 0 | 1 | 2 | 3 | 4
+export const PASSPHRASE_STRENGTH_LABEL = ['Too short', 'Weak', 'Fair', 'Strong', 'Very strong'] as const
+const COMMON_PATTERNS = /password|passwort|motdepasse|swissquote|qwerty|azerty|123456|abcdef|iloveyou/i
+
+/**
+ * Rough estimate for the strength indicator: character pool × length, repeats and common
+ * patterns penalised. A hint for the user, not a guarantee (a stolen file is attacked offline).
+ */
+export function passphraseStrength(passphrase: string): PassphraseStrength {
+  if (passphraseIssue(passphrase)) return 0
+  if (COMMON_PATTERNS.test(passphrase)) return 1
+  let pool = 0
+  if (/[a-z]/.test(passphrase)) pool += 26
+  if (/[A-Z]/.test(passphrase)) pool += 26
+  if (/\d/.test(passphrase)) pool += 10
+  if (/[^a-zA-Z\d]/.test(passphrase)) pool += 33
+  const unique = new Set(passphrase.toLowerCase()).size
+  const bits = Math.min(passphrase.length, unique * 2) * Math.log2(pool)
+  return bits < 50 ? 1 : bits < 70 ? 2 : bits < 90 ? 3 : 4
+}
+
 /** Encrypts both keys (about 1–2 s each in a browser: deliberately slow to attack). */
 export async function encryptKit(
   keys: KitKeys,

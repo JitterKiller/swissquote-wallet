@@ -10,6 +10,7 @@
     "smoke": "node scripts/smoke-passkey.mts",
     "e2e": "node scripts/e2e-passkey.mts",
     "e2e:recovery": "node scripts/e2e-recovery.mts",
+    "e2e:account-setup": "tsx scripts/e2e-account-setup.mts",
     "screenshots": "node scripts/ui-screenshots.mts",
     "spike:two-safe": "node scripts/spike-two-safe.mts",
     "check:account": "tsx scripts/check-account-lib.mts",

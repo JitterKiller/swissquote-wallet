@@ -14,6 +14,11 @@ export function formatUsdc(amount: bigint) {
   })
 }
 
+/** 3500000000n → "3,500" (decimals only when needed): limits and bounds. */
+export function formatUsdcShort(amount: bigint) {
+  return Number(formatUnits(amount, USDC_DECIMALS)).toLocaleString('en-US', { maximumFractionDigits: 2 })
+}
+
 export function formatCountdown(seconds: number) {
   if (seconds <= 0) return '0:00'
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`

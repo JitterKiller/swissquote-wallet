@@ -24,6 +24,8 @@ type WalletContextValue = {
   /** false during SSR/hydration: browser-only data is not available yet. */
   ready: boolean
   wallet: StoredWallet | null
+  /** The Account Safe holding the funds (ADR-017), null until protection is activated. */
+  account: `0x${string}` | null
   setWallet: (wallet: StoredWallet) => void
   forget: () => void
   chain: ChainState
@@ -112,6 +114,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     () => ({
       ready,
       wallet,
+      account: wallet?.account ?? null,
       setWallet,
       forget,
       refresh,

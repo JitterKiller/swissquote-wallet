@@ -23,6 +23,8 @@
   --hero-fg: #f6f5f3;
   --hero-muted: #a1a5ad;
   --card-shadow: 0 1px 2px rgb(18 20 24 / 0.04), 0 8px 24px -12px rgb(18 20 24 / 0.08);
+  /* Motion (emil-design-eng): strong ease-out for entering UI. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -91,6 +93,26 @@ body {
 :focus-visible:not(input, textarea) {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Entrance for rare, first-time screens (onboarding steps, success states). */
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.animate-enter {
+  animation: enter 280ms var(--ease-out) both;
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+.animate-pop {
+  animation: pop 320ms var(--ease-out) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

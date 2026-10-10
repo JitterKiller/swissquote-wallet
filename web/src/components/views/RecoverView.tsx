@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, Badge, Spinner } from '@/components/ui/feedback'
 import { Field, Input, Textarea } from '@/components/ui/field'
 import { Stepper } from '@/components/ui/stepper'
+import type { KitSigner } from '@/lib/account'
 import { api } from '@/lib/api'
 import { NODE_URL, RECOVERY_DELAY_SECONDS } from '@/lib/config'
 import { errorMessage, formatCountdown, shortAddress } from '@/lib/format'
@@ -24,7 +25,7 @@ import {
   recoveryTypedData,
   type PendingRecovery,
 } from '@/lib/recovery'
-import { parseRecoveryKit, type RecoveryKit } from '@/lib/recoveryKit'
+import { KitPassphraseError, decryptKit, parseKitFile } from '@/lib/recoveryKit'
 import {
   clearLocalRecovery,
   loadLocalRecovery,
@@ -35,6 +36,8 @@ import {
 } from '@/lib/storage'
 
 type Step = 'kit' | 'passkey' | 'identity' | 'pending'
+/** The Kit's guardian key for this wallet: v1 file, or v3 file + passphrase (ADR-018). */
+type OpenedKit = { wallet: `0x${string}`; account?: `0x${string}`; guardian: KitSigner }
 const STEPS: Step[] = ['kit', 'passkey', 'identity', 'pending']
 const STEP_LABELS = ['Kit', 'Passkey', 'Identity', 'Delay']
 
@@ -52,7 +55,7 @@ export function RecoverView() {
   const [step, setStep] = useState<Step>(() =>
     typeof window !== 'undefined' && loadLocalRecovery()?.requestTx ? 'pending' : 'kit',
   )
-  const [kit, setKit] = useState<RecoveryKit | null>(null)
+  const [kit, setKit] = useState<OpenedKit | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<{ title: string; message: string } | null>(null)
 
@@ -88,6 +91,7 @@ export function RecoverView() {
       publicKey: recovery.publicKey,
       address: recovery.wallet,
       createdAt: Date.now(),
+      account: recovery.account,
     })
     clearLocalRecovery()
     router.replace('/')
@@ -107,13 +111,13 @@ export function RecoverView() {
       {step === 'kit' && (
         <KitStep
           busy={busy}
-          onSubmit={(text) =>
+          onSubmit={(text, passphrase) =>
             run('Checking your Recovery Kit…', async () => {
-              const parsed = parseRecoveryKit(text)
-              const isGuardian = await recoveryModule.isGuardian(NODE_URL, parsed.wallet, parsed.guardianAddress)
+              const opened = await openKit(text, passphrase)
+              const isGuardian = await recoveryModule.isGuardian(NODE_URL, opened.wallet, opened.guardian.address)
               if (!isGuardian) throw new Error('This Recovery Kit is not registered on that wallet.')
-              setKit(parsed)
-              const resumable = local && local.wallet.toLowerCase() === parsed.wallet.toLowerCase()
+              setKit(opened)
+              const resumable = local && local.wallet.toLowerCase() === opened.wallet.toLowerCase()
               setStep(resumable ? 'identity' : 'passkey')
             })
           }
@@ -133,6 +137,7 @@ export function RecoverView() {
                 credentialId: passkey.credentialId,
                 publicKey: serializePublicKey(passkey.publicKey),
                 newOwner: ownerAddressForPasskey(passkey.publicKey),
+                account: kit.account,
               })
               setStep('identity')
             })
@@ -148,12 +153,12 @@ export function RecoverView() {
               const kyc = await api<{ sessionId: string }>('/api/kyc', { wallet: local.wallet, outcome: 'match' })
               setBusy('Signing with your Recovery Kit…')
               const typedData = await recoveryTypedData(local.wallet, local.newOwner)
-              const kitSignature = await privateKeyToAccount(kit.guardianKey).signTypedData(typedData)
+              const kitSignature = await kit.guardian.signTypedData(typedData)
               setBusy('Swissquote is approving the recovery…')
               const { txHash } = await api<{ txHash: string }>('/api/recovery', {
                 wallet: local.wallet,
                 newPublicKey: local.publicKey,
-                kitGuardian: kit.guardianAddress,
+                kitGuardian: kit.guardian.address,
                 kitSignature,
                 kycSessionId: kyc.sessionId,
               })
@@ -221,8 +226,33 @@ function StepCard({ icon, title, description, children }: { icon: ReactNode; tit
   )
 }
 
-function KitStep({ busy, onSubmit }: { busy: string | null; onSubmit: (text: string) => void }) {
+async function openKit(text: string, passphrase: string): Promise<OpenedKit> {
+  const parsed = parseKitFile(text)
+  if (parsed.version === 1) {
+    return { wallet: parsed.kit.wallet, guardian: privateKeyToAccount(parsed.kit.guardianKey) }
+  }
+  try {
+    const { guardian } = await decryptKit(parsed.kit, passphrase)
+    return { wallet: parsed.kit.keySafe, account: parsed.kit.account, guardian }
+  } catch (e) {
+    if (e instanceof KitPassphraseError) throw new Error('Wrong Kit passphrase. Check it and try again.')
+    throw e
+  }
+}
+
+/** v3 Kits are encrypted: their content tells whether to ask for the passphrase. */
+function kitVersion(text: string) {
+  try {
+    return (JSON.parse(text) as { version?: number }).version ?? null
+  } catch {
+    return null
+  }
+}
+
+function KitStep({ busy, onSubmit }: { busy: string | null; onSubmit: (text: string, passphrase: string) => void }) {
   const [text, setText] = useState('')
+  const [passphrase, setPassphrase] = useState('')
+  const encrypted = kitVersion(text) === 3
   return (
     <StepCard
       icon={<FileKey className="h-5 w-5" />}
@@ -254,7 +284,23 @@ function KitStep({ busy, onSubmit }: { busy: string | null; onSubmit: (text: str
           spellCheck={false}
         />
       </Field>
-      <Button size="lg" className="w-full" disabled={!text.trim() || !!busy} onClick={() => onSubmit(text)}>
+      {encrypted && (
+        <Field label="Kit passphrase" htmlFor="kit-passphrase">
+          <Input
+            id="kit-passphrase"
+            type="password"
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.target.value)}
+            autoComplete="off"
+          />
+        </Field>
+      )}
+      <Button
+        size="lg"
+        className="w-full"
+        disabled={!text.trim() || (encrypted && !passphrase) || !!busy}
+        onClick={() => onSubmit(text, passphrase)}
+      >
         {busy ? (
           <>
             <Spinner /> {busy}

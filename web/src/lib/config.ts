@@ -77,3 +77,6 @@ const EVICTION_DELAYS =
       }
 export const ACCOUNT_RECOVERY_MODULE: Record<Level, `0x${string}`> = EVICTION_DELAYS.modules
 export const EVICTION_DELAY_SECONDS: Record<Level, number> = EVICTION_DELAYS.seconds
+/** Product delays (PDR-018), used for the loss bound shown to the user (PDR-020). */
+export const EVICTION_DAYS: Record<Level, number> = { 0: 7, 1: 3 }
+export const EVICTION_DELAY_IS_DEMO = process.env.NEXT_PUBLIC_EVICTION_DELAYS !== 'production'

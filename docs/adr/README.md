@@ -77,6 +77,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-023](architecture/ADR-023-sponsorship-policy-proxy.md) | Sponsorship policy: ERC-7677 paymaster proxy (quota, security operations, sanctions, stolen-device reports) | Accepted |
 | [ADR-024](architecture/ADR-024-handle-directory.md) | `@handle` directory: exact-match resolution for linked clients, visibility and contacts, `RecipientField`, MOCK session | Accepted |
 | [ADR-025](architecture/ADR-025-swissquote-transfers.md) | Swissquote account transfers: treasury = relayer Safe, deposits verified from on-chain logs, MOCK balances | Accepted |
+| [ADR-026](architecture/ADR-026-transitional-legacy-key-safe-recovery.md) | Transitional: the protect flow keeps the legacy Key Safe recovery (same Kit guardian key) until the eviction flow ships | Accepted (temporary, #33) |
 
 ## Open questions (future records)
 

@@ -36,7 +36,13 @@ async function newPage(browser: Browser, opts: { width: number; height: number; 
   return page
 }
 
-const shot = (page: Page, name: string) => page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true })
+const PASSPHRASE = 'orange glacier violin 42'
+
+// Let entrance animations and colour transitions settle before each capture.
+const shot = async (page: Page, name: string) => {
+  await page.waitForTimeout(450)
+  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true })
+}
 
 async function createProtectedWallet(page: Page, prefix: string) {
   await page.goto(`${APP_URL}/welcome`)
@@ -44,9 +50,22 @@ async function createProtectedWallet(page: Page, prefix: string) {
   await shot(page, `${prefix}-01-welcome`)
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
-  await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download Recovery Kit' }).click()])
-  await page.getByRole('checkbox').check()
+  await page.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
+  await page.getByLabel('Confirm passphrase', { exact: true }).fill(PASSPHRASE)
   await shot(page, `${prefix}-02-protect`)
+  await page.getByRole('button', { name: 'Create my Recovery Kit' }).click()
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Download Recovery Kit' }).click(),
+  ])
+  await shot(page, `${prefix}-02b-save-kit`)
+  await page.getByRole('button', { name: 'I saved it, continue' }).click()
+  await page.getByLabel('Recovery Kit file').setInputFiles(await download.path())
+  await page.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
+  await shot(page, `${prefix}-02c-test-kit`)
+  await page.getByRole('button', { name: 'Test my Kit' }).click()
+  await page.getByRole('heading', { name: 'Choose your daily limit' }).waitFor()
+  await shot(page, `${prefix}-02d-daily-limit`)
   await page.getByRole('button', { name: 'Activate protection' }).click()
   await page.getByRole('heading', { name: 'Your wallet is protected' }).waitFor()
   await shot(page, `${prefix}-03-protected`)

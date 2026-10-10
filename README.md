@@ -24,9 +24,9 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | `@handle` directory: verified payee before Face ID, visibility, contacts, payment request link + QR (PDR-010, ADR-024); send-flow integration in #12 | ✅ |
 | Transfers between the Swissquote account and the wallet, both directions, travel rule filled in (PDR-024, ADR-025); demo treasury to fund once | ✅ |
 | Third guardian (trusted contact) | ⏳ |
-| Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ⏳ (spike ✅) |
+| Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ⏳ (Account created at onboarding ✅ #10; balance and send on the Account: #11, #12) |
 | One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019) | ⏳ (spike ✅) |
-| Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018) | ⏳ |
+| Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step | ✅ ("test your Kit" reminder ⏳) |
 | Open wallet for everyone + Swissquote link as the upgrade (PDR-015) | ⏳ |
 | Theft protection: hardware key, guided "phone stolen" flow (PDR-017) | ⏳ |
 
@@ -36,7 +36,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 ┌──────────────── Web app (Next.js) ──────────────────┐     ┌──── Mock Swissquote backend (/api) ────┐
 │ Passkey (WebAuthn P-256, Secure Enclave)             │     │ KYC session (video ident. — MOCK)       │
 │   └─ signs UserOperations (biometric prompt)         │────►│ Swissquote Guardian key (HSM — MOCK)    │
-│ Recovery Kit (guardian key, downloaded, not stored)  │     │ Relayer: ops Safe, sponsored UserOps    │
+│ Recovery Kit v3 (2 keys, passphrase-encrypted)       │     │ Relayer: ops Safe, sponsored UserOps    │
 └───────────────┬──────────────────────────────────────┘     └───────────────────┬────────────────────┘
                 │ UserOps                                                         │ UserOps
                 ▼                                                                 ▼
@@ -55,13 +55,13 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 |---|---|---|
 | Passkey private key | Device secure hardware (or synced in iCloud Keychain / Google Password Manager), never extractable | Yes, it is the owner |
 | Passkey public key | On-chain, in the Safe | — |
-| Recovery Kit key | With the client, offline (file / printed / password manager), never stored by the app | No: one guardian vote, subject to delay + owner veto |
+| Recovery Kit keys (Account owner + guardian) | Encrypted with the client's passphrase (keystore V3): file in iCloud Drive / Google Drive + encrypted copy in the app. The passphrase is never stored or sent | Not alone: the owner key is 1 of the 2 signatures the Account needs; the guardian key starts a delayed eviction |
 | Swissquote Guardian key | Swissquote HSM (mocked: env var or `web/.data`) | No: one guardian vote, signs only after identity check, subject to delay + owner veto |
 
 ## Recovery flow
 
-1. **Setup** (after wallet creation): download the Recovery Kit, then one passkey-signed, gasless UserOp enables the module and registers both guardians.
-2. **Lost device → new device**: upload the Recovery Kit and create a new passkey.
+1. **Setup** (after wallet creation): choose a Kit passphrase, download the encrypted Recovery Kit and test it, choose a daily limit. Then one passkey-signed, gasless UserOp creates the Account (Key Safe + Kit owner, threshold 2, daily allowance, eviction module) and registers the Key Safe guardians used by this flow (transitional, ADR-026).
+2. **Lost device → new device**: upload the Recovery Kit, type its passphrase and create a new passkey.
 3. **Identity check** with Swissquote (mock: video identification). If it fails (attacker), Swissquote refuses to sign and the owner is alerted.
 4. **Request**: the Kit signs (in the browser) and Swissquote co-signs (server). The relayer deploys the new passkey's signer and starts the recovery on-chain.
 5. **Delay**: the current device shows an alert and can **cancel**. Swissquote notifies the client on every channel (mock).
@@ -104,6 +104,7 @@ Passkeys are bound to the domain: create demo wallets **on the production URL**.
 npm run smoke          # simulated passkey → Safe → sponsored UserOps (no browser)
 npm run e2e            # real Chrome + virtual authenticator: create wallet in the UI, sign UserOps
 npm run e2e:recovery   # two devices: attacker refused, owner cancels, full recovery, old device revoked (~5 min)
+npm run e2e:account-setup # protect flow in the UI (passphrase, Kit test, daily limit) → Account checked on-chain, levels 0 and 1 (~1 min)
 npm run screenshots    # captures every screen (desktop light/dark + mobile) into web/screenshots/
 npm run spike:two-safe # on-chain spike of the two-Safe account + time-locked eviction (ADR-017, ADR-019), ~5 min
 npm run spike:two-safe-variants # 2-owner eviction + immediate eviction with Kit + key, through lib/account.ts (~5 min)
@@ -146,7 +147,7 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 
 | Real (on-chain / standard) | Mocked (documented) |
 |---|---|
-| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC) |
+| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Account Safe (Allowance Module, eviction module), Recovery Kit encryption (keystore V3), Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC) |
 
 ## Repo layout
 

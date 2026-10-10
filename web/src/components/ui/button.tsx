@@ -18,7 +18,7 @@ const SIZES: Record<Size, string> = {
 }
 
 export function buttonClasses(variant: Variant = 'primary', size: Size = 'md', className = '') {
-  return `inline-flex items-center justify-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-45 ${VARIANTS[variant]} ${SIZES[size]} ${className}`
+  return `inline-flex items-center justify-center font-medium transition-[color,background-color,border-color,opacity,transform] duration-150 ease-out active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45 ${VARIANTS[variant]} ${SIZES[size]} ${className}`
 }
 
 export function Button({
