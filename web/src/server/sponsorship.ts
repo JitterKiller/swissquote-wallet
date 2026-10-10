@@ -14,6 +14,8 @@ import {
   type Hex,
 } from 'viem'
 
+import { ALLOWANCE_MODULE_ADDRESS, SAFE_PROXY_FACTORY_141 } from '@/lib/config'
+
 import { isSanctioned } from './compliance'
 import { getWalletByAccount, getWalletByKeySafe } from './registry'
 import { store } from './store'
@@ -32,12 +34,10 @@ import { store } from './store'
 
 export const SPONSORED_OPS_PER_MONTH = Number(process.env.SPONSORED_OPS_PER_MONTH ?? 10)
 
-// Same address as ALLOWANCE_MODULE_ADDRESS (ADR-017, issue #8).
-const ALLOWANCE_MODULE = '0x691f59471Bfd2B7d639DCF74671a2d648ED1E331'
 const RECOVERY_MODULES = Object.values(SocialRecoveryModuleGracePeriodSelector).map((a) => String(a).toLowerCase())
 const SETUP_CONTRACTS = [
   SafeAccount.DEFAULT_WEB_AUTHN_SIGNER_FACTORY, // passkey verifier proxies
-  '0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67', // Safe v1.4.1 proxy factory (Account deployment, ADR-017)
+  SAFE_PROXY_FACTORY_141, // Account deployment (ADR-017)
 ].map((a) => a.toLowerCase())
 
 const SAFE_ADMIN_SELECTORS = [
@@ -113,7 +113,7 @@ function classify(call: Call, depth = 0): Classified {
   } catch {
     // Not one of the calls above: a generic contract call.
   }
-  if (to === ALLOWANCE_MODULE.toLowerCase()) return { security: true, counterparties: [] } // limit settings
+  if (to === ALLOWANCE_MODULE_ADDRESS.toLowerCase()) return { security: true, counterparties: [] } // limit settings
   return { security: false, counterparties: [call.to] }
 }
 
