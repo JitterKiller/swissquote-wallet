@@ -22,20 +22,37 @@ export type ClientNotification = {
   at: number
 }
 
+/** A time-locked eviction relayed by the backend (ADR-019, PDR-021). Keyed by Account (lowercase). */
+export type EvictionRecord = {
+  account: string
+  level: 0 | 1
+  oldKeySafe: string
+  newOwners: string[]
+  startTx: string
+  executeAfter: number // unix seconds
+  status: 'pending' | 'finalized'
+  startedAt: number
+  finalizeTx?: string
+}
+
 type Db = {
   guardianKey?: `0x${string}`
   kycSessions: Record<string, KycSession>
   notifications: ClientNotification[]
+  evictions: Record<string, EvictionRecord>
 }
 
 const DIR = path.join(process.cwd(), '.data')
 const FILE = path.join(DIR, 'db.json')
 
+const EMPTY_DB = (): Db => ({ kycSessions: {}, notifications: [], evictions: {} })
+
 export function readDb(): Db {
   try {
-    return JSON.parse(fs.readFileSync(FILE, 'utf8')) as Db
+    // Older files may lack newer tables: fill in the defaults.
+    return { ...EMPTY_DB(), ...(JSON.parse(fs.readFileSync(FILE, 'utf8')) as Partial<Db>) }
   } catch {
-    return { kycSessions: {}, notifications: [] }
+    return EMPTY_DB()
   }
 }
 

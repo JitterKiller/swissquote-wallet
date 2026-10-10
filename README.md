@@ -91,6 +91,10 @@ npm run e2e            # real Chrome + virtual authenticator: create wallet in t
 npm run e2e:recovery   # two devices: attacker refused, owner cancels, full recovery, old device revoked (~5 min)
 npm run screenshots    # captures every screen (desktop light/dark + mobile) into web/screenshots/
 npm run spike:two-safe # on-chain spike of the two-Safe account + time-locked eviction (ADR-017, ADR-019), ~5 min
+npm run spike:two-safe-variants # 2-owner eviction + immediate eviction with Kit + key, through lib/account.ts (~5 min)
+npm run check:account  # lib/account.ts: setup + C1–C4 on Base Sepolia (~1 min)
+npm run check:kit      # Kit v3 encryption, local (~5 s)
+npm run check:eviction-api # /api/eviction endpoints over HTTP, needs npm run dev (~4 min)
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.
@@ -103,6 +107,8 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 | `POST /api/kyc` | Identity verification session (MOCK outcome) |
 | `POST /api/recovery` | Checks KYC + Kit signature, co-signs, relays `multiConfirmRecovery` |
 | `POST /api/recovery/finalize` | Relays `finalizeRecovery` after the delay |
+| `POST /api/eviction` | Starts a time-locked eviction of the phone (Key Safe) on the Account: Kit guardian signature; at level 1 also a verified KYC session, then Swissquote co-signs. Refuses anything but replacing the Key Safe (ADR-019, PDR-021) |
+| `POST /api/eviction/finalize` | Relays `finalizeRecovery` on the Account after the delay |
 
 ## Real vs mocked
 
