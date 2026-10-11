@@ -11,7 +11,10 @@ const nextConfig: NextConfig = {
   redirects() {
     return [
       { source: '/start', destination: '/', permanent: false },
-      ...['activity', 'earn', 'handle', 'offers', 'receive', 'security', 'send', 'swap', 'swissquote', 'welcome', 'recover', 'lost'].map((page) => ({
+      // The legacy Key Safe recovery is gone (#33, ADR-042): one flow for a lost or stolen phone.
+      { source: '/recover', destination: '/wallet/lost', permanent: false },
+      { source: '/wallet/recover', destination: '/wallet/lost', permanent: false },
+      ...['activity', 'earn', 'handle', 'offers', 'receive', 'security', 'send', 'swap', 'swissquote', 'welcome', 'lost'].map((page) => ({
         source: `/${page}/:rest*`,
         destination: `/wallet/${page}/:rest*`,
         permanent: false,

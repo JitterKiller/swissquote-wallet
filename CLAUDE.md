@@ -21,7 +21,7 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 
 - `npm run dev`: app + mock backend on http://localhost:3000
 - `npm run lint` and `npx tsc --noEmit`
-- `npm run smoke`, `npm run e2e`, `npm run e2e:recovery`, `npm run e2e:account-setup` (the e2e scripts need `npm run dev` and Google Chrome)
+- `npm run smoke`, `npm run e2e`, `npm run e2e:account-setup` (the e2e scripts need `npm run dev` and Google Chrome)
 - `npm run screenshots`: captures every screen (desktop light/dark + mobile) into `web/screenshots/` for UI review
 - `npm run spike:two-safe`: on-chain spike of the two-Safe account and the time-locked eviction (ADR-017, ADR-019), about 5 minutes
 - `npm run check:registry`: wallet registry checks against `npm run dev` (ADR-021)

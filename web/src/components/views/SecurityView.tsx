@@ -23,7 +23,7 @@ import { useBlockNumber } from '@/components/ui/live'
 import { PageHeader } from '@/components/ui/page'
 import { Plate } from '@/components/ui/plate'
 import type { AccountState } from '@/lib/account'
-import { EVICTION_DAYS, EVICTION_DELAY_IS_DEMO, EVICTION_DELAY_SECONDS, EXPLORER_URL, RECOVERY_DELAY_LABEL, type Level } from '@/lib/config'
+import { EVICTION_DAYS, EVICTION_DELAY_IS_DEMO, EVICTION_DELAY_SECONDS, EXPLORER_URL, type Level } from '@/lib/config'
 import { getPendingEviction } from '@/lib/eviction'
 import { formatDelay, formatUsdc, shortAddress } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
@@ -64,7 +64,7 @@ export function SecurityView() {
       <div className="space-y-6">
         <PageHeader title="Security" description="Who can move your money, read live onchain." />
         {!wallet.account ? (
-          <LegacyRecovery keys={keys} />
+          <NotProtected />
         ) : !state ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <Skeleton className="h-80 rounded-2xl" />
@@ -836,58 +836,18 @@ function ForgetWallet() {
   )
 }
 
-// ── Wallets protected before the Account (legacy Key Safe recovery, until #33) ─
+// ── A wallet without an Account ──────────────────────────────────────────────
 
-function LegacyRecovery({ keys }: { keys: SwissquoteKeys }) {
-  const { chain } = useLoadedWallet()
-  const status = chain.recovery
-  const swissquoteGuardian = keys.status === 'ok' ? keys.guardian : null
-  const protectedWallet = !!status && status.guardians.length > 0
-
+function NotProtected() {
   return (
-    <section aria-labelledby="legacy-title" className="max-w-2xl">
-      <h2 id="legacy-title" className="text-lg font-semibold tracking-tight">
-        Recovery
+    <section aria-labelledby="not-protected-title" className="max-w-2xl">
+      <h2 id="not-protected-title" className="text-lg font-semibold tracking-tight">
+        Not protected yet
       </h2>
-      {status === null ? (
-        <div className="mt-4 space-y-2">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      ) : protectedWallet ? (
-        <>
-          <p className="mt-1 text-sm text-muted">This wallet was protected before Accounts: your Kit and Swissquote can move it to a new phone.</p>
-          <ul className="mt-4 border-t border-border">
-            {status.guardians.map((g) => {
-              const isSwissquote = same(g, swissquoteGuardian)
-              return (
-                <li key={g} className="flex items-center gap-3 border-b border-border py-3">
-                  {isSwissquote ? <span aria-hidden className="h-2.5 w-2.5 shrink-0" /> : <FactorSquare factor="kit" />}
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium">{isSwissquote ? 'Swissquote' : 'Recovery Kit'}</span>
-                    <span className="block text-xs text-muted">{isSwissquote ? 'Signs only after an identity check' : 'Kept by you'}</span>
-                  </span>
-                  <AddressPill address={g} />
-                </li>
-              )
-            })}
-          </ul>
-          <p className="mt-3 text-sm text-muted">
-            {status.threshold} of {status.guardians.length} approvals, then {RECOVERY_DELAY_LABEL} during which you can cancel from this device.
-          </p>
-          <ButtonLink href="/wallet/welcome/protect" className="mt-4">
-            Create your Account
-          </ButtonLink>
-          <p className="mt-2 text-xs text-muted">Adds a daily limit and a lock-out the thief cannot cancel.</p>
-        </>
-      ) : (
-        <>
-          <p className="mt-1 text-sm text-muted">If you lose this phone, you lose this wallet. Protect it with a Recovery Kit and a daily limit.</p>
-          <ButtonLink href="/wallet/welcome/protect" className="mt-4">
-            Protect your wallet
-          </ButtonLink>
-        </>
-      )}
+      <p className="mt-1 text-sm text-muted">If you lose this phone, you lose this wallet. Protect it with a Recovery Kit and a daily limit.</p>
+      <ButtonLink href="/wallet/welcome/protect" className="mt-4">
+        Protect your wallet
+      </ButtonLink>
     </section>
   )
 }

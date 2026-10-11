@@ -8,7 +8,7 @@
  *      and the 7-day (demo: 3-minute) eviction module, guardian = Kit guardian key, allowance 250
  *      for the Key Safe.
  *  S3  The wallet stored on the device has account, level and daily limit, and the encrypted Kit copy.
- *  S4  Transitional (ADR-026): the Key Safe keeps the legacy recovery (Kit guardian + Swissquote, 2 of 2).
+ *  S4  No legacy recovery on the Key Safe (#33, ADR-042): the Kit and Swissquote have no role on it.
  *  S5  Level 1 (signed in with Swissquote, MOCK session): guardians Kit + Swissquote, threshold 2.
  *
  * Prereqs: `npm run dev`, Google Chrome. About 2 minutes. Run: npm run e2e:account-setup
@@ -16,12 +16,13 @@
 import fs from 'node:fs'
 
 import { chromium, type Browser, type Page } from 'playwright-core'
-import { parseUnits, type Address } from 'viem'
+import { SocialRecoveryModuleGracePeriodSelector } from 'abstractionkit'
+import { parseAbi, parseUnits, type Address } from 'viem'
 
 import { readAccount } from '../src/lib/account'
 import { ACCOUNT_RECOVERY_MODULE, ALLOWANCE_MODULE_ADDRESS, EXPLORER_URL, USDC_DECIMALS } from '../src/lib/config'
-import { getRecoveryStatus } from '../src/lib/recovery'
 import { kitAddresses, parseKitFile, type RecoveryKitV3 } from '../src/lib/recoveryKit'
+import { publicClient } from '../src/lib/wallet'
 import { createReport } from './helpers/chain'
 
 const APP_URL = process.env.APP_URL ?? 'http://localhost:3000'
@@ -58,8 +59,14 @@ const shot = async (page: Page, name: string) => {
 /** Create a wallet and go through the protect flow. Returns the Kit file and the stored wallet. */
 async function createAndProtect(page: Page, name: string, limitPreset?: string) {
   await page.goto(`${APP_URL}/wallet/welcome`)
-  await page.getByLabel('Your name').fill(name)
-  await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
+  // A cold dev compile can hydrate after the first fill and clear the field: fill until the button is enabled.
+  const create = page.getByRole('button', { name: 'Create wallet with passkey' })
+  for (let i = 0; i < 20; i++) {
+    await page.getByLabel('Your name').fill(name)
+    if (await create.isEnabled()) break
+    await page.waitForTimeout(500)
+  }
+  await create.click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
   await page.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
   await page.getByLabel('Confirm passphrase', { exact: true }).fill(PASSPHRASE)
@@ -137,12 +144,13 @@ try {
     same(w.account ?? '', level0.kit.account) && w.level === 0 && w.dailyLimit === limit250.toString() && same(level0.stored.kit?.account ?? '', level0.kit.account),
     `stored account=${w.account} level=${w.level} dailyLimit=${w.dailyLimit} encrypted Kit copy=${!!level0.stored.kit}`,
   )
-  const legacy = await getRecoveryStatus(level0.kit.keySafe)
-  record(
-    'S4',
-    sameSet(legacy.guardians, [kitAddresses(level0.kit).guardian, swissquote]) && legacy.threshold === 2,
-    `Key Safe legacy guardians=${legacy.guardians.length} threshold=${legacy.threshold}`,
-  )
+  const legacyModule = await publicClient.readContract({
+    address: level0.kit.keySafe,
+    abi: parseAbi(['function isModuleEnabled(address module) view returns (bool)']),
+    functionName: 'isModuleEnabled',
+    args: [SocialRecoveryModuleGracePeriodSelector.After3Minutes],
+  })
+  record('S4', !legacyModule, `Key Safe without the legacy recovery module (isModuleEnabled=${legacyModule})`)
 
   // Level 1: signed in with Swissquote before protecting (suggested 500 limit).
   const B = await device(browser)

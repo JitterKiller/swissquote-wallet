@@ -48,7 +48,12 @@ await cdp.send('WebAuthn.addVirtualAuthenticator', {
 try {
   // 1. Create the wallet through the UI.
   await page.goto(`${APP_URL}/wallet/welcome`) // no wallet yet: the create screen
-  await page.getByLabel('Your name').fill('Alice')
+  // A cold dev compile can hydrate after the first fill and clear the field: fill until the button is enabled.
+  for (let i = 0; i < 20; i++) {
+    await page.getByLabel('Your name').fill('Alice')
+    if (await page.getByRole('button', { name: 'Create wallet with passkey' }).isEnabled()) break
+    await page.waitForTimeout(500)
+  }
   if (SCREENSHOTS) await page.screenshot({ path: `${SCREENSHOTS}/1-onboarding.png`, fullPage: true })
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor({ timeout: 20_000 })
@@ -123,7 +128,7 @@ try {
 
   // 4. UI reflects the deployed account.
   await page.goto(`${APP_URL}/wallet/security`)
-  await page.getByText('Active on-chain').waitFor({ timeout: 20_000 })
+  await page.getByText('Active onchain').waitFor({ timeout: 20_000 })
   if (SCREENSHOTS) await page.screenshot({ path: `${SCREENSHOTS}/3-active.png`, fullPage: true })
   console.log('UI shows account active on-chain ✓')
 } finally {

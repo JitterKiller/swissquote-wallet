@@ -6,9 +6,8 @@ import { readAccount, type AccountState } from '@/lib/account'
 import { DEFAULT_LOOKBACK_BLOCKS, currentBlock, fetchTransfers, mergeTransfers, type Transfer } from '@/lib/activity'
 import { isEvicted } from '@/lib/eviction'
 import { useIsClient } from '@/lib/hooks'
-import { getRecoveryStatus, isPasskeyOwner, type RecoveryStatus } from '@/lib/recovery'
 import { clearAll, loadWallet, saveWallet, toPublicKey, type StoredWallet } from '@/lib/storage'
-import { getUsdcBalance, isDeployed } from '@/lib/wallet'
+import { getUsdcBalance, isDeployed, isPasskeyOwner } from '@/lib/wallet'
 
 /**
  * Single source of truth for the wallet on this device + its on-chain state,
@@ -22,8 +21,7 @@ export type ChainState = {
   keySafeBalance: bigint | null
   /** Key Safe (the passkey Safe) deployed. */
   deployed: boolean | null
-  recovery: RecoveryStatus | null
-  /** The passkey still owns the Key Safe (false after a legacy recovery elsewhere). */
+  /** The passkey still owns the Key Safe. */
   passkeyOwner: boolean | null
   /** Derived: passkey owns the Key Safe and the Key Safe still owns the Account (#16). */
   isOwner: boolean | null
@@ -51,7 +49,6 @@ const EMPTY_CHAIN: ChainState = {
   balance: null,
   keySafeBalance: null,
   deployed: null,
-  recovery: null,
   passkeyOwner: null,
   isOwner: null,
   account: null,
@@ -60,7 +57,7 @@ const EMPTY_CHAIN: ChainState = {
 /** Chain state and history are keyed by wallet + Account, so protecting a wallet never shows stale data. */
 const keyOf = (wallet: StoredWallet) => `${wallet.address}:${wallet.account ?? ''}`
 
-/** Revoked if the passkey lost the Key Safe (legacy recovery) or the Key Safe lost the Account (eviction). */
+/** Revoked if the passkey lost the Key Safe or the Key Safe lost the Account (eviction). */
 function withOwner(state: ChainState, wallet: StoredWallet): ChainState {
   const isOwner = state.passkeyOwner === null ? null : state.passkeyOwner && !isEvicted(state.account, wallet.address)
   return { ...state, isOwner }
@@ -99,8 +96,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             .catch(() => {})
         : Promise.resolve()
     const loadDevice = () =>
-      Promise.all([isDeployed(wallet.address), getRecoveryStatus(wallet.address), isPasskeyOwner(wallet.address, toPublicKey(wallet))])
-        .then(([deployed, recovery, passkeyOwner]) => !cancelled && merge({ deployed, recovery, passkeyOwner }))
+      Promise.all([isDeployed(wallet.address), isPasskeyOwner(wallet.address, toPublicKey(wallet))])
+        .then(([deployed, passkeyOwner]) => !cancelled && merge({ deployed, passkeyOwner }))
         .catch(() => {})
     loadFunds()
     loadAccount()

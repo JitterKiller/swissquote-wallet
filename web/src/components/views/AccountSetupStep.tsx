@@ -14,7 +14,6 @@ import { accountSetupCalls } from '@/lib/account'
 import { api } from '@/lib/api'
 import { EVICTION_DAYS, type Level } from '@/lib/config'
 import { errorMessage, formatUsdcShort } from '@/lib/format'
-import { getRecoveryStatus, recoverySetupCalls } from '@/lib/recovery'
 import { kitAccounts, kitAddresses, type KitKeys, type RecoveryKitV3 } from '@/lib/recoveryKit'
 import { saveLocalKit, toPublicKey, type StoredWallet } from '@/lib/storage'
 import { SEND_STEP_LABEL, sendCalls, type SendStep } from '@/lib/wallet'
@@ -61,10 +60,7 @@ export function AccountSetupStep({
       if (owner !== accounts.owner.address || guardian !== accounts.guardian.address) {
         throw new Error('The Recovery Kit does not match. Start the protection again.')
       }
-      const [{ guardian: swissquote }, legacy] = await Promise.all([
-        api<{ guardian: Address }>('/api/guardian'),
-        getRecoveryStatus(wallet.address),
-      ])
+      const { guardian: swissquote } = await api<{ guardian: Address }>('/api/guardian')
       const setup = await accountSetupCalls(
         {
           keySafe: wallet.address,
@@ -80,12 +76,7 @@ export function AccountSetupStep({
         address: wallet.address,
         credentialId: wallet.credentialId,
         publicKey: toPublicKey(wallet),
-        calls: [
-          // Transitional (ADR-026): the Key Safe keeps the legacy recovery, with the same Kit
-          // guardian key, until the eviction flow replaces it (#15, #33).
-          ...(legacy.guardians.length === 0 ? recoverySetupCalls(wallet.address, guardian, swissquote) : []),
-          ...setup,
-        ],
+        calls: setup,
         onStep: setStep,
       })
       saveLocalKit(kit)

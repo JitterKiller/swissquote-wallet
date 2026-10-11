@@ -32,9 +32,6 @@ export const USDC_FAUCET_URL = 'https://faucet.circle.com'
 
 // Candide Social Recovery Module. Each deployment has a fixed recovery delay:
 // 3 minutes for the demo; production would use After3Days or longer.
-export const RECOVERY_MODULE_ADDRESS = SocialRecoveryModuleGracePeriodSelector.After3Minutes
-export const RECOVERY_DELAY_LABEL = '3 minutes (demo)'
-export const RECOVERY_DELAY_SECONDS = 180
 
 // ── Account Safe (ADR-017, ADR-019) ────────────────────────────────────────
 // The Account holds all funds. Owners: Key Safe + Kit owner key (+ hardware key),

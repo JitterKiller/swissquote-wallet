@@ -20,15 +20,11 @@ export function CustodyCard() {
   const state = chain.account
 
   if (!wallet.account) {
-    // Wallets protected before the Account (legacy guardians) or not protected at all.
-    const legacy = !!chain.recovery && chain.recovery.guardians.length > 0
     return (
       <section className="rounded-2xl border border-border p-5">
-        <h2 className="font-semibold">{legacy ? 'Wallet protected' : 'Not protected yet'}</h2>
+        <h2 className="font-semibold">Not protected yet</h2>
         <p className="mt-1 text-sm text-muted">
-          {legacy
-            ? 'Recovery Kit + Swissquote can move this wallet to a new phone. Create your Account to add a daily limit.'
-            : 'If you lose this phone, you lose this wallet. Protect it with a Recovery Kit and a daily limit.'}
+          {'If you lose this phone, you lose this wallet. Protect it with a Recovery Kit and a daily limit.'}
         </p>
         <ButtonLink href="/wallet/welcome/protect" className="mt-4 w-full">
           Protect your wallet

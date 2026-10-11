@@ -15,10 +15,6 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Create wallet with a passkey (Face ID / Touch ID), no seed phrase | ✅ |
 | Safe smart account (ERC-4337) owned by the passkey, deterministic address | ✅ |
 | Gasless USDC transfers (paymaster), user never holds ETH | ✅ |
-| Recovery setup: Recovery Kit + Swissquote Guardian (2 of 2), one gasless tx | ✅ |
-| Recovery on a new device: Kit + identity check → delay → new passkey owns the wallet | ✅ |
-| Attacker path refused (identity check fails), owner can cancel during the delay | ✅ |
-| Old device revoked after recovery | ✅ |
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity with the factors that approved each payment (ADR-029), light/dark | ✅ |
 | Security page for the two-Safe Account: owners read live onchain, "Swissquote · not an owner" checkable on Basescan, worst case as an amount, who can do what (ADR-034, #26) | ✅ |
@@ -30,7 +26,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Transfers between the Swissquote account and the wallet, both directions, travel rule filled in (PDR-024, ADR-025); demo treasury to fund once | ✅ |
 | Third guardian (trusted contact) | ⏳ |
 | Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ✅ (Account created at onboarding #10; Overview with today's Face ID budget #11; Send: Face ID alone within the limit, Kit passphrase + Face ID above it #12) |
-| One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019, ADR-030) | ✅ ("Phone lost or stolen?" on the new phone #15, alert and 2-factor stop on the old phone #16, `npm run e2e:eviction`; legacy `/wallet/recover` until #33) |
+| One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019, ADR-030) | ✅ ("Phone lost or stolen?" on the new phone #15, alert and 2-factor stop on the old phone #16, `npm run e2e:eviction`) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step; "Test your Kit" every 90 days from the Security page, with an Overview reminder (the cloud file + passphrase, keys checked onchain; ADR-041, #9, `npm run e2e:kit`) | ✅ |
 | Open wallet for everyone + Swissquote link as the upgrade (PDR-015): level 0 for everyone, level 1 for linked clients (3-day lock-out with a Swissquote identity check), from the Security page or right after linking (ADR-036, #21, `npm run e2e:level`) | ✅ (KYC and the Swissquote sign-in are MOCK; no way back to level 0 yet) |
 | Offers page: Free, Client and Premium "Theft protection" compared for your own Account (worst case from your daily limit, what your own key does in every offer), your offer and its one next step; one line on Send's receipt after the first payment that needed the Kit (PDR-019, ADR-039, #22) | ✅ (Premium subscription and key order are MOCK; key tap for large payments and Kit replacement "Soon") |
@@ -49,34 +45,41 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
           Candide bundler + paymaster (gas sponsored) ───────────────────────────────
                 │
                 ▼
-   EntryPoint v0.9 ──► Safe smart account                         Base Sepolia
-                        ├─ owner: passkey (WebAuthn verifier proxy)
-                        └─ Social Recovery Module: guardians {Recovery Kit, Swissquote}, threshold 2,
-                           delay 3 min (demo) / 3 days (prod), cancellable by the owner
+   EntryPoint v0.9 ──► Key Safe (the phone)                         Base Sepolia
+                        └─ owner: passkey (WebAuthn verifier proxy)
+                       Account Safe (holds the funds), threshold 2
+                        ├─ owners: Key Safe, Kit owner key, optional security key (ADR-017, ADR-038)
+                        ├─ Allowance Module: the Key Safe spends up to the daily limit with Face ID alone
+                        └─ Candide recovery module: the lock-out of a lost phone (guardian = the Kit's
+                           guardian key, + Swissquote at level 1), 7 / 3 days (3 min in the demo),
+                           stopped only by 2 owners (ADR-019)
 ```
 
 **Where the keys live**
 
 | Key | Where | Can move funds? |
 |---|---|---|
-| Passkey private key | Device secure hardware (or synced in iCloud Keychain / Google Password Manager), never extractable | Yes, it is the owner |
+| Passkey private key | Device secure hardware (or synced in iCloud Keychain / Google Password Manager), never extractable | Up to the daily limit alone; above it, with a second factor |
 | Passkey public key | On-chain, in the Safe | — |
 | Recovery Kit keys (Account owner + guardian) | Encrypted with the client's passphrase (keystore V3): file in iCloud Drive / Google Drive + encrypted copy in the app. The passphrase is never stored or sent | Not alone: the owner key is 1 of the 2 signatures the Account needs; the guardian key starts a delayed eviction |
-| Swissquote Guardian key | Swissquote HSM (mocked: env var or `web/.data`) | No: one guardian vote, signs only after identity check, subject to delay + owner veto |
+| Security key (optional) | A FIDO2 key kept at home; its Safe WebAuthn verifier is an owner of the Account | Not alone: with the Kit it locks a lost phone out at once (ADR-038) |
+| Swissquote Guardian key | Swissquote HSM (mocked: env var or `web/.data`) | No: never an owner. At level 1, one guardian vote on a lock-out, after an identity check, during a delay that 2 owners can stop |
 
-## Recovery flow
+## Lost or stolen phone
 
-1. **Setup** (after wallet creation): choose a Kit passphrase, download the encrypted Recovery Kit and test it, choose a daily limit. Then one passkey-signed, gasless UserOp creates the Account (Key Safe + Kit owner, threshold 2, daily allowance, eviction module) and registers the Key Safe guardians used by this flow (transitional, ADR-026).
-2. **Lost device → new device**: upload the Recovery Kit, type its passphrase and create a new passkey.
-3. **Identity check** with Swissquote (mock: video identification). If it fails (attacker), Swissquote refuses to sign and the owner is alerted.
-4. **Request**: the Kit signs (in the browser) and Swissquote co-signs (server). The relayer deploys the new passkey's signer and starts the recovery on-chain.
-5. **Delay**: the current device shows an alert and can **cancel**. Swissquote notifies the client on every channel (mock).
-6. **Finalize**: the new passkey becomes the owner. Same address, same funds. The old passkey can no longer sign.
+1. **Setup** (after wallet creation): choose a Kit passphrase, download the encrypted Recovery Kit and test it, choose a daily limit. Then one passkey-signed, gasless UserOp creates the Account (Key Safe + Kit owner, threshold 2, daily allowance, the lock-out module). The Key Safe itself has no guardian (ADR-042).
+2. **New device:** "Phone lost or stolen?" (`/wallet/lost`): open the Recovery Kit (file + passphrase) and create a new passkey.
+3. **Level 1:** an identity check with Swissquote (mock: video identification). If it fails, Swissquote refuses to co-sign and the owner is alerted.
+4. **Lock-out:** the Kit's guardian key starts it onchain (Swissquote co-signs at level 1); relayed and sponsored.
+5. **Delay** (7 days, 3 at level 1; 3 minutes in the demo): the old phone shows a red alert and can stop it only with Face ID + the Kit. A thief holding the phone alone is refused onchain (GS020).
+6. **Takeover:** the new device becomes the owner with Face ID + the Kit and takes the daily limit. Same Account, same funds; the old phone is locked out.
+
+With a security key, the Kit and the key replace the old phone at once, also while a lock-out runs (ADR-038).
 
 ## Stack
 
 - **Next.js 16** (App Router with route groups, client-only wallet UI + route handlers for the mock backend), Tailwind CSS v4 with design tokens (visual rules in [DESIGN.md](DESIGN.md), ADR-027), Hanken Grotesk + JetBrains Mono, lucide-react icons, sonner toasts, react-qr-code
-- **abstractionkit** (Candide): Safe accounts, WebAuthn signer, paymaster, Social Recovery Module
+- **abstractionkit** (Candide): Safe accounts, WebAuthn signer, paymaster, the recovery module behind the lock-out
 - **ox**: WebAuthn ceremonies · **viem**: chain reads, ABI encoding, EIP-712
 - **Network**: Base Sepolia (RIP-7212 P-256 precompile), Circle testnet USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
 
@@ -109,7 +112,6 @@ Passkeys are bound to the domain: create demo wallets **on the production URL**.
 ```bash
 npm run smoke          # simulated passkey → Safe → sponsored UserOps (no browser)
 npm run e2e            # real Chrome + virtual authenticator: create wallet in the UI, sign UserOps
-npm run e2e:recovery   # two devices: attacker refused, owner cancels, full recovery, old device revoked (~5 min)
 npm run e2e:account-setup # protect flow in the UI (passphrase, Kit test, daily limit) → Account checked on-chain, levels 0 and 1 (~1 min)
 npm run screenshots    # captures every screen (desktop light/dark + mobile) into web/screenshots/
 npm run spike:two-safe # on-chain spike of the two-Safe account + time-locked eviction (ADR-017, ADR-019), ~5 min
@@ -142,8 +144,6 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 | `GET /api/health` | Deployment check: store kind, write/read round trip, guardian + relayer (ADR-020) |
 | `GET /api/guardian` | Swissquote Guardian + relayer addresses |
 | `POST /api/kyc` | Identity verification session (MOCK outcome) |
-| `POST /api/recovery` | Checks KYC + Kit signature, co-signs, relays `multiConfirmRecovery` |
-| `POST /api/recovery/finalize` | Relays `finalizeRecovery` after the delay |
 | `POST /api/eviction` | Starts a time-locked eviction of the phone (Key Safe) on the Account: Kit guardian signature; at level 1 also a verified KYC session, then Swissquote co-signs. Refuses anything but replacing the Key Safe (ADR-019, PDR-021) |
 | `POST /api/eviction/finalize` | Relays `finalizeRecovery` on the Account after the delay |
 | `POST /api/wallets/challenge` | Registry: single-use challenge for the ownership statement (ADR-021, MOCK auth) |
@@ -166,7 +166,7 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 
 | Real (on-chain / standard) | Mocked (documented) |
 |---|---|
-| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Account Safe (Allowance Module, eviction module), approved dApps (Aave v3, Compound III on Base Sepolia), Recovery Kit encryption (keystore V3), Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks), security key (a WebAuthn credential as the Account's third owner through Safe's WebAuthn verifier) and the immediate lock-out with Kit + key | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC), Premium "Theft protection" subscription and security key order (`/api/offers`, `server/offers.ts`: no payment, nothing ships) |
+| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Account Safe (Allowance Module, eviction module), approved dApps (Aave v3, Compound III on Base Sepolia), Recovery Kit encryption (keystore V3), the Candide recovery module behind the lock-out (guardians, delay, stop, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks), security key (a WebAuthn credential as the Account's third owner through Safe's WebAuthn verifier) and the immediate lock-out with Kit + key | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC), Premium "Theft protection" subscription and security key order (`/api/offers`, `server/offers.ts`: no payment, nothing ships) |
 
 ## Repo layout
 
@@ -176,7 +176,7 @@ CLAUDE.md           context for AI assistants (imports docs/adr/README.md)
 web/
   src/app/(marketing)/           /  (landing page)
   src/app/wallet/(wallet)/       /wallet, /wallet/send, /wallet/receive, /wallet/activity, /wallet/security, … (AppShell: sidebar + guards)
-  src/app/wallet/(onboarding)/   /wallet/welcome, /wallet/welcome/protect, /wallet/recover   (OnboardingShell)
+  src/app/wallet/(onboarding)/   /wallet/welcome, /wallet/welcome/protect   (OnboardingShell)
   src/app/wallet/(recovery)/     /wallet/lost   (OnboardingShell, quiet)
   src/app/api/            mock backend route handlers: guardian, kyc, recovery, recovery/finalize
   src/components/views/   one view per page (Overview, Send, Receive, Activity, Security, Create, Protect, Recover)

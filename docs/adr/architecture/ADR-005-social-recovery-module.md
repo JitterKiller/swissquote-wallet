@@ -1,6 +1,6 @@
 # ADR-005: Recovery mechanism — Candide Social Recovery Module v0.0.1
 
-- **Status:** Accepted, amended by [ADR-019](ADR-019-account-eviction-module.md) (target design: the module protects the Account, guardian = the Kit's guardian key; on the Key Safe it stays only until the eviction UI ships)
+- **Status:** Accepted, amended by [ADR-019](ADR-019-account-eviction-module.md) (the module protects the Account, guardian = the Kit's guardian key) and [ADR-042](ADR-042-retire-legacy-key-safe-recovery.md) (no longer on the Key Safe)
 - **Date:** 2026-10-10
 - **Related:** [PDR-004](../product/PDR-004-recovery-policy.md), [ADR-006](ADR-006-recovery-target-verifier-proxy.md), [ADR-007](ADR-007-swissquote-guardian-and-relayer.md)
 

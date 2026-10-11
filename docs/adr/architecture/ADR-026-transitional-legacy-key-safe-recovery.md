@@ -1,6 +1,6 @@
 # ADR-026: Transitional — the protect flow keeps the legacy Key Safe recovery until the eviction flow ships
 
-- **Status:** Accepted (temporary: removed by issue #33)
+- **Status:** Superseded by [ADR-042](ADR-042-retire-legacy-key-safe-recovery.md) (the legacy recovery is removed, #33)
 - **Date:** 2026-10-10
 - **Related:** [ADR-005](ADR-005-social-recovery-module.md), [ADR-017](ADR-017-two-safe-account.md), [ADR-018](ADR-018-recovery-kit-encryption-and-storage.md), [ADR-019](ADR-019-account-eviction-module.md), [PDR-021](../product/PDR-021-one-flow-lost-or-stolen-phone.md)
 

@@ -9,7 +9,6 @@
     "lint": "eslint",
     "smoke": "node scripts/smoke-passkey.mts",
     "e2e": "node scripts/e2e-passkey.mts",
-    "e2e:recovery": "node scripts/e2e-recovery.mts",
     "e2e:account-setup": "tsx scripts/e2e-account-setup.mts",
     "e2e:eviction": "node scripts/e2e-eviction.mts",
     "e2e:earn": "node scripts/e2e-earn.mts",

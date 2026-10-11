@@ -24,10 +24,10 @@ import { AddressPill } from '@/components/ui/address'
 import { Badge, Skeleton } from '@/components/ui/feedback'
 import { TokenBar } from '@/components/ui/live'
 import { getPendingEviction, isEvicted } from '@/lib/eviction'
-import { loadLocalEviction, loadLocalRecovery, type StoredWallet } from '@/lib/storage'
+import { loadLocalEviction, type StoredWallet } from '@/lib/storage'
 
 import { Logo } from './Logo'
-import { EvictionAlert, RecoveryAlert, RevokedScreen } from './SecurityBanners'
+import { EvictionAlert, RevokedScreen } from './SecurityBanners'
 
 type NavItem = { href: string; label: string; icon: LucideIcon; soon?: boolean }
 
@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (ready && !wallet) router.replace(loadLocalEviction() ? '/wallet/lost' : loadLocalRecovery() ? '/wallet/recover' : '/')
+    if (ready && !wallet) router.replace(loadLocalEviction() ? '/wallet/lost' : '/')
   }, [ready, wallet, router])
 
   if (!ready || !wallet) return <ShellSkeleton />
@@ -111,11 +111,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         {lockOut && (
           <div className="mb-6">
             <EvictionAlert pending={lockOut} />
-          </div>
-        )}
-        {chain.recovery?.pending && (
-          <div className="mb-6">
-            <RecoveryAlert pending={chain.recovery.pending} />
           </div>
         )}
         {children}

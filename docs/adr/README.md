@@ -4,11 +4,27 @@ Why the project is built the way it is. Read the relevant record **before** chan
 
 ## Current design in one paragraph
 
-A **Safe smart account** (ERC-4337) on **Base Sepolia**, owned by a **passkey** (Face ID / Touch ID). Gas is always **sponsored**, so users never hold ETH. **Recovery** needs two guardians, the client's **Recovery Kit** and the **Swissquote Guardian** (which approves only after identity verification). After their approval comes a **delay**, during which the current owner can **cancel**. When the delay ends, the owner is replaced by a new passkey: same address, same funds. Swissquote alone can never move funds or recover a wallet. Banking, KYC and the HSM are **mocked** in a small backend inside the Next.js app.
+The funds sit in a **Safe smart account** (ERC-4337) on **Base Sepolia**, the **Account**. Its owners are only the user's factors (PDR-013):
+- the **phone**, a passkey Safe unlocked with Face ID;
+- the **Recovery Kit**, a passphrase-encrypted file in the user's cloud;
+- optionally, a **security key**.
 
-## Target design (decided, being built)
+Any two of them act together. **Face ID alone spends up to a daily limit** the user chooses (PDR-014, PDR-020). Gas is always **sponsored**, so users never hold ETH.
 
-**The user always holds the majority, Swissquote never does** (PDR-013). Funds move to an **Account Safe** whose owners are only the user's factors: the **Key Safe** (today's passkey Safe, which holds no funds), the **Recovery Kit** (a passphrase-encrypted cloud backup, PDR-016) and, optionally, a **hardware key** (PDR-017). Threshold 2. Face ID alone can only spend up to a **daily limit**; anything else needs 2 factors, so a thief with an unlocked phone cannot empty the account or block anything on it (PDR-014, ADR-017). The user chooses the limit (PDR-020). A **lost or stolen phone** goes through one flow: the Kit evicts it after **7 days** (3 days for linked clients, immediately with a hardware key), and the thief cannot cancel (PDR-018, PDR-021, ADR-019). The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Swissquote is **never an owner**. **Shipped so far:** the Account at onboarding (#10), Overview and Send on the Account (#11, #12), the "Phone lost or stolen?" lock-out with the alert and 2-factor stop on the old phone (#15, #16, ADR-030), Earn (#25, ADR-031), Swap (PDR-028, ADR-032), the Security page (#26, ADR-034), the daily limit change (#13, ADR-035), the level 1 upgrade (#21, ADR-036), the security key with the immediate lock-out (#17, ADR-038), the Offers page with the upgrade funnel (#22, ADR-039) and the "Test your Kit" reminder (#9, ADR-041). The legacy Key Safe recovery described above stays reachable until #33.
+A **lost or stolen phone** goes through one flow (PDR-018, PDR-021). The Kit locks it out after **7 days**, or **3 days** for linked clients with a Swissquote identity check; with a security key it is locked out **at once**. The thief cannot cancel.
+
+**Swissquote is never an owner.** It pays the fees, checks identity at level 1 and relays. The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Banking, KYC and the HSM are **mocked** in a small backend inside the Next.js app.
+
+## Build log
+
+Shipped, in order:
+- the Account at onboarding (#10), Overview and Send (#11, #12);
+- the lost-phone lock-out with the alert and the 2-factor stop (#15, #16, ADR-030);
+- Earn (#25, ADR-031) and Swap (PDR-028, ADR-032);
+- the Security page (#26, ADR-034), the daily limit change (#13, ADR-035) and the level 1 upgrade (#21, ADR-036);
+- the security key (#17, ADR-038) and the Offers page (#22, ADR-039);
+- the landing page at `/` (ADR-040) and "Test your Kit" (#9, ADR-041);
+- one flow for a lost phone, with the legacy Key Safe recovery retired (#33, ADR-042).
 
 ## Two kinds of records
 
@@ -26,7 +42,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-001](product/PDR-001-non-custodial-model.md) | Non-custodial: Swissquote is a guardian, never a custodian | Accepted |
 | [PDR-002](product/PDR-002-passkeys-instead-of-seed-phrases.md) | Passkeys instead of seed phrases | Accepted |
 | [PDR-003](product/PDR-003-gasless-by-default.md) | Gasless by default: users never need ETH | Accepted, refined by PDR-015 and PDR-019 |
-| [PDR-004](product/PDR-004-recovery-policy.md) | Recovery: Recovery Kit + Swissquote, 2 of 2, delay with owner veto | Superseded by PDR-021 (target design; still in the code) |
+| [PDR-004](product/PDR-004-recovery-policy.md) | Recovery: Recovery Kit + Swissquote, 2 of 2, delay with owner veto | Superseded by PDR-021; removed from the code by ADR-042 |
 | [PDR-005](product/PDR-005-recovery-kit.md) | Recovery Kit: client-held offline factor, never stored by the app | Superseded by PDR-016 |
 | [PDR-006](product/PDR-006-identity-verification-before-guardian-approval.md) | Identity verification before Swissquote approves a recovery | Accepted |
 | [PDR-007](product/PDR-007-prototype-scope-real-vs-mocked.md) | Prototype scope: real on-chain, mocked banking | Accepted |
@@ -60,8 +76,8 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-002](architecture/ADR-002-passkey-signing-safe-webauthn.md) | Passkey signing through Safe's WebAuthn signer (shared signer → verifier proxy) | Accepted |
 | [ADR-003](architecture/ADR-003-network-base-sepolia.md) | Base Sepolia + Circle testnet USDC | Accepted |
 | [ADR-004](architecture/ADR-004-bundler-and-paymaster.md) | Candide public bundler + ERC-7677 paymaster | Accepted, amended by ADR-023 |
-| [ADR-005](architecture/ADR-005-social-recovery-module.md) | Candide Social Recovery Module **v0.0.1** | Accepted, amended by ADR-019 |
-| [ADR-006](architecture/ADR-006-recovery-target-verifier-proxy.md) | Recovery target = new passkey's verifier proxy, deployed in the request UserOp | Superseded by ADR-019 (target design; still in the code) |
+| [ADR-005](architecture/ADR-005-social-recovery-module.md) | Candide Social Recovery Module **v0.0.1** | Accepted, amended by ADR-019 and ADR-042 (on the Account only) |
+| [ADR-006](architecture/ADR-006-recovery-target-verifier-proxy.md) | Recovery target = new passkey's verifier proxy, deployed in the request UserOp | Superseded by ADR-019; removed from the code by ADR-042 |
 | [ADR-007](architecture/ADR-007-swissquote-guardian-and-relayer.md) | Swissquote Guardian key + relayer Safe (mock HSM) | Accepted |
 | [ADR-008](architecture/ADR-008-mock-backend.md) | Mock backend: Next.js route handlers + JSON file store | Accepted, amended by ADR-020 |
 | [ADR-009](architecture/ADR-009-client-storage-public-data-only.md) | Client storage: public data only | Accepted, amended by ADR-015 and ADR-018 |
@@ -81,7 +97,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-023](architecture/ADR-023-sponsorship-policy-proxy.md) | Sponsorship policy: ERC-7677 paymaster proxy (quota, security operations, sanctions, stolen-device reports) | Accepted, amended by ADR-028 |
 | [ADR-024](architecture/ADR-024-handle-directory.md) | `@handle` directory: exact-match resolution for linked clients, visibility and contacts, `RecipientField`, MOCK session | Accepted |
 | [ADR-025](architecture/ADR-025-swissquote-transfers.md) | Swissquote account transfers: treasury = relayer Safe, deposits verified from on-chain logs, MOCK balances | Accepted |
-| [ADR-026](architecture/ADR-026-transitional-legacy-key-safe-recovery.md) | Transitional: the protect flow keeps the legacy Key Safe recovery (same Kit guardian key) until the eviction flow ships | Accepted (temporary, #33) |
+| [ADR-026](architecture/ADR-026-transitional-legacy-key-safe-recovery.md) | Transitional: the protect flow keeps the legacy Key Safe recovery (same Kit guardian key) until the eviction flow ships | Superseded by ADR-042 |
 | [ADR-027](architecture/ADR-027-visual-world-swiss-onchain-fintech.md) | Visual world: Swiss onchain fintech (white, ink, one Swissquote orange, sealed ink plates), recorded in DESIGN.md through impeccable | Accepted, amended by ADR-037 |
 | [ADR-028](architecture/ADR-028-approved-dapps-native-integration.md) | Approved dApps: native call builders (`lib/dapps.ts`), 2-factor Account transactions, paymaster allowlist | Accepted, amended by ADR-032 |
 | [ADR-029](architecture/ADR-029-approval-route-from-chain-events.md) | Activity shows which factors approved each payment (Face ID alone vs Face ID + Kit), read from the Allowance Module's `ExecuteAllowanceTransfer` events | Accepted |
@@ -97,6 +113,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-039](architecture/ADR-039-offers-page.md) | Offers page and the upgrade funnel (#22, #21): comparison table at `/offers` (your column outlined, worst case from your limit, what your own key does in every offer, "Soon" for what isn't built), MOCK Premium in `store()` (`/api/offers`), one trigger after the first Kit payment on Send, the sidebar reads the link, quota and protect-flow calls to link | Accepted (amends ADR-036) |
 | [ADR-040](architecture/ADR-040-landing-at-root-app-under-wallet.md) | The landing page at `/`, the app under `/wallet` (`app/wallet/(wallet)`, `(onboarding)`, `(recovery)`), guards to the landing, old paths redirected with their query (payment request QR codes) | Accepted (amends ADR-014) |
 | [ADR-041](architecture/ADR-041-test-your-kit-reminder.md) | "Test your Kit" (#9): a Recovery Kit row on the Security page and an In-Row test panel (cloud file + passphrase, keys checked onchain, the lost file saved again from the phone's encrypted copy), an Overview reminder after 90 days, "Demo: skip 90 days", `npm run e2e:kit` | Accepted |
+| [ADR-042](architecture/ADR-042-retire-legacy-key-safe-recovery.md) | Retire the legacy Key Safe recovery (#33): the protect UserOp creates the Account only, `/wallet/recover` and `/api/recovery` removed (old paths redirect to `/wallet/lost`), `isPasskeyOwner` kept in `lib/wallet.ts`, `e2e:account-setup` checks the Key Safe has no legacy module | Accepted (supersedes ADR-026) |
 
 ## Open questions (future records)
 

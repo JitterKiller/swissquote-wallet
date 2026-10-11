@@ -43,7 +43,7 @@ const STEP_LABELS = ['Kit', 'Face ID', 'Lock out', 'Delay', 'Take over']
 
 /** What the Kit step reads on-chain before a passkey exists (memory only). */
 type Target = { account: Address; oldKeySafe: Address; level: Level; dailyLimit: bigint; keyProxy?: Address }
-type Failure = { title: string; message: string; legacy?: boolean }
+type Failure = { title: string; message: string }
 type Done = { oldKeySafe: Address; dailyLimit: bigint; startTx?: string; finalizeTx?: string; handoverTx?: string; lockOutNowTx?: string }
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
@@ -71,7 +71,7 @@ async function retryLagging<T>(task: () => Promise<T>) {
   }
 }
 
-/** A Kit or wallet from before the Account: the legacy Key Safe recovery handles it (ADR-026, until #33). */
+/** A Kit or wallet from before the Account: the one lost-phone flow is the Account's lock-out (PDR-021, ADR-042). */
 class LegacyWalletError extends Error {}
 
 /**
@@ -105,7 +105,7 @@ export function EvictionView() {
     try {
       await task()
     } catch (e) {
-      if (e instanceof LegacyWalletError) setError({ title: 'Use the previous recovery', message: e.message, legacy: true })
+      if (e instanceof LegacyWalletError) setError({ title: 'Wallet from before the Account', message: e.message })
       else setError({ title: failureTitle, message: errorMessage(e) })
     } finally {
       setBusy(null)
@@ -180,7 +180,7 @@ export function EvictionView() {
   async function openKit(text: string, passphrase: string) {
     const parsed = parseKitFile(text)
     if (parsed.version === 1) {
-      throw new LegacyWalletError('This Recovery Kit is from before the Account. The previous recovery moves that wallet to this device.')
+      throw new LegacyWalletError('This Recovery Kit is from before the Account. This version moves only wallets protected with an Account.')
     }
     let opened: KitAccounts
     try {
@@ -192,7 +192,7 @@ export function EvictionView() {
     const account = parsed.kit.account
     const [state, { guardian: swissquote }] = await Promise.all([readAccount(account), api<{ guardian: Address }>('/api/guardian')])
     if (!state.deployed || !state.evictionModule) {
-      throw new LegacyWalletError('This wallet has no Account lock-out yet. The previous recovery moves it to this device.')
+      throw new LegacyWalletError('This wallet has no Account lock-out, so this version can’t move it to a new phone.')
     }
     if (!state.guardians.some((g) => same(g, opened.guardian.address))) throw new Error('This Recovery Kit does not guard that Account.')
     const oldKeySafe = state.allowance?.delegate
@@ -390,17 +390,7 @@ export function EvictionView() {
       {step === 'done' && done && <DoneStep done={done} />}
 
       {error && (
-        <Alert
-          tone="danger"
-          title={error.title}
-          action={
-            error.legacy ? (
-              <ButtonLink href="/wallet/recover" variant="secondary" size="sm">
-                Open the previous recovery
-              </ButtonLink>
-            ) : undefined
-          }
-        >
+        <Alert tone="danger" title={error.title}>
           {error.message}
         </Alert>
       )}
@@ -409,9 +399,6 @@ export function EvictionView() {
         <p className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-center text-sm">
           <Link href="/wallet/welcome" className="text-muted hover:text-foreground">
             Back
-          </Link>
-          <Link href="/wallet/recover" className="text-muted hover:text-foreground">
-            Wallet without an Account? Previous recovery
           </Link>
         </p>
       )}

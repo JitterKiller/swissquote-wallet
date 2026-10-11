@@ -26,21 +26,6 @@ export type StoredWallet = {
 }
 
 /**
- * A recovery started on THIS (new) device: the new passkey must be persisted
- * before anything is sent, otherwise a reload would lose its public key.
- */
-export type LocalRecovery = {
-  wallet: `0x${string}`
-  name: string
-  credentialId: string
-  publicKey: { x: string; y: string }
-  newOwner: `0x${string}`
-  requestTx?: string
-  /** The Account of a v3 Kit, restored once the recovery completes. */
-  account?: `0x${string}`
-}
-
-/**
  * An eviction started on THIS (new) device (#15): the new passkey is persisted before anything is
  * sent, so a reload during the delay keeps it. Public data only.
  */
@@ -71,6 +56,7 @@ export type SecurityKeyRecord = {
 }
 
 const WALLET_KEY = 'sq-wallet:v1'
+// Left on devices by the legacy Key Safe recovery (removed in #33, ADR-042): cleared with the wallet.
 const RECOVERY_KEY = 'sq-recovery:v1'
 // The only secret stored client-side, and always encrypted (ADR-018).
 const KIT_KEY = 'sq-kit:v3'
@@ -107,14 +93,6 @@ function write(key: string, value: unknown) {
 
 export const loadWallet = () => read<StoredWallet>(WALLET_KEY)
 export const saveWallet = (wallet: StoredWallet) => write(WALLET_KEY, wallet)
-
-export const loadLocalRecovery = () => read<LocalRecovery>(RECOVERY_KEY)
-export const saveLocalRecovery = (recovery: LocalRecovery) => write(RECOVERY_KEY, recovery)
-export function clearLocalRecovery() {
-  try {
-    window.localStorage.removeItem(RECOVERY_KEY)
-  } catch {}
-}
 
 export const loadLocalEviction = () => read<LocalEviction>(EVICTION_KEY)
 export const saveLocalEviction = (eviction: LocalEviction) => write(EVICTION_KEY, eviction)

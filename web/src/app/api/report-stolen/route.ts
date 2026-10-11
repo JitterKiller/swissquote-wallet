@@ -1,6 +1,5 @@
 import { getAddress, isAddress, isHex, parseAbi, recoverMessageAddress } from 'viem'
 
-import { getRecoveryStatus } from '@/lib/recovery'
 import { isDeployed, publicClient } from '@/lib/wallet'
 import { getKycSession, notifyClient, saveKycSession, store } from '@/server/store'
 import { getWalletByKeySafe } from '@/server/registry'
@@ -12,7 +11,7 @@ import { getWalletByKeySafe } from '@/server/registry'
  * Proof that the reporter owns the wallet:
  *  - level 1: a fresh, verified identity session (PDR-006) for the registered Account;
  *  - any level: a Recovery Kit signature over the report message, the Kit being an owner of
- *    the Account (ADR-017) or a guardian of a legacy single-Safe wallet (ADR-005).
+ *    the Account (ADR-017).
  */
 const SIGNATURE_TTL_S = 10 * 60
 const safeAbi = parseAbi(['function isOwner(address owner) view returns (bool)'])
@@ -51,7 +50,7 @@ export async function POST(request: Request) {
       const isKitOwner =
         getAddress(account) !== getAddress(keySafe) && (await isDeployed(getAddress(account)))
           ? await publicClient.readContract({ address: getAddress(account), abi: safeAbi, functionName: 'isOwner', args: [kit] })
-          : (await getRecoveryStatus(keySafe)).guardians.some((g) => g.toLowerCase() === kit.toLowerCase())
+          : false
       if (!isKitOwner) return fail('This Recovery Kit does not belong to this wallet', 403)
       via = 'kit'
     }

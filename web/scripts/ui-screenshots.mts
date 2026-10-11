@@ -151,13 +151,6 @@ try {
   await shot(dark, 'dark-04-overview')
   await dark.context().close()
 
-  // Recovery screen on a fresh device.
-  const fresh = await newPage(browser, { width: 1440, height: 900 })
-  await fresh.goto(`${APP_URL}/wallet/recover`)
-  await fresh.getByRole('heading', { name: 'Recover your wallet' }).waitFor()
-  await shot(fresh, 'desktop-09-recover')
-  await fresh.context().close()
-
   // Mobile.
   const mobile = await newPage(browser, { width: 390, height: 844 })
   await createProtectedWallet(mobile, 'mobile')

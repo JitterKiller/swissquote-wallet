@@ -111,3 +111,16 @@ export async function sendCalls(params: {
 
   return { txHash: receipt.receipt.transactionHash, userOpHash: response.userOperationHash }
 }
+
+/** Safe owner address of a passkey: its deterministic WebAuthn verifier proxy (ADR-002). */
+export function ownerAddressForPasskey(publicKey: WebauthnPublicKey): `0x${string}` {
+  return SafeAccount.createWebAuthnSignerVerifierAddress(publicKey.x, publicKey.y) as `0x${string}`
+}
+
+/** Is this passkey still an owner of its Key Safe? True while the Safe is counterfactual. */
+export async function isPasskeyOwner(wallet: `0x${string}`, publicKey: WebauthnPublicKey) {
+  if (!(await isDeployed(wallet))) return true
+  const owners = await new SafeAccount(wallet).getOwners(NODE_URL)
+  const me = ownerAddressForPasskey(publicKey).toLowerCase()
+  return owners.some((owner) => owner.toLowerCase() === me)
+}

@@ -250,6 +250,12 @@ try {
   log('Linked client: identity check shown, then the 3-day terms ✓')
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error))
+  // Every open page as it was when the step failed, and the app's own alerts (the error it showed).
+  for (const [i, page] of browser.contexts().flatMap((c) => c.pages()).entries()) {
+    await page.screenshot({ path: `${OUT}/eviction-failure-${i}.png`, fullPage: true }).catch(() => {})
+    const alerts = await page.getByRole('alert').allTextContents().catch(() => [])
+    if (alerts.length) console.log(`[page ${i}] ${alerts.join(' | ')}`)
+  }
 } finally {
   await browser.close()
 }
