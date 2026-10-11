@@ -73,6 +73,12 @@ typography:
     lineHeight: 1.2
     letterSpacing: "-0.025em"
     fontFeature: "\"tnum\""
+  section:
+    fontFamily: "Hanken Grotesk, system-ui, sans-serif"
+    fontSize: "1.125rem"
+    fontWeight: 600
+    lineHeight: 1.56
+    letterSpacing: "-0.025em"
   token:
     fontFamily: "JetBrains Mono, ui-monospace, monospace"
     fontSize: "11px"
@@ -201,6 +207,19 @@ components:
     textColor: "{colors.ink}"
     rounded: "{rounded.2xl}"
     padding: "16px"
+  loss-bound-field-roomy:
+    backgroundColor: "{colors.accent-soft}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.2xl}"
+    padding: "20px 24px"
+  day-square:
+    backgroundColor: "{colors.accent}"
+    rounded: "{rounded.cell}"
+    size: "28px"
+  day-square-lg:
+    backgroundColor: "{colors.accent}"
+    rounded: "{rounded.cell}"
+    size: "36px"
   plate:
     backgroundColor: "{colors.hero}"
     textColor: "{colors.hero-fg}"
@@ -295,10 +314,11 @@ Dark mode (OS setting) swaps the ground to near-black (#0c0c0c, surfaces #151515
 ### Hierarchy
 - **Display** (600, 3rem from 640px up, 1.05, -0.035em): the step title of each screen ("Choose your daily limit", "Your wallet is protected"), balanced. The onboarding panel's tagline uses the same register at 2.25 to 3rem with -0.03em.
 - **Headline** (600, 2.25rem, 1.05, -0.035em): the display title on phones.
+- **Section** (600, 1.125rem, tight -0.025em): the title of a section on an app page ("Who can do what", "Rules of your Account"), a protocol card's name, an action panel's heading. A muted 14px subline may follow it.
 - **Title** (600, 0.875rem): section titles inside a step ("Three locks, all held by you") and card headers.
 - **Body** (400, 1rem, 1.5): step descriptions in Graphite, under the display title.
 - **Body small** (400 or 500, 0.875rem): field labels (500), list rows, plate rows, alerts. Hints and errors drop to 0.75rem.
-- **Figure XL** (JetBrains Mono 600, 3rem, tabular): the amount being chosen, inside the amount field. The loss bound sits one step down at 2.25rem with its unit in the grotesk, and so do the amount being given (Send, Swap) and Swap's quote, at 2.25rem with tight tracking; on phones these step down to 1.875rem, then 1.5rem, before they would clip (`amountFit`).
+- **Figure XL** (JetBrains Mono 600, 3rem, tabular): the amount being chosen, inside the amount field. The loss bound sits one step down at 2.25rem with its unit in the grotesk (on the Security page it stands as the page's figure at 3rem, 3.75rem from 640px, -0.04em, with its unit in the 20px grotesk), and so do the amount being given (Send, Swap) and Swap's quote, at 2.25rem with tight tracking; on phones these step down to 1.875rem, then 1.5rem, before they would clip (`amountFit`).
 - **Figure** (JetBrains Mono 400, 1.25rem, tabular): the live strip's facts (fee, block, status).
 - **Rate** (JetBrains Mono 600, 1.875rem, tabular, tight): a protocol's variable rate on its card, followed by "a year, variable" in 14px Graphite grotesk.
 - **Token** (JetBrains Mono 500, 11px, 0.12em, uppercase): stepper labels, the token bar, a plate's title, units inside fields ("USDC / DAY"), file metadata, and short verifiable status ("2 of 2 · yours", "Account · live onchain", "Lent · live onchain").
@@ -324,7 +344,7 @@ Onboarding is a two-column split from 1024px: an ink panel on the left (0.9fr) h
 
 The quiet variant of the same shell serves the lost-phone flow (`/lost`): the panel steps back to the logo and the live strip, with no candle chart and no tagline, and narrows to 0.7fr against 1.3fr for the content, so the lock-out leads.
 
-Inside a step, vertical rhythm is 24px between blocks (title, form, action), 16 to 20px inside forms, 6px between a label and its field. Plates take extra top margin (64px) so the seal's overhang has room. Panel padding is 40px (48px from 1280px). Lists use hairline top and bottom rules rather than boxes. Primary actions run full width at the bottom of the column. In the app shell the sidebar runs Overview, Send, Receive, Earn, Swap, Handle, Swissquote, Activity, Security; a task screen with a reference list (Swap) puts it in a 340px aside from 1024px, under the task on phones. Breakpoints are Tailwind's 640, 1024 and 1280px. Page gutters are 20px on phones (app header, content, onboarding), 24px from 640px, 40px on desktop content.
+Inside a step, vertical rhythm is 24px between blocks (title, form, action), 16 to 20px inside forms, 6px between a label and its field. Plates take extra top margin (64px) so the seal's overhang has room. Panel padding is 40px (48px from 1280px). Lists use hairline top and bottom rules rather than boxes. Primary actions run full width at the bottom of the column. In the app shell the sidebar runs Overview, Send, Receive, Earn, Swap, Handle, Swissquote, Activity, Security; a task screen with a reference list (Swap) puts it in a 340px aside from 1024px, under the task on phones. A page of proof (Security) sets its sections in pairs on a 7fr/5fr grid from 1024px (24px gap for the plate row, 40px for the section rows), stacked on phones, with 48px between rows; the wider column carries the plate, the matrix and the rules, the narrower one the worst case, the scenarios and this phone. Breakpoints are Tailwind's 640, 1024 and 1280px. Page gutters are 20px on phones (app header, content, onboarding), 24px from 640px, 40px on desktop content.
 
 ## Elevation & Depth
 
@@ -362,6 +382,8 @@ Crisp, solid, decisive.
 
 ### Badges
 Small 6px tags, 12px medium text: neutral (Stone Wash with a hairline), accent (Apricot with Ember Ink), success, danger, warning on their soft grounds, and hero (Plate Rule with Plate Grey, no border), the neutral badge on an ink plate. Warning marks DEMO and MOCK states. "Soon" is always the neutral badge (hero tone on a plate), in the sidebar, on plates and on cards, never a mono token.
+
+**The Soon Slot.** A power the app does not build yet keeps its place and its control: the neutral "Soon" badge sits just before a disabled small secondary button that names the action ("Change", "Upgrade to level 1", "Add a key"). On a plate the slot is a row with a 10px empty outlined square in Plate Grey, the name and its line in Plate Grey, and the hero "Soon" badge at the right. Nothing in a Soon slot is orange, and it is never hidden.
 
 ### Cards / Containers
 - **Corner Style:** 10px.
@@ -412,6 +434,18 @@ The review replaces the card, with the Action Panel's grammar and no panel borde
 ### Activity Row
 One row per USDC movement: a 36px icon tile (6px corners), a 14px medium title with approval squares at the small size, a 12px Graphite subtitle that truncates, and the USDC figure in mono at asset precision at the right (Ledger Green when it comes in). Sent and received rows read "Sent USDC" / "Received USDC" with "To 0x…" / "From 0x…" and the time. A swap is one row, never two: a neutral tile (Stone Wash, ink Repeat icon) in both directions, "Swapped to EURC" or "Swapped from ETH", approval squares on both directions, and "Got 0.49 EURC · Uniswap v3 · 03:55" (or "Gave …"), the venue hidden on phones.
 
+### Security Page
+`/security` is a proof, not a settings list: who can move the money, as the chain reports it. Under the page header ("Who can move your money, read live onchain.") the rows run on the Layout's 7fr/5fr grid:
+- **Owners plate and worst case.** An ink plate without a seal, titled "Owners of your Account · live onchain" with the 6px live square. Owner rows: factor square, name in 14px medium Plate White, one 12px Plate Grey line, the hero address pill at the right. "This phone" (orange, its Key Safe; "Being locked out · m:ss left" in Plate White under it while a lock-out is pending), "Recovery Kit" (Plate White square, its owner key), any "Another owner" not added by the app (a filled Plate Grey square, "Not added by this app"), then the Security key Soon slot. A plate-ruled footer reads "Above your daily limit" left and "2 of 2 needed · both yours" right (mono figures), stacked on phones. Last, the Swissquote block: "Swissquote" in 14px medium, the verdict "Not an owner" in 20px semibold at the right (announced politely), then one Plate Grey sentence naming its guardian key and treasury in mono, only once the live comparison has passed. If Swissquote's keys do not load, the verdict reads "Not checked" with a "Try again" link; if one is an owner, "Listed as an owner" with a warning-icon sentence in Plate White. It closes with "Verify the owners on Basescan ↗". Beside it, the roomy loss bound, as tall as the plate.
+- **"Who can do what"** (the Powers Matrix) beside **"If something goes wrong"**: four scenarios on hairline rows, the title in 14px medium, the body in Graphite, the worst case in mono ink.
+- **"Rules of your Account"** beside **"This phone"** and the forget box. Rules are hairline rows of a Graphite label, the value in medium (figures in mono), a Graphite detail line, and a Soon slot at the right (under the text on phones): daily limit (amount, spent today, reset), lock-out delay ("7 days (3 min in this demo)" and the level), security key ("None"). "This phone" is a hairline definition list (label in Graphite left, fact right) ending in a status badge read from the Account: success "Owner of your Account", danger "Being locked out" or "No longer an owner".
+- **Forget this wallet on this device:** a white box with a 1px Signal Red border at 30%, 10px corners and 20px padding, a 16px semibold title and a muted paragraph. "Forget…" (small secondary) turns into "Keep it" (secondary) beside "Forget this wallet" (danger).
+
+Each section is the Section title, an optional muted subline, then hairline rows, no cards. A wallet without an Account shows only a "Recovery" hairline list: the Kit's factor square, the Swissquote guardian with an empty square column, address pills, and a primary link to create the Account. No shield icons, no success badge.
+
+### Powers Matrix
+Powers × parties, for any screen that says who can do what. From 640px a table with hairline row rules: the power as the row header in 14px (a 12px Graphite detail under it, such as "After 7 days (3 min in this demo)"), then one column per party headed in 14px medium with its small factor square: Phone (orange), Kit (ink) and Swissquote with none, under the Factor Code Rule. A cell is small factor squares plus a few words: "alone", "together" spanning the Phone and Kit columns with both squares, "starts it" or "checks ID" at level 1; "never" and "—" (not needed) stand in Graphite without squares. Every cell carries screen-reader text ("yes, Face ID alone", "not needed"). Below 640px the table becomes a hairline list: the power in 14px medium, its detail, then one line of parties ("■ Phone alone", "■■ Phone + Kit together", "Swissquote never" in Graphite) with "not needed" dropped. A muted footnote closes it.
+
 ### Compliance Checks
 A list of checks before Face ID, each a status icon, a 14px title and mono detail lines that wrap anywhere (never cut). On a dApp action the subject is the contract, not a recipient: "Protocol contract screened: not on sanctions lists", "Simulation: these steps would succeed" with one mono line per step, and "Large amount: type the amount to confirm" (on a payment, "Large payment"). The typed confirmation compares amounts, so "0.5" matches "0.50". Simulation lines name an approved dApp with its short address ("Allow Aave v3 (0x07eA…814b) to spend 0.50 USDC"); a transfer's recipient stays the full address, because it is what the user verifies.
 
@@ -440,7 +474,9 @@ The price is a seeded, range-bound walk with no drift: the chart must never impl
 - **Live strip:** on the ink panel, three columns under a Plate Rule line: Network fee "0.00", Base Sepolia block, Status, each a 12px Plate Grey label over a 20px mono figure.
 
 ### Loss bound
-An apricot field: a 14px sentence, the worst case as a 36px mono figure with its unit, and a row of 28px squares numbered in 11px mono: a leading solid orange "now" square for what can still go today, then one square at orange 45% per daily reset during the delay. A closing sentence spells the sum out with its mono figures. Used at setup and on the lock-out step.
+An apricot field: a 14px sentence, the worst case as a 36px mono figure with its unit, and a row of 28px squares numbered in 11px mono: a leading solid orange "now" square for what can still go today, then one square at orange 45% per daily reset during the delay. A closing sentence spells the sum out with its mono figures, with the warning "Demo" badge and the testnet delay while it is on. One component (`LossBound`) in two modes:
+- **Compact** (setup, lock-out step): 16px padding, the figure and the squares on one row.
+- **Roomy** (Security, beside the owners plate): 20 to 24px padding, stretched to the plate's height as a column spaced between its ends: the sentence and the figure at the top (mono 600, 48px, 60px from 640px), the day squares in the middle, the explanation at the bottom. Its squares take the large size: 28px, 36px from 1024px (`DaySquares size="lg"`), labels unchanged.
 
 **The Loss Bound Truth Rule.** The worst case is what is left today plus one daily limit per reset during the delay, computed exactly and shown with two decimals. Never "about", never rounded up for effect.
 
@@ -479,6 +515,8 @@ Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale fro
 - **Do** show a rate as a percentage with two decimals and "variable", next to a footnote that it is a testnet rate and not promised.
 - **Do** mark the card or row in action with an ink border, and keep the screen's one orange fill for its primary action.
 - **Do** name an approved dApp with its short address in readable steps, and keep a transfer's recipient as the full address.
+- **Do** keep a power that is not built yet in place as a Soon slot: the neutral "Soon" badge beside its disabled small secondary button.
+- **Do** say who can do what as a powers matrix of factor squares and a few words, a table from 640px and a list on phones.
 - **Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours.
 
 ### Don't:

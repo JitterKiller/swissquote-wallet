@@ -3,23 +3,21 @@
 import { useState } from 'react'
 import { formatUnits, parseUnits, type Address } from 'viem'
 
-import { DaySquares } from '@/components/account/DaySquares'
+import { LossBound } from '@/components/account/LossBound'
 import { useWallet } from '@/components/providers/WalletProvider'
 import { Button } from '@/components/ui/button'
-import { Alert, Badge, Spinner } from '@/components/ui/feedback'
+import { Alert, Spinner } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
 import { Plate, PlateRow } from '@/components/ui/plate'
 import { accountSetupCalls } from '@/lib/account'
 import { api } from '@/lib/api'
 import {
   EVICTION_DAYS,
-  EVICTION_DELAY_IS_DEMO,
-  EVICTION_DELAY_SECONDS,
   SUGGESTED_DAILY_LIMIT,
   USDC_DECIMALS,
   type Level,
 } from '@/lib/config'
-import { errorMessage, formatUsdc, formatUsdcShort } from '@/lib/format'
+import { errorMessage, formatUsdcShort } from '@/lib/format'
 import { cleanAmount } from '@/lib/inputs'
 import { getRecoveryStatus, recoverySetupCalls } from '@/lib/recovery'
 import { kitAccounts, kitAddresses, type KitKeys, type RecoveryKitV3 } from '@/lib/recoveryKit'
@@ -158,25 +156,7 @@ export function AccountSetupStep({
         })}
       </div>
 
-      <section className="rounded-2xl bg-accent-soft p-4" aria-label="Worst case if your phone is stolen">
-        <p className="text-sm text-foreground/75">If your phone is stolen, a thief can take at most</p>
-        <div className="mt-1 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-          <p className="font-mono text-4xl font-semibold tabular-nums tracking-tight">
-            {valid ? formatUsdc(dailyLimit * BigInt(days + 1)) : '–'} <span className="font-sans text-lg">USDC</span>
-          </p>
-          <DaySquares days={days} today />
-        </div>
-        <p className="mt-2 text-sm text-foreground/75">
-          <span className="font-mono tabular-nums">{valid ? formatUsdc(dailyLimit) : '–'}</span> today, then again after each of the{' '}
-          {days} daily resets until your Kit locks them out{level === 1 ? ' with a Swissquote identity check.' : '.'}
-          {EVICTION_DELAY_IS_DEMO && (
-            <span className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap text-xs">
-              <Badge tone="warning">Demo</Badge>
-              {Math.round(EVICTION_DELAY_SECONDS[level] / 60)} min on testnet
-            </span>
-          )}
-        </p>
-      </section>
+      <LossBound limit={valid ? dailyLimit : null} level={level} />
 
       <Plate title="Face ID will approve" className="!mt-16">
         <dl>
