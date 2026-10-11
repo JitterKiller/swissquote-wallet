@@ -158,7 +158,7 @@ function offerRows(limit: bigint | null, quota: number | null): { rows: Row[]; s
       id: 'security-key',
       label: 'Security key',
       detail: 'With one, any offer locks a stolen phone out at once.',
-      link: { href: '/security?change=key', label: 'Add a security key' },
+      link: { href: '/wallet/security?change=key', label: 'Add a security key' },
       cells: { free: ownKey, client: ownKey, premium: { value: <FactorLabel factors={['key']}>Included</FactorLabel>, lines: ['Shipped, set up and checked for you'] } },
     },
     {
@@ -297,7 +297,7 @@ export function OffersView() {
     free: null,
     client:
       offer === 'free' ? (
-        <ButtonLink href="/swissquote" variant="secondary" size="sm" className="max-sm:h-11">
+        <ButtonLink href="/wallet/swissquote" variant="secondary" size="sm" className="max-sm:h-11">
           Link your account
         </ButtonLink>
       ) : null,
@@ -400,16 +400,16 @@ function YourOffer({
   let mock: string | null = null
   if (!hasAccount) {
     text = 'This wallet has no Account yet. Protect it first: a Recovery Kit and a daily limit you choose, free in every offer.'
-    next = <ButtonLink href="/welcome/protect">Protect your wallet</ButtonLink>
+    next = <ButtonLink href="/wallet/welcome/protect">Protect your wallet</ButtonLink>
   } else if (offer === 'free') {
     text =
       level === 1
         ? 'Link this wallet to your Swissquote account for an @handle, one-tap transfers and all network fees covered.'
         : `Linking is free for Swissquote clients: an @handle, one-tap transfers and all network fees covered. Then, with your Kit, add Swissquote's identity check and a stolen phone is locked out after ${EVICTION_DAYS[1]} days instead of ${EVICTION_DAYS[0]}${demo}. Swissquote never becomes an owner.`
-    next = <ButtonLink href="/swissquote">Link your Swissquote account</ButtonLink>
+    next = <ButtonLink href="/wallet/swissquote">Link your Swissquote account</ButtonLink>
   } else if (offer === 'client' && level === 0) {
     text = `Your Account still locks a stolen phone out after ${EVICTION_DAYS[0]} days${demo}. As a client, shorten it to ${EVICTION_DAYS[1]} days with your Kit: Swissquote checks your identity first and never becomes an owner.`
-    next = <ButtonLink href="/security?change=level">Shorten the lock-out to {EVICTION_DAYS[1]} days</ButtonLink>
+    next = <ButtonLink href="/wallet/security?change=level">Shorten the lock-out to {EVICTION_DAYS[1]} days</ButtonLink>
   } else if (offer === 'client') {
     text = hasKey
       ? 'Your security key is already an owner. Premium adds an insured worst case and a priority hotline. Your basic security stays the same.'
@@ -439,7 +439,7 @@ function YourOffer({
     const delay = demoDelay(level)
     text = `Your security key was ordered ${when}. When it arrives, add it as a third owner of your Account: until then, a stolen phone is locked out after ${EVICTION_DAYS[level]} days${delay ? ` (${delay})` : ''}.`
     next = (
-      <ButtonLink href="/security?change=key" variant="secondary">
+      <ButtonLink href="/wallet/security?change=key" variant="secondary">
         Add a security key
       </ButtonLink>
     )
@@ -797,7 +797,7 @@ export function OffersHint() {
     <p className="text-sm text-muted">
       Coming soon: a tap on a security key instead of your passphrase, with your own key or one set up for you with Premium.{' '}
       <Link
-        href="/offers"
+        href="/wallet/offers"
         className="inline-flex items-center gap-0.5 font-medium text-accent-ink underline-offset-4 hover:underline max-sm:-my-3 max-sm:min-h-11"
       >
         Offers

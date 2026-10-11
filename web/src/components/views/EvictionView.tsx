@@ -93,7 +93,7 @@ export function EvictionView() {
 
   // A wallet already lives on this device and nothing is in progress: go to it.
   useEffect(() => {
-    if (ready && wallet && !local && step !== 'done') router.replace('/')
+    if (ready && wallet && !local && step !== 'done') router.replace('/wallet')
   }, [ready, wallet, local, step, router])
 
   if (!ready) return null
@@ -392,7 +392,7 @@ export function EvictionView() {
           title={error.title}
           action={
             error.legacy ? (
-              <ButtonLink href="/recover" variant="secondary" size="sm">
+              <ButtonLink href="/wallet/recover" variant="secondary" size="sm">
                 Open the previous recovery
               </ButtonLink>
             ) : undefined
@@ -404,10 +404,10 @@ export function EvictionView() {
 
       {step === 'kit' && (
         <p className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-center text-sm">
-          <Link href="/welcome" className="text-muted hover:text-foreground">
+          <Link href="/wallet/welcome" className="text-muted hover:text-foreground">
             Back
           </Link>
-          <Link href="/recover" className="text-muted hover:text-foreground">
+          <Link href="/wallet/recover" className="text-muted hover:text-foreground">
             Wallet without an Account? Previous recovery
           </Link>
         </p>
@@ -983,7 +983,7 @@ function DoneStep({ done }: { done: Done }) {
           ))}
         </p>
       </Plate>
-      <ButtonLink href="/" size="lg" className="w-full">
+      <ButtonLink href="/wallet" size="lg" className="w-full">
         Open my Account
       </ButtonLink>
     </div>

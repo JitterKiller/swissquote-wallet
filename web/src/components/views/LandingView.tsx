@@ -30,7 +30,7 @@ import { shortAddress } from '@/lib/format'
  */
 export function LandingView() {
   const { ready, wallet } = useWallet()
-  const primary = ready && wallet ? { href: '/', label: 'Open your wallet' } : { href: '/welcome', label: 'Create your wallet' }
+  const primary = ready && wallet ? { href: '/wallet', label: 'Open your wallet' } : { href: '/wallet/welcome', label: 'Create your wallet' }
 
   return (
     <div className="bg-background text-foreground">
@@ -67,7 +67,7 @@ export function LandingView() {
             <ButtonLink href={primary.href} size="lg">
               {primary.label}
             </ButtonLink>
-            <Link href="/lost" className="text-sm font-medium text-accent underline-offset-4 hover:underline">
+            <Link href="/wallet/lost" className="text-sm font-medium text-accent underline-offset-4 hover:underline">
               Phone lost or stolen?
             </Link>
           </div>
@@ -103,7 +103,7 @@ export function LandingView() {
             <ButtonLink href={primary.href} size="lg">
               {primary.label}
             </ButtonLink>
-            <Link href="/lost" className="text-sm font-medium text-accent underline-offset-4 hover:underline">
+            <Link href="/wallet/lost" className="text-sm font-medium text-accent underline-offset-4 hover:underline">
               Phone lost or stolen?
             </Link>
           </div>

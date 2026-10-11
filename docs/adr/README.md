@@ -69,7 +69,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-011](architecture/ADR-011-no-custom-cryptography.md) | No custom cryptography | Accepted |
 | [ADR-012](architecture/ADR-012-testing-real-chain-real-webauthn.md) | Testing on the real chain with real Chrome WebAuthn | Accepted |
 | [ADR-013](architecture/ADR-013-vault-allowance-module.md) | Vault: second Safe + Safe Allowance Module, the Spending Safe as delegate | Superseded by ADR-017 |
-| [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted |
+| [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted, amended by ADR-040 |
 | [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted, amended by ADR-029 and ADR-032 |
 | [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted, amended by ADR-027 |
 | [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Accepted (spike C1–C4 passed on 2026-10-10), amended by ADR-019 |
@@ -95,6 +95,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-037](architecture/ADR-037-ui-refinements-no-seal-4px-tab-bar-chart.md) | UI refinements: no seal on ink plates (approval squares instead), 4px buttons, phone tab bar with More, Overview balance chart from on-chain transfers, one custody vocabulary, phone polish | Accepted |
 | [ADR-038](architecture/ADR-038-security-key.md) | Security key (#17): a third Account owner through Safe's WebAuthn verifier, added with Face ID + Kit (the wallet's own passkey refused); with the Kit it locks a lost phone out at once, also while a lock-out runs (cancelled in the same transaction), relayed by `/api/evict-now`; Key column in the powers matrix, `npm run e2e:key` | Accepted |
 | [ADR-039](architecture/ADR-039-offers-page.md) | Offers page and the upgrade funnel (#22, #21): comparison table at `/offers` (your column outlined, worst case from your limit, what your own key does in every offer, "Soon" for what isn't built), MOCK Premium in `store()` (`/api/offers`), one trigger after the first Kit payment on Send, the sidebar reads the link, quota and protect-flow calls to link | Accepted (amends ADR-036) |
+| [ADR-040](architecture/ADR-040-landing-at-root-app-under-wallet.md) | The landing page at `/`, the app under `/wallet` (`app/wallet/(wallet)`, `(onboarding)`, `(recovery)`), guards to the landing, old paths redirected with their query (payment request QR codes) | Accepted (amends ADR-014) |
 
 ## Open questions (future records)
 

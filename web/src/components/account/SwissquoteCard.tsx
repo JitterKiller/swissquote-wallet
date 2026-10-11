@@ -48,7 +48,7 @@ export function SwissquoteCard({ wallet }: { wallet: StoredWallet }) {
             <span className="font-sans text-base font-normal text-muted">USDC</span>
           </p>
           <p className="mt-1 text-sm text-muted">{link.linked.maskedName} · linked to this wallet</p>
-          <Link href="/swissquote" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
+          <Link href="/wallet/swissquote" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
             Move money <ChevronRight className="h-4 w-4" aria-hidden />
           </Link>
         </>
@@ -58,7 +58,7 @@ export function SwissquoteCard({ wallet }: { wallet: StoredWallet }) {
             Link your Swissquote account: one-tap transfers, an @handle and all network fees covered. Then, with your Kit, a stolen phone can be
             locked out after {EVICTION_DAYS[1]} days instead of {EVICTION_DAYS[0]}.
           </p>
-          <Link href="/swissquote" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
+          <Link href="/wallet/swissquote" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
             Link with Face ID <ChevronRight className="h-4 w-4" aria-hidden />
           </Link>
         </>

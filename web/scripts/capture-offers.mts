@@ -68,7 +68,7 @@ async function capture(page: Page, name: string) {
 }
 
 async function protect(page: Page) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Alice')
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
@@ -92,7 +92,7 @@ async function protect(page: Page) {
 const visible = (page: Page, text: string) => page.getByText(text, { exact: true }).filter({ visible: true }).first()
 
 async function openOffers(page: Page, offer: string, worstCase: string) {
-  await page.goto(`${APP_URL}/offers`)
+  await page.goto(`${APP_URL}/wallet/offers`)
   await page.getByRole('heading', { name: `Your offer: ${offer}` }).waitFor({ timeout: 60_000 })
   await visible(page, worstCase).waitFor({ timeout: 60_000 }) // the worst case, from the daily limit read onchain
 }
@@ -121,7 +121,7 @@ try {
   await P.screenshot({ path: `${OUT}/offers-free-tab-premium.png` })
   log('Free: captured, and the Premium tab on the phone ✓')
 
-  await P.goto(`${APP_URL}/swissquote`)
+  await P.goto(`${APP_URL}/wallet/swissquote`)
   await P.getByLabel('Name on your Swissquote account').fill(CLIENT)
   await P.getByRole('button', { name: 'Sign in with Swissquote' }).click()
   await P.getByRole('button', { name: 'Link with Face ID' }).click()
@@ -149,13 +149,13 @@ try {
   if (SEND) {
     try {
       const { relayer: treasury } = (await (await fetch(`${APP_URL}/api/guardian`)).json()) as { relayer: string }
-      await P.goto(`${APP_URL}/swissquote`)
+      await P.goto(`${APP_URL}/wallet/swissquote`)
       await P.locator('#to-wallet').waitFor({ timeout: 60_000 })
       await P.locator('#to-wallet').fill('1')
       await P.getByRole('button', { name: 'Move to my wallet' }).click()
       await P.getByText('1 USDC moved to your wallet').waitFor({ timeout: 90_000 })
       // Back to the treasury, above the 0.50 limit: Face ID + the Kit.
-      await P.goto(`${APP_URL}/send`)
+      await P.goto(`${APP_URL}/wallet/send`)
       await P.getByLabel('Recipient').fill(treasury)
       await P.locator('#amount').fill('1')
       await P.getByText('Needs your Kit:', { exact: false }).waitFor({ timeout: 60_000 })

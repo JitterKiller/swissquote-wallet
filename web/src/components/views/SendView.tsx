@@ -389,7 +389,7 @@ export function SendView() {
                 <Button variant="secondary" size="lg" onClick={reset}>
                   Send another
                 </Button>
-                <ButtonLink href="/" size="lg">
+                <ButtonLink href="/wallet" size="lg">
                   Back to overview
                 </ButtonLink>
               </div>

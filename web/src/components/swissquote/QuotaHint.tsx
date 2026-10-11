@@ -11,7 +11,7 @@ export const isQuotaRefusal = (error: string | null) => !!error && /sponsored qu
 export function QuotaHint({ error }: { error: string | null }) {
   if (!isQuotaRefusal(error)) return null
   return (
-    <Link href="/swissquote" className="mt-2 inline-flex min-h-11 items-center gap-1 font-medium text-accent-ink hover:underline sm:min-h-0">
+    <Link href="/wallet/swissquote" className="mt-2 inline-flex min-h-11 items-center gap-1 font-medium text-accent-ink hover:underline sm:min-h-0">
       Link with Face ID <ChevronRight className="h-4 w-4" aria-hidden />
     </Link>
   )

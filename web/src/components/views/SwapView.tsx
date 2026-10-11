@@ -98,7 +98,7 @@ export function SwapView() {
           icon={<Repeat className="h-5 w-5" />}
           title="Protect your wallet first"
           description="Swaps run from your Account, and every swap needs your Recovery Kit with Face ID."
-          action={<ButtonLink href="/welcome/protect">Protect your wallet</ButtonLink>}
+          action={<ButtonLink href="/wallet/welcome/protect">Protect your wallet</ButtonLink>}
         />
       </div>
     )

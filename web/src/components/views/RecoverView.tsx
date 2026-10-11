@@ -62,7 +62,7 @@ export function RecoverView() {
 
   // A wallet already lives on this device and nothing is in progress: go to it.
   useEffect(() => {
-    if (ready && wallet && !local) router.replace('/')
+    if (ready && wallet && !local) router.replace('/wallet')
   }, [ready, wallet, local, router])
 
   if (!ready) return null
@@ -95,7 +95,7 @@ export function RecoverView() {
       account: recovery.account,
     })
     clearLocalRecovery()
-    router.replace('/')
+    router.replace('/wallet')
   }
 
   return (
@@ -111,7 +111,7 @@ export function RecoverView() {
           <Badge tone="warning">Prototype</Badge>
           <span>
             This page still runs the earlier recovery, which your old device can cancel. For a lost or stolen phone, use{' '}
-            <Link href="/lost" className="font-medium text-accent-ink underline underline-offset-4">
+            <Link href="/wallet/lost" className="font-medium text-accent-ink underline underline-offset-4">
               Phone lost or stolen
             </Link>
             : your Kit locks it out, and a thief can&apos;t cancel it.
@@ -214,7 +214,7 @@ export function RecoverView() {
       )}
 
       <p className="text-center text-sm">
-        <Link href="/welcome" className="text-muted hover:text-foreground">
+        <Link href="/wallet/welcome" className="text-muted hover:text-foreground">
           Back
         </Link>
       </p>

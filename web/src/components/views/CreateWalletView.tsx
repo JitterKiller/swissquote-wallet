@@ -27,7 +27,7 @@ export function CreateWalletView() {
 
   // Already have a wallet on this device: go to it (unless we are mid-creation).
   useEffect(() => {
-    if (ready && wallet && !busy) router.replace('/')
+    if (ready && wallet && !busy) router.replace('/wallet')
   }, [ready, wallet, busy, router])
 
   async function create(e: React.FormEvent) {
@@ -45,7 +45,7 @@ export function CreateWalletView() {
         createdAt: Date.now(),
         createdBlock: block === null ? undefined : String(block - 10n),
       })
-      router.push('/welcome/protect')
+      router.push('/wallet/welcome/protect')
     } catch (e) {
       setError(errorMessage(e))
       setBusy(false)
@@ -89,7 +89,7 @@ export function CreateWalletView() {
       <div className="flex items-center gap-3 text-xs text-muted">
         <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
       </div>
-      <ButtonLink href="/lost" variant="secondary" className="w-full">
+      <ButtonLink href="/wallet/lost" variant="secondary" className="w-full">
         Phone lost or stolen?
       </ButtonLink>
     </div>

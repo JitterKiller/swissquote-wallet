@@ -59,7 +59,7 @@ export function ActivityView() {
               title={filter === 'all' ? 'No transactions yet' : 'Nothing here yet'}
               description="Transfers appear here a few seconds after they are confirmed on-chain."
               action={
-                <ButtonLink href="/receive" variant="secondary" size="sm">
+                <ButtonLink href="/wallet/receive" variant="secondary" size="sm">
                   Receive USDC
                 </ButtonLink>
               }

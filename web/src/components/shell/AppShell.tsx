@@ -33,19 +33,19 @@ type NavItem = { href: string; label: string; icon: LucideIcon; soon?: boolean }
 
 // The phone's tab bar keeps the five daily jobs; the rest stays one tap away on the Overview.
 /** A phone tab bar holds five: four destinations, then More for the rest of NAV. */
-const MOBILE_TABS = ['/', '/send', '/receive', '/activity']
+const MOBILE_TABS = ['/wallet', '/wallet/send', '/wallet/receive', '/wallet/activity']
 
 const NAV: NavItem[] = [
-  { href: '/', label: 'Overview', icon: House },
-  { href: '/send', label: 'Send', icon: ArrowUpRight },
-  { href: '/receive', label: 'Receive', icon: ArrowDownLeft },
-  { href: '/earn', label: 'Earn', icon: Sprout },
-  { href: '/swap', label: 'Swap', icon: Repeat },
-  { href: '/handle', label: 'Handle', icon: AtSign },
-  { href: '/swissquote', label: 'Swissquote', icon: Landmark },
-  { href: '/activity', label: 'Activity', icon: Clock },
-  { href: '/security', label: 'Security', icon: ShieldCheck },
-  { href: '/offers', label: 'Offers', icon: Layers },
+  { href: '/wallet', label: 'Overview', icon: House },
+  { href: '/wallet/send', label: 'Send', icon: ArrowUpRight },
+  { href: '/wallet/receive', label: 'Receive', icon: ArrowDownLeft },
+  { href: '/wallet/earn', label: 'Earn', icon: Sprout },
+  { href: '/wallet/swap', label: 'Swap', icon: Repeat },
+  { href: '/wallet/handle', label: 'Handle', icon: AtSign },
+  { href: '/wallet/swissquote', label: 'Swissquote', icon: Landmark },
+  { href: '/wallet/activity', label: 'Activity', icon: Clock },
+  { href: '/wallet/security', label: 'Security', icon: ShieldCheck },
+  { href: '/wallet/offers', label: 'Offers', icon: Layers },
 ]
 
 /** Authenticated layout: sidebar on desktop, top bar + tab bar on mobile. */
@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (ready && !wallet) router.replace(loadLocalEviction() ? '/lost' : loadLocalRecovery() ? '/recover' : '/start')
+    if (ready && !wallet) router.replace(loadLocalEviction() ? '/wallet/lost' : loadLocalRecovery() ? '/wallet/recover' : '/')
   }, [ready, wallet, router])
 
   if (!ready || !wallet) return <ShellSkeleton />
@@ -66,7 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         account={wallet.account && isEvicted(chain.account, wallet.address) ? wallet.account : null}
         onForget={() => {
           forget()
-          router.replace('/welcome')
+          router.replace('/wallet/welcome')
         }}
       />
     )
@@ -224,7 +224,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
 }
 
 function isActive(pathname: string, href: string) {
-  return href === '/' ? pathname === '/' : pathname.startsWith(href)
+  return href === '/wallet' ? pathname === '/wallet' : pathname.startsWith(href)
 }
 
 function NavLink({ item, active }: { item: NavItem; active: boolean }) {

@@ -185,7 +185,7 @@ export function LevelUpgrade({
             out after {EVICTION_DAYS[1]} days instead of {EVICTION_DAYS[0]}.
           </p>
           <div className="flex flex-wrap gap-2">
-            <ButtonLink href="/swissquote">Link your Swissquote account</ButtonLink>
+            <ButtonLink href="/wallet/swissquote">Link your Swissquote account</ButtonLink>
             <Button variant="secondary" onClick={onClose}>
               Not now
             </Button>

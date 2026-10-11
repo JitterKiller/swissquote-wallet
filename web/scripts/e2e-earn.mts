@@ -66,7 +66,7 @@ const both = async (page: Page, name: string, keepScroll = false) => {
 }
 
 async function protect(page: Page) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Alice')
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
@@ -89,7 +89,7 @@ async function protect(page: Page) {
 }
 
 async function fund(page: Page, amount: string) {
-  await page.goto(`${APP_URL}/swissquote`)
+  await page.goto(`${APP_URL}/wallet/swissquote`)
   await page.getByLabel('Name on your Swissquote account').fill('Alice Meier')
   await page.getByRole('button', { name: 'Sign in with Swissquote' }).click()
   await page.getByRole('button', { name: 'Link with Face ID' }).click()
@@ -130,7 +130,7 @@ try {
   await fund(P, '1')
   log('Wallet protected (limit 0.50 USDC/day) and funded with 1 USDC ✓')
 
-  await P.goto(`${APP_URL}/earn`)
+  await P.goto(`${APP_URL}/wallet/earn`)
   await P.getByText('a year, variable', { exact: false }).first().waitFor({ timeout: 60_000 })
   await P.waitForTimeout(1500)
   await both(P, 'earn-01-overview')
@@ -163,7 +163,7 @@ try {
   else failures.push(`unlisted demo: ${await P.getByRole('alert').last().textContent()}`)
 
   // Back to the treasury (Kit route: the balance is above today's limit).
-  await P.goto(`${APP_URL}/send`)
+  await P.goto(`${APP_URL}/wallet/send`)
   await P.getByLabel('Recipient').fill(treasury)
   await P.getByRole('button', { name: 'Max' }).click()
   await P.getByText(/Needs your Kit:|Face ID alone:/).first().waitFor({ timeout: 60_000 })

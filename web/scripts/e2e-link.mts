@@ -27,7 +27,7 @@ const record = (id: string, ok: boolean, detail: string) => {
 const same = (a?: string, b?: string) => !!a && !!b && a.toLowerCase() === b.toLowerCase()
 
 async function createAndProtect(page: Page) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Adam')
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
@@ -65,7 +65,7 @@ try {
   record('L1', !!wallet.account && !same(wallet.account, wallet.address), `Key Safe ${wallet.address}, Account ${wallet.account}`)
 
   // L2
-  await page.goto(`${APP_URL}/handle`)
+  await page.goto(`${APP_URL}/wallet/handle`)
   await page.getByLabel('Name on your Swissquote account').fill(NAME)
   await page.getByRole('button', { name: 'Sign in with Swissquote' }).click()
   const signaturesBefore = (await cdp.send('WebAuthn.getCredentials', { authenticatorId })).credentials[0]?.signCount ?? 0
@@ -90,7 +90,7 @@ try {
   record('L4', same(resolved.account, wallet.account) && resolved.maskedName === 'Adam R.', `@${HANDLE} → ${resolved.account} (${resolved.maskedName})`)
 
   // L5
-  await page.goto(`${APP_URL}/swissquote`)
+  await page.goto(`${APP_URL}/wallet/swissquote`)
   await page.getByText('Adam R. · Swissquote account').waitFor()
   const balance = await page.getByText(/USDC$/).first().textContent()
   record('L5', !!balance && balance.includes('1,000'), `/swissquote shows the linked account, balance "${balance}" (MOCK)`)

@@ -79,7 +79,7 @@ export function ProtectWalletView() {
   const [activation, setActivation] = useState<AccountActivation | null>(null)
 
   useEffect(() => {
-    if (ready && !wallet) router.replace('/welcome')
+    if (ready && !wallet) router.replace('/wallet/welcome')
   }, [ready, wallet, router])
 
   if (!ready || !wallet) return null
@@ -151,7 +151,7 @@ export function ProtectWalletView() {
 
       {step === 'passphrase' && (
         <p className="text-center text-sm">
-          <Link href="/" className="text-muted hover:text-foreground">
+          <Link href="/wallet" className="text-muted hover:text-foreground">
             Skip for now
           </Link>
         </p>
@@ -489,7 +489,7 @@ function Protected({ account, dailyLimit, level }: { account: `0x${string}`; dai
       </Plate>
 
       <div className="space-y-3">
-        <ButtonLink href="/" size="lg" className="w-full">
+        <ButtonLink href="/wallet" size="lg" className="w-full">
           Go to my wallet
         </ButtonLink>
         <a
@@ -512,7 +512,7 @@ function Protected({ account, dailyLimit, level }: { account: `0x${string}`; dai
             identity check: a stolen phone is locked out after {EVICTION_DAYS[1]} days instead of {EVICTION_DAYS[0]}. Swissquote never becomes an
             owner.
           </p>
-          <ButtonLink href="/swissquote" variant="secondary" className="mt-4">
+          <ButtonLink href="/wallet/swissquote" variant="secondary" className="mt-4">
             Link my Swissquote account
           </ButtonLink>
         </section>

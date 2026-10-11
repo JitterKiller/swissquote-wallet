@@ -45,7 +45,7 @@ export function EarnCard({ account }: { account: Address }) {
     <section className="rounded-2xl border border-border p-5">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="font-semibold">Earn</h2>
-        <Link href="/earn" className="inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
+        <Link href="/wallet/earn" className="inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
           Open Earn <ChevronRight className="h-4 w-4" />
         </Link>
       </div>

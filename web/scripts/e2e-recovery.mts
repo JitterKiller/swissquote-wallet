@@ -100,7 +100,7 @@ try {
   pages.push(A, B)
 
   // 1. Old device: create + protect.
-  await A.goto(APP_URL)
+  await A.goto(`${APP_URL}/wallet`)
   await A.getByLabel('Your name').fill('Alice')
   await A.getByRole('button', { name: 'Create wallet with passkey' }).click()
   const kitText = await protect(A)
@@ -112,9 +112,9 @@ try {
   await shot(A, 'r2-protected')
 
   // 2. New device: attacker path refused at identity verification.
-  await B.goto(APP_URL)
+  await B.goto(`${APP_URL}/wallet`)
   // The legacy Key Safe recovery, kept until #33 (the welcome link now opens the lock-out flow, /lost).
-  await B.goto(`${APP_URL}/recover`)
+  await B.goto(`${APP_URL}/wallet/recover`)
   await startRecovery(B, kitText)
   await B.getByRole('button', { name: 'Demo: simulate an attacker' }).click()
   await B.getByText(/Identity verification failed/).waitFor()

@@ -30,7 +30,7 @@ export function CustodyCard() {
             ? 'Recovery Kit + Swissquote can move this wallet to a new phone. Create your Account to add a daily limit.'
             : 'If you lose this phone, you lose this wallet. Protect it with a Recovery Kit and a daily limit.'}
         </p>
-        <ButtonLink href="/welcome/protect" className="mt-4 w-full">
+        <ButtonLink href="/wallet/welcome/protect" className="mt-4 w-full">
           Protect your wallet
         </ButtonLink>
       </section>
@@ -74,7 +74,7 @@ export function CustodyCard() {
         )}
       </ul>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <Link href="/security" className="inline-flex items-center gap-1 font-medium text-accent-ink hover:underline">
+        <Link href="/wallet/security" className="inline-flex items-center gap-1 font-medium text-accent-ink hover:underline">
           Who can do what <ChevronRight className="h-4 w-4" />
         </Link>
         <a

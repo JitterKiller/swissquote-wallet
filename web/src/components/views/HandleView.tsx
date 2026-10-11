@@ -83,7 +83,7 @@ export function HandleView() {
   const DESCRIPTION = 'Pay and get paid by @name instead of a 0x address, with the verified name shown before Face ID.'
   // "Review and pay" hands the recipient and amount to Send, where the review plate and Face ID take over.
   const payHref = checkRecipient
-    ? `/send?${new URLSearchParams({ to: checkValue.trim(), ...(checkAmount ? { amount: checkAmount } : {}) })}`
+    ? `/wallet/send?${new URLSearchParams({ to: checkValue.trim(), ...(checkAmount ? { amount: checkAmount } : {}) })}`
     : null
 
   const swissquoteCard = <SwissquoteLinkCard link={link} description="Handles are for linked Swissquote clients: your name is verified by your KYC." />

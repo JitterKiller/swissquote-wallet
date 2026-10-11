@@ -1,6 +1,6 @@
 # ADR-014: Routing with route groups + a shared `WalletProvider`
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-040 (landing at `/`, the app under `/wallet`)
 - **Date:** 2026-10-10
 - **Supersedes:** the screen-switching part of [ADR-010](ADR-010-frontend-nextjs-client-only.md) (`ClientApp` / `WalletApp`)
 - **Related:** [PDR-012](../product/PDR-012-web-first-banking-ux.md), [ADR-015](ADR-015-activity-from-chain-logs.md)

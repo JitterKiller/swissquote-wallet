@@ -533,7 +533,7 @@ function AccountRules({
   const close = () => {
     setOpen(null)
     // Drop ?change= so a reload doesn't reopen a finished task.
-    if (asked) router.replace('/security', { scroll: false })
+    if (asked) router.replace('/wallet/security', { scroll: false })
   }
   const openPanel = (panel: RulePanel) => {
     setDone(false)
@@ -784,7 +784,7 @@ function ForgetWallet() {
               size="sm"
               onClick={() => {
                 forget()
-                router.replace('/welcome')
+                router.replace('/wallet/welcome')
               }}
             >
               Forget this wallet
@@ -839,7 +839,7 @@ function LegacyRecovery({ keys }: { keys: SwissquoteKeys }) {
           <p className="mt-3 text-sm text-muted">
             {status.threshold} of {status.guardians.length} approvals, then {RECOVERY_DELAY_LABEL} during which you can cancel from this device.
           </p>
-          <ButtonLink href="/welcome/protect" className="mt-4">
+          <ButtonLink href="/wallet/welcome/protect" className="mt-4">
             Create your Account
           </ButtonLink>
           <p className="mt-2 text-xs text-muted">Adds a daily limit and a lock-out the thief cannot cancel.</p>
@@ -847,7 +847,7 @@ function LegacyRecovery({ keys }: { keys: SwissquoteKeys }) {
       ) : (
         <>
           <p className="mt-1 text-sm text-muted">If you lose this phone, you lose this wallet. Protect it with a Recovery Kit and a daily limit.</p>
-          <ButtonLink href="/welcome/protect" className="mt-4">
+          <ButtonLink href="/wallet/welcome/protect" className="mt-4">
             Protect your wallet
           </ButtonLink>
         </>

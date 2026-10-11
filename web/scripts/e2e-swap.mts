@@ -66,7 +66,7 @@ const both = async (page: Page, name: string, keepScroll = false) => {
 }
 
 async function protect(page: Page) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Alice')
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
@@ -89,7 +89,7 @@ async function protect(page: Page) {
 }
 
 async function fund(page: Page, amount: string) {
-  await page.goto(`${APP_URL}/swissquote`)
+  await page.goto(`${APP_URL}/wallet/swissquote`)
   await page.getByLabel('Name on your Swissquote account').fill('Alice Meier')
   await page.getByRole('button', { name: 'Sign in with Swissquote' }).click()
   await page.getByRole('button', { name: 'Link with Face ID' }).click()
@@ -107,7 +107,7 @@ async function confirmLarge(page: Page) {
 
 /** Pick the pair, type the amount (or Max), review, Kit + Face ID, receipt. */
 async function swap(page: Page, name: string | null, from: string, to: string, amount: string | 'max') {
-  await page.goto(`${APP_URL}/swap`)
+  await page.goto(`${APP_URL}/wallet/swap`)
   await page.getByLabel('Asset you give').selectOption(from)
   await page.getByLabel('Asset you get').selectOption(to)
   if (amount === 'max') {
@@ -141,20 +141,20 @@ try {
   log('Wallet protected (limit 0.50 USDC/day) and funded with 1 USDC ✓')
 
   log(`USDC → EURC: 0.50 swapped with Face ID + Kit → ${await swap(P, 'swap-01-eurc', 'USDC', 'EURC', '0.5')} ✓`)
-  await P.goto(APP_URL)
+  await P.goto(`${APP_URL}/wallet`)
   await P.getByText('EURC', { exact: false }).first().waitFor({ timeout: 60_000 })
   await P.waitForTimeout(1500)
   await both(P, 'swap-02-overview')
   log(`EURC → USDC: all back (Max, exact amount confirmed) → ${await swap(P, 'swap-03-back', 'EURC', 'USDC', 'max')} ✓`)
   log(`USDC → ETH: 0.20 swapped → ${await swap(P, 'swap-04-eth', 'USDC', 'ETH', '0.2')} ✓`)
   log(`ETH → USDC: all back → ${await swap(P, null, 'ETH', 'USDC', 'max')} ✓`)
-  await P.goto(`${APP_URL}/activity`)
+  await P.goto(`${APP_URL}/wallet/activity`)
   await P.getByText('Swapped from ETH').first().waitFor({ timeout: 60_000 })
   await both(P, 'swap-05-activity')
   log('Activity shows the swaps (not payments to the pools) ✓')
 
   // Back to the treasury (Kit route when the balance is above today's limit).
-  await P.goto(`${APP_URL}/send`)
+  await P.goto(`${APP_URL}/wallet/send`)
   await P.getByLabel('Recipient').fill(treasury)
   await P.getByRole('button', { name: 'Max' }).click()
   await P.getByText(/Needs your Kit:|Face ID alone:/).first().waitFor({ timeout: 60_000 })

@@ -101,11 +101,11 @@ function AccountPlate() {
       {chain.balance === 0n && (
         <p className="mt-2 text-sm text-hero-muted">
           Add USDC: share your address from{' '}
-          <Link href="/receive" className="text-hero-fg underline underline-offset-4">
+          <Link href="/wallet/receive" className="text-hero-fg underline underline-offset-4">
             Receive
           </Link>{' '}
           or move money from your{' '}
-          <Link href="/swissquote" className="text-hero-fg underline underline-offset-4">
+          <Link href="/wallet/swissquote" className="text-hero-fg underline underline-offset-4">
             Swissquote account
           </Link>
           .
@@ -118,7 +118,7 @@ function AccountPlate() {
             allowance={allowance}
             action={
               <Link
-                href="/security?change=limit"
+                href="/wallet/security?change=limit"
                 className="-my-3 inline-flex min-h-11 items-center px-1 font-medium text-hero-fg underline-offset-4 hover:underline"
               >
                 Change
@@ -131,16 +131,16 @@ function AccountPlate() {
       ) : null}
 
       <div className="mt-6 grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
-        <ButtonLink href="/send" size="action">
+        <ButtonLink href="/wallet/send" size="action">
           <ArrowUpRight className="h-5 w-5" /> Send
         </ButtonLink>
-        <ButtonLink href="/receive" size="action" variant="hero">
+        <ButtonLink href="/wallet/receive" size="action" variant="hero">
           <ArrowDownLeft className="h-5 w-5" /> Receive
         </ButtonLink>
-        <ButtonLink href="/swap" size="action" variant="hero">
+        <ButtonLink href="/wallet/swap" size="action" variant="hero">
           <Repeat className="h-5 w-5" /> Swap
         </ButtonLink>
-        <ButtonLink href="/earn" size="action" variant="hero">
+        <ButtonLink href="/wallet/earn" size="action" variant="hero">
           <Sprout className="h-5 w-5" /> Earn
         </ButtonLink>
       </div>
@@ -154,7 +154,7 @@ function ActivitySection() {
     <section className="rounded-2xl border border-border">
       <div className="flex items-baseline justify-between gap-3 px-5 pt-5">
         <h2 className="font-semibold">Activity</h2>
-        <Link href="/activity" className="inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
+        <Link href="/wallet/activity" className="inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
           View all <ChevronRight className="h-4 w-4" />
         </Link>
       </div>

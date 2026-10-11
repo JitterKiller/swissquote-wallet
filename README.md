@@ -30,7 +30,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Transfers between the Swissquote account and the wallet, both directions, travel rule filled in (PDR-024, ADR-025); demo treasury to fund once | ✅ |
 | Third guardian (trusted contact) | ⏳ |
 | Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ✅ (Account created at onboarding #10; Overview with today's Face ID budget #11; Send: Face ID alone within the limit, Kit passphrase + Face ID above it #12) |
-| One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019, ADR-030) | ✅ ("Phone lost or stolen?" on the new phone #15, alert and 2-factor stop on the old phone #16, `npm run e2e:eviction`; legacy `/recover` until #33) |
+| One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019, ADR-030) | ✅ ("Phone lost or stolen?" on the new phone #15, alert and 2-factor stop on the old phone #16, `npm run e2e:eviction`; legacy `/wallet/recover` until #33) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step | ✅ ("test your Kit" reminder ⏳) |
 | Open wallet for everyone + Swissquote link as the upgrade (PDR-015): level 0 for everyone, level 1 for linked clients (3-day lock-out with a Swissquote identity check), from the Security page or right after linking (ADR-036, #21, `npm run e2e:level`) | ✅ (KYC and the Swissquote sign-in are MOCK; no way back to level 0 yet) |
 | Offers page: Free, Client and Premium "Theft protection" compared for your own Account (worst case from your daily limit, what your own key does in every offer), your offer and its one next step; one line on Send's receipt after the first payment that needed the Kit (PDR-019, ADR-039, #22) | ✅ (Premium subscription and key order are MOCK; key tap for large payments and Kit replacement "Soon") |
@@ -123,7 +123,7 @@ npm run check:registry # wallet registry: valid proof, replay, other passkey, ot
 npm run check:sponsorship # sponsorship policy: quota, security ops, mixed batches, sanctions, linked client, stolen report (needs npm run dev)
 npm run check:handles  # @handles: uniqueness, reserved names, verified name, hidden = missing, contacts, rate limit (needs npm run dev)
 npm run check:swissquote # Swissquote transfers: balance, unlinked refused, overdraft, treasury, deposit verification (needs npm run dev)
-npm run e2e:link       # real Chrome + virtual passkey: protect, sign in (MOCK), "Link with Face ID", claim @handle, /swissquote (~2 min)
+npm run e2e:link       # real Chrome + virtual passkey: protect, sign in (MOCK), "Link with Face ID", claim @handle, /wallet/swissquote (~2 min)
 npm run e2e:eviction   # "Phone lost or stolen?" on two phones: lock-out, thief refused, 2-factor stop, takeover after the delay (~6 min)
 npm run e2e:earn       # Earn: Aave deposit with Kit + Face ID, withdraw, unlisted-dApp demo (~2 min, funded treasury)
 npm run e2e:swap       # Swap: USDC ↔ EURC, USDC ↔ ETH, Activity (~2 min, funded treasury)
@@ -173,8 +173,10 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 docs/adr/           decision records: product/ (PDR-*) and architecture/ (ADR-*), index in README.md
 CLAUDE.md           context for AI assistants (imports docs/adr/README.md)
 web/
-  src/app/(wallet)/       /, /send, /receive, /activity, /security   (AppShell: sidebar + guards)
-  src/app/(onboarding)/   /welcome, /welcome/protect, /recover       (OnboardingShell)
+  src/app/(marketing)/           /  (landing page)
+  src/app/wallet/(wallet)/       /wallet, /wallet/send, /wallet/receive, /wallet/activity, /wallet/security, … (AppShell: sidebar + guards)
+  src/app/wallet/(onboarding)/   /wallet/welcome, /wallet/welcome/protect, /wallet/recover   (OnboardingShell)
+  src/app/wallet/(recovery)/     /wallet/lost   (OnboardingShell, quiet)
   src/app/api/            mock backend route handlers: guardian, kyc, recovery, recovery/finalize
   src/components/views/   one view per page (Overview, Send, Receive, Activity, Security, Create, Protect, Recover)
   src/components/shell/   AppShell, OnboardingShell, security banners, logo

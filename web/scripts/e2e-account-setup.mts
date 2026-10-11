@@ -57,7 +57,7 @@ const shot = async (page: Page, name: string) => {
 
 /** Create a wallet and go through the protect flow. Returns the Kit file and the stored wallet. */
 async function createAndProtect(page: Page, name: string, limitPreset?: string) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill(name)
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
@@ -146,7 +146,7 @@ try {
 
   // Level 1: signed in with Swissquote before protecting (suggested 500 limit).
   const B = await device(browser)
-  await B.goto(`${APP_URL}/welcome`)
+  await B.goto(`${APP_URL}/wallet/welcome`)
   await B.evaluate(() => localStorage.setItem('sq-session:v1', JSON.stringify({ clientId: 'sq-bob-e2e', displayName: 'Bob E2E' })))
   const level1 = await createAndProtect(B, 'Bob')
   const b = await checkAccount(level1.kit, 1, parseUnits('500', USDC_DECIMALS), swissquote)

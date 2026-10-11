@@ -34,7 +34,7 @@ export const addContact = (clientId: string, contactHandle: string) =>
 
 /** Payment request link: opens the send flow with the recipient and amount filled in (#12). */
 export function paymentRequestUrl(handle: string, amount?: string) {
-  const url = new URL('/send', window.location.origin)
+  const url = new URL('/wallet/send', window.location.origin)
   url.searchParams.set('to', `@${normalizeHandle(handle)}`)
   if (amount) url.searchParams.set('amount', amount)
   return url.toString()

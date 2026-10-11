@@ -210,7 +210,7 @@ function LevelCallout() {
           : `As a linked client, you can have a lost phone locked out after ${EVICTION_DAYS[1]} days instead of ${EVICTION_DAYS[0]}${demo}, with your Kit and a Swissquote identity check. Swissquote never becomes an owner.`}
       </p>
       {level === 0 && (
-        <ButtonLink href="/security?change=level" variant="secondary" className="mt-4">
+        <ButtonLink href="/wallet/security?change=level" variant="secondary" className="mt-4">
           Shorten the lock-out to 3 days
         </ButtonLink>
       )}

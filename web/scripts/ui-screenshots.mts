@@ -47,7 +47,7 @@ const shot = async (page: Page, name: string) => {
 }
 
 async function createProtectedWallet(page: Page, prefix: string, dailyLimit?: string) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Alice')
   await shot(page, `${prefix}-01-welcome`)
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
@@ -79,7 +79,7 @@ async function createProtectedWallet(page: Page, prefix: string, dailyLimit?: st
 
 /** Link to the (MOCK) Swissquote account with Face ID and move `amount` USDC from the demo treasury. */
 async function fundFromSwissquote(page: Page, amount: string) {
-  await page.goto(`${APP_URL}/swissquote`)
+  await page.goto(`${APP_URL}/wallet/swissquote`)
   await page.getByLabel('Name on your Swissquote account').fill('Alice Meier')
   await page.getByRole('button', { name: 'Sign in with Swissquote' }).click()
   await page.getByRole('button', { name: 'Link with Face ID' }).click()
@@ -92,7 +92,7 @@ async function fundFromSwissquote(page: Page, amount: string) {
 
 /** One payment through the Send flow; `kit` = above today's limit (passphrase, then Face ID). */
 async function pay(page: Page, prefix: string, to: string, amount: string, kit: boolean) {
-  await page.goto(`${APP_URL}/send`)
+  await page.goto(`${APP_URL}/wallet/send`)
   await page.getByLabel('Recipient').fill(to)
   await page.locator('#amount').fill(amount)
   // The route note under the amount, not the side card: "Face ID alone:" / "Needs your Kit:".
@@ -123,23 +123,23 @@ try {
   const desktop = await newPage(browser, { width: 1440, height: 900 })
   await createProtectedWallet(desktop, 'desktop', '0.5')
   await fundFromSwissquote(desktop, '1')
-  await desktop.goto(APP_URL)
+  await desktop.goto(`${APP_URL}/wallet`)
   // Loaded: the allowance cells' caption and the custody card both come from the chain.
   await desktop.getByText('USDC left', { exact: false }).waitFor({ timeout: 60_000 })
   await desktop.getByText('Wallet protected').waitFor()
   await shot(desktop, 'desktop-04-overview')
   await pay(desktop, 'desktop-05-send-kit', treasury, '0.8', true)
   await pay(desktop, 'desktop-05-send-limit', treasury, '0.2', false)
-  await desktop.goto(APP_URL)
+  await desktop.goto(`${APP_URL}/wallet`)
   await desktop.getByText('USDC left', { exact: false }).waitFor({ timeout: 60_000 })
   await desktop.waitForTimeout(2000)
   await shot(desktop, 'desktop-04b-overview-after')
-  await desktop.goto(`${APP_URL}/receive`)
+  await desktop.goto(`${APP_URL}/wallet/receive`)
   await shot(desktop, 'desktop-06-receive')
-  await desktop.goto(`${APP_URL}/activity`)
+  await desktop.goto(`${APP_URL}/wallet/activity`)
   await desktop.waitForTimeout(1500)
   await shot(desktop, 'desktop-07-activity')
-  await desktop.goto(`${APP_URL}/security`)
+  await desktop.goto(`${APP_URL}/wallet/security`)
   await desktop.getByText('Swissquote Guardian').waitFor()
   await shot(desktop, 'desktop-08-security')
   // Finished pages stop polling the public RPC (it rate-limits per IP).
@@ -153,7 +153,7 @@ try {
 
   // Recovery screen on a fresh device.
   const fresh = await newPage(browser, { width: 1440, height: 900 })
-  await fresh.goto(`${APP_URL}/recover`)
+  await fresh.goto(`${APP_URL}/wallet/recover`)
   await fresh.getByRole('heading', { name: 'Recover your wallet' }).waitFor()
   await shot(fresh, 'desktop-09-recover')
   await fresh.context().close()
@@ -162,7 +162,7 @@ try {
   const mobile = await newPage(browser, { width: 390, height: 844 })
   await createProtectedWallet(mobile, 'mobile')
   await shot(mobile, 'mobile-04-overview')
-  await mobile.goto(`${APP_URL}/send`)
+  await mobile.goto(`${APP_URL}/wallet/send`)
   await mobile.getByLabel('Recipient').fill(treasury)
   await mobile.locator('#amount').fill('1')
   // The wallet is not funded: wait until the balance and today's limit are read.

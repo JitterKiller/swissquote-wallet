@@ -52,7 +52,7 @@ const both = async (page: Page, name: string, keepScroll = false) => {
 }
 
 async function protect(page: Page) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Alice')
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
@@ -109,7 +109,7 @@ try {
   await protect(A.page)
   log('Phone A: wallet protected (level 0) ✓')
 
-  await A.page.goto(`${APP_URL}/security`)
+  await A.page.goto(`${APP_URL}/wallet/security`)
   await A.page.getByRole('button', { name: 'Add a key' }).click()
   // The phone alone: it already holds the wallet's passkey, so it can't be the key (excludeCredentials).
   await A.page.getByRole('button', { name: 'Register a security key' }).click()
@@ -157,7 +157,7 @@ try {
   const B = await newDevice(browser)
   current = B.page
   await B.cdp.send('WebAuthn.addCredential', { authenticatorId: B.authenticatorId, credential: keyCredential })
-  await B.page.goto(`${APP_URL}/lost`)
+  await B.page.goto(`${APP_URL}/wallet/lost`)
   await B.page.getByLabel('Recovery Kit file').setInputFiles(kitPath)
   await B.page.locator('#lost-kit-passphrase').fill(PASSPHRASE)
   await B.page.getByRole('button', { name: 'Open my Kit' }).click()
@@ -179,7 +179,7 @@ try {
   log(`New device: running lock-out cancelled and old phone replaced at once with Kit + key → ${lockOutTx} ✓`)
 
   current = A.page
-  await A.page.goto(APP_URL)
+  await A.page.goto(`${APP_URL}/wallet`)
   await A.page.getByText('This phone was locked out').waitFor({ timeout: 60_000 })
   await A.page.screenshot({ path: `${OUT}/key-07-old-phone.png` })
   log('Old phone A no longer controls the Account ✓')

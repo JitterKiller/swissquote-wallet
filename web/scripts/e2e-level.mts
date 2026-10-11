@@ -67,7 +67,7 @@ const both = async (page: Page, name: string, keepScroll = false) => {
 }
 
 async function protect(page: Page) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Alice')
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
@@ -99,7 +99,7 @@ try {
   await protect(P)
   log('Wallet protected at level 0 (no Swissquote session) ✓')
 
-  await P.goto(`${APP_URL}/security`)
+  await P.goto(`${APP_URL}/wallet/security`)
   await P.getByRole('button', { name: 'Upgrade to level 1' }).click()
   await P.getByText('Level 1 is for Swissquote clients who linked this wallet').waitFor({ timeout: 30_000 })
   await P.waitForTimeout(600)
@@ -135,7 +135,7 @@ try {
   await both(P, 'level-05-security')
   log('Security page reads level 1 (3 days, Kit + identity check) ✓')
 
-  await P.goto(`${APP_URL}/swissquote`)
+  await P.goto(`${APP_URL}/wallet/swissquote`)
   await P.getByText('Level 1: lock-out after 3 days').waitFor({ timeout: 60_000 })
   await P.getByText('Level 1: lock-out after 3 days').scrollIntoViewIfNeeded()
   await P.waitForTimeout(400)

@@ -85,17 +85,17 @@ const both = async (page: Page, name: string, keepScroll = false) => {
 
 /** Create and protect a wallet; returns the downloaded Kit file path. A linked client protects at level 1. */
 async function protect(page: Page, kitName = 'eviction-kit', linked = false) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Alice')
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
   if (linked) {
     // MOCK Swissquote session before protecting: the Account gets the Swissquote guardian (level 1).
-    await page.goto(`${APP_URL}/swissquote`)
+    await page.goto(`${APP_URL}/wallet/swissquote`)
     await page.getByLabel('Name on your Swissquote account').fill('Alice Meier')
     await page.getByRole('button', { name: 'Sign in with Swissquote' }).click()
     await page.getByRole('button', { name: 'Link with Face ID' }).waitFor()
-    await page.goto(`${APP_URL}/welcome/protect`)
+    await page.goto(`${APP_URL}/wallet/welcome/protect`)
     await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
   }
   await page.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
@@ -118,7 +118,7 @@ async function protect(page: Page, kitName = 'eviction-kit', linked = false) {
 }
 
 async function fund(page: Page, amount: string) {
-  await page.goto(`${APP_URL}/swissquote`)
+  await page.goto(`${APP_URL}/wallet/swissquote`)
   await page.getByLabel('Name on your Swissquote account').fill('Alice Meier')
   await page.getByRole('button', { name: 'Sign in with Swissquote' }).click()
   await page.getByRole('button', { name: 'Link with Face ID' }).click()
@@ -157,13 +157,13 @@ try {
   const A = await newPhone(browser)
   const kitPath = await protect(A)
   await fund(A, '1')
-  await A.goto(APP_URL)
+  await A.goto(`${APP_URL}/wallet`)
   await A.getByText('USDC left', { exact: false }).waitFor({ timeout: 60_000 })
   log('Old phone: wallet protected (limit 0.50 USDC/day) and funded with 1 USDC ✓')
 
   // 2. New phone starts the lock-out.
   const B = await newPhone(browser)
-  await B.goto(`${APP_URL}/welcome`)
+  await B.goto(`${APP_URL}/wallet/welcome`)
   await B.getByRole('link', { name: 'Phone lost or stolen?' }).click()
   await openKit(B, kitPath, true)
   await startLockOut(B, true)
@@ -220,7 +220,7 @@ try {
   await B.getByRole('link', { name: 'Open my Account' }).click()
   await B.getByText('USDC left', { exact: false }).waitFor({ timeout: 60_000 })
   await both(B, 'lost-08-overview')
-  await B.goto(`${APP_URL}/send`)
+  await B.goto(`${APP_URL}/wallet/send`)
   await B.getByLabel('Recipient').fill(treasury)
   await B.locator('#amount').fill('0.1')
   await B.getByText('Face ID alone:', { exact: false }).waitFor({ timeout: 60_000 })
@@ -236,7 +236,7 @@ try {
   const linkedKit = await protect(L, 'eviction-kit-level1', true)
   log('Linked client: wallet protected at level 1 (Kit + Swissquote guardian) ✓')
   const C = await newPhone(browser)
-  await C.goto(`${APP_URL}/lost`)
+  await C.goto(`${APP_URL}/wallet/lost`)
   await C.getByLabel('Recovery Kit file').setInputFiles(linkedKit)
   await C.locator('#lost-kit-passphrase').fill(PASSPHRASE)
   await C.getByRole('button', { name: 'Open my Kit' }).click()

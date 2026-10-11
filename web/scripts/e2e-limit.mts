@@ -67,7 +67,7 @@ const both = async (page: Page, name: string, keepScroll = false) => {
 }
 
 async function protect(page: Page) {
-  await page.goto(`${APP_URL}/welcome`)
+  await page.goto(`${APP_URL}/wallet/welcome`)
   await page.getByLabel('Your name').fill('Alice')
   await page.getByRole('button', { name: 'Create wallet with passkey' }).click()
   await page.getByRole('heading', { name: 'Protect your wallet' }).waitFor()
@@ -90,7 +90,7 @@ async function protect(page: Page) {
 }
 
 async function fund(page: Page, amount: string) {
-  await page.goto(`${APP_URL}/swissquote`)
+  await page.goto(`${APP_URL}/wallet/swissquote`)
   await page.getByLabel('Name on your Swissquote account').fill('Alice Meier')
   await page.getByRole('button', { name: 'Sign in with Swissquote' }).click()
   await page.getByRole('button', { name: 'Link with Face ID' }).click()
@@ -150,13 +150,13 @@ try {
   log(`Raised to 1.00 with Face ID + Kit → ${await changeLimit(P, 'limit-02-raise', '1', /more than now/)} ✓`)
   await P.getByText(/^1\.00$/).first().waitFor({ timeout: 60_000 })
   log(`Lowered to 0.25 with Face ID + Kit → ${await changeLimit(P, 'limit-03-lower', '0.25', /less than now/)} ✓`)
-  await P.goto(APP_URL)
+  await P.goto(`${APP_URL}/wallet`)
   await P.getByText(/of\s*0\.25/).first().waitFor({ timeout: 60_000 })
   await both(P, 'limit-04-overview')
   log('Security page and Overview meter read the new limit ✓')
 
   // States of the panel.
-  await P.goto(`${APP_URL}/security?change=limit`)
+  await P.goto(`${APP_URL}/wallet/security?change=limit`)
   await P.locator('#limit-new').waitFor({ timeout: 30_000 })
   await panelState(P, 'limit-05-zero', '0', /Choose more than 0/)
   await panelState(P, 'limit-06-over-max', '2000000', /Choose at most 1,000,000 USDC/)
@@ -170,7 +170,7 @@ try {
 
   // Spend 0.10 with Face ID alone, then a new limit below it.
   await fund(P, '0.1')
-  await P.goto(`${APP_URL}/send`)
+  await P.goto(`${APP_URL}/wallet/send`)
   await P.getByLabel('Recipient').fill(treasury)
   await P.locator('#amount').fill('0.1')
   await P.getByText('Face ID alone:', { exact: false }).first().waitFor({ timeout: 60_000 })
@@ -180,7 +180,7 @@ try {
   if (await confirm.count()) await confirm.fill((await confirm.getAttribute('placeholder')) ?? '')
   await P.getByRole('button', { name: 'Approve with biometrics' }).click()
   await P.getByText('Sent · live onchain').waitFor({ timeout: 120_000 })
-  await P.goto(`${APP_URL}/security?change=limit`)
+  await P.goto(`${APP_URL}/wallet/security?change=limit`)
   await P.locator('#limit-new').waitFor({ timeout: 30_000 })
   await P.getByText(/0\.10\s*spent today/).first().waitFor({ timeout: 60_000 })
   await panelState(P, 'limit-08-below-spent', '0.05', /can’t spend more until the reset/)
@@ -188,7 +188,7 @@ try {
 
   // No local Kit: the panel asks for the file.
   await P.evaluate(() => localStorage.removeItem('sq-kit:v3'))
-  await P.goto(`${APP_URL}/security?change=limit`)
+  await P.goto(`${APP_URL}/wallet/security?change=limit`)
   await P.locator('#limit-new').waitFor({ timeout: 30_000 })
   await P.locator('#limit-new').fill('0.3')
   await P.getByText('Choose your Kit file').waitFor({ timeout: 30_000 })
