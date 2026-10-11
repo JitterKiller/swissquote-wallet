@@ -8,7 +8,7 @@ A **Safe smart account** (ERC-4337) on **Base Sepolia**, owned by a **passkey** 
 
 ## Target design (decided, being built)
 
-**The user always holds the majority, Swissquote never does** (PDR-013). Funds move to an **Account Safe** whose owners are only the user's factors: the **Key Safe** (today's passkey Safe, which holds no funds), the **Recovery Kit** (a passphrase-encrypted cloud backup, PDR-016) and, optionally, a **hardware key** (PDR-017). Threshold 2. Face ID alone can only spend up to a **daily limit**; anything else needs 2 factors, so a thief with an unlocked phone cannot empty the account or block anything on it (PDR-014, ADR-017). The user chooses the limit (PDR-020). A **lost or stolen phone** goes through one flow: the Kit evicts it after **7 days** (3 days for linked clients, immediately with a hardware key), and the thief cannot cancel (PDR-018, PDR-021, ADR-019). The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Swissquote is **never an owner**.
+**The user always holds the majority, Swissquote never does** (PDR-013). Funds move to an **Account Safe** whose owners are only the user's factors: the **Key Safe** (today's passkey Safe, which holds no funds), the **Recovery Kit** (a passphrase-encrypted cloud backup, PDR-016) and, optionally, a **hardware key** (PDR-017). Threshold 2. Face ID alone can only spend up to a **daily limit**; anything else needs 2 factors, so a thief with an unlocked phone cannot empty the account or block anything on it (PDR-014, ADR-017). The user chooses the limit (PDR-020). A **lost or stolen phone** goes through one flow: the Kit evicts it after **7 days** (3 days for linked clients, immediately with a hardware key), and the thief cannot cancel (PDR-018, PDR-021, ADR-019). The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Swissquote is **never an owner**. **Shipped so far:** the Account at onboarding (#10), Overview and Send on the Account (#11, #12), the "Phone lost or stolen?" lock-out with the alert and 2-factor stop on the old phone (#15, #16, ADR-030). The legacy Key Safe recovery described above stays reachable until #33.
 
 ## Two kinds of records
 
@@ -83,6 +83,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-027](architecture/ADR-027-visual-world-swiss-onchain-fintech.md) | Visual world: Swiss onchain fintech (white, ink, one Swissquote orange, sealed ink plates), recorded in DESIGN.md through impeccable | Accepted |
 | [ADR-028](architecture/ADR-028-approved-dapps-native-integration.md) | Approved dApps: native call builders (`lib/dapps.ts`), 2-factor Account transactions, paymaster allowlist | Accepted |
 | [ADR-029](architecture/ADR-029-approval-route-from-chain-events.md) | Activity shows which factors approved each payment (Face ID alone vs Face ID + Kit), read from the Allowance Module's `ExecuteAllowanceTransfer` events | Accepted |
+| [ADR-030](architecture/ADR-030-lost-phone-flow-ui.md) | "Phone lost or stolen?" in the app: `/lost` on the new phone (Kit, Face ID, lock-out, live countdown, takeover in one action), red alert and 2-factor stop on the old phone, "Demo: try with Face ID only" refused (GS020), `npm run e2e:eviction` | Accepted |
 
 ## Open questions (future records)
 

@@ -27,7 +27,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Transfers between the Swissquote account and the wallet, both directions, travel rule filled in (PDR-024, ADR-025); demo treasury to fund once | ✅ |
 | Third guardian (trusted contact) | ⏳ |
 | Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ✅ (Account created at onboarding #10; Overview with today's Face ID budget #11; Send: Face ID alone within the limit, Kit passphrase + Face ID above it #12) |
-| One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019) | ⏳ (spike ✅) |
+| One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019, ADR-030) | ✅ ("Phone lost or stolen?" on the new phone #15, alert and 2-factor stop on the old phone #16, `npm run e2e:eviction`; legacy `/recover` until #33) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step | ✅ ("test your Kit" reminder ⏳) |
 | Open wallet for everyone + Swissquote link as the upgrade (PDR-015) | ⏳ |
 | Theft protection: hardware key, guided "phone stolen" flow (PDR-017) | ⏳ |

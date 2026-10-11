@@ -113,7 +113,8 @@ try {
 
   // 2. New device: attacker path refused at identity verification.
   await B.goto(APP_URL)
-  await B.getByRole('link', { name: /Recover your wallet/ }).click()
+  // The legacy Key Safe recovery, kept until #33 (the welcome link now opens the lock-out flow, /lost).
+  await B.goto(`${APP_URL}/recover`)
   await startRecovery(B, kitText)
   await B.getByRole('button', { name: 'Demo: simulate an attacker' }).click()
   await B.getByText(/Identity verification failed/).waitFor()

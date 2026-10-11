@@ -53,7 +53,7 @@ export function Plate({
       <Crosshair className="-left-[7px] -top-[7px]" />
       <Crosshair className="-bottom-[7px] -right-[7px]" />
       {seal && <Seal size={120} className="absolute -top-[56px] right-4 sm:right-6" />}
-      {title && <p className="token pr-32 text-hero-muted sm:pr-36">{title}</p>}
+      {title && <p className={`token text-hero-muted ${seal ? 'pr-32 sm:pr-36' : ''}`}>{title}</p>}
       {/* With the seal, the first row starts below its lower edge (64px inside the plate). */}
       <div className={title ? (seal ? 'mt-7' : 'mt-4') : ''}>{children}</div>
     </section>

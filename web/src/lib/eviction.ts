@@ -2,16 +2,21 @@ import type { MetaTransaction } from 'abstractionkit'
 import type { Address, Hex } from 'viem'
 
 import {
+  accountExecCall,
   cancelEvictionCall,
+  encodeSafeSignatures,
   evictionNewOwners,
   evictionTypedData,
   handoverCall,
   readAccount,
+  senderSignature,
   twoFactorCall,
   type AccountState,
   type KitSigner,
 } from './account'
 import { api } from './api'
+import { errorChain } from './format'
+import { publicClient } from './wallet'
 
 /**
  * "Phone lost or stolen?" (PDR-018, PDR-021, ADR-019, issues #15 and #16).
@@ -86,6 +91,35 @@ export async function cancelEvictionCalls(params: {
 }): Promise<MetaTransaction[]> {
   const { account, keySafe, evictionModule, kit } = params
   return [await twoFactorCall({ account, keySafe, call: cancelEvictionCall(evictionModule), kit })]
+}
+
+/**
+ * Demo (#16): what a thief holding only the phone would send to cancel, the Account transaction with
+ * the Key Safe's approval alone. The Account needs 2 signatures, so it refuses (Safe error GS020).
+ */
+export function thiefCancelCalls(params: { account: Address; keySafe: Address; evictionModule: Address }): MetaTransaction[] {
+  const { account, keySafe, evictionModule } = params
+  return [accountExecCall(account, cancelEvictionCall(evictionModule), encodeSafeSignatures([senderSignature(keySafe)]))]
+}
+
+/**
+ * Why the Account refuses `call` when `from` sends it alone: the Safe's revert reason (e.g. "GS020"),
+ * read with eth_call. The bundler only reports "execution reverted" without the inner reason.
+ */
+export async function safeRevertReason(from: Address, call: MetaTransaction): Promise<string | null> {
+  try {
+    await publicClient.call({ account: from, to: call.to as Address, data: call.data as Hex })
+    return null
+  } catch (error) {
+    return /GS0\d\d/.exec(errorChain(error))?.[0] ?? null
+  }
+}
+
+/** The pending eviction that would lock THIS phone out (its Key Safe is not among the new owners), if any (#16). */
+export function getPendingEviction(state: AccountState | null, keySafe: Address) {
+  const pending = state?.pendingEviction
+  if (!pending || pending.newOwners.some((o) => o.toLowerCase() === keySafe.toLowerCase())) return null
+  return pending
 }
 
 /** This phone was replaced: the Account no longer lists its Key Safe as an owner. */

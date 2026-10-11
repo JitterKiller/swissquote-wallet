@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-11T12:00:00+00:00",
+  "generatedAt": "2026-10-11T18:00:00+00:00",
   "title": "Design System: SQure",
   "extensions": {
     "colorMeta": {
@@ -416,9 +416,9 @@
         "purpose": "Allowance cells emptying when a payment lands or previewing a typed amount."
       },
       {
-        "name": "block-field",
-        "value": "canvas, about 30fps, slow diagonal sine waves, pointer gather",
-        "purpose": "The ink panel signature; paused off screen, still under reduced motion."
+        "name": "candle-field",
+        "value": "canvas redrawn every frame; one candle per 1.6s, constant linear slide of a pixel-snapped layer; live close smoothed over 90ms, vertical scale eased over 450ms",
+        "purpose": "The ink panel signature; runs only on screen in a visible tab, one still frame with a half-formed candle under reduced motion."
       },
       {
         "name": "reduced-motion",
@@ -537,16 +537,24 @@
       "description": "Who can move the money: a status token, factor rows with squares (Swissquote guardian without one), links to Security and Basescan.",
       "html": "<section class=\"ds-custody\"><div class=\"ds-cust-head\"><h2>Wallet protected</h2><span class=\"ds-tok\">2 of 2 · yours</span></div><ul><li><i class=\"ds-sq ds-phone\"></i><span><b>This phone</b><em>Face ID, up to <span class=\"ds-fig\">500.00</span> USDC a day</em></span></li><li><i class=\"ds-sq ds-kit\"></i><span><b>Recovery Kit</b><em>With the phone for anything above. Locks out a lost phone after 3 days</em></span></li><li><i></i><span><b>Swissquote</b><em>Guardian: checks your identity before a lock-out. Never an owner</em></span></li></ul><div class=\"ds-cust-links\"><a href=\"#\">Who can do what ›</a><a href=\"#\" class=\"ds-out\">Check the owners on Basescan ↗</a></div></section>",
       "css": ".ds-custody{border:1px solid var(--border, #e7e5e4);border-radius:10px;padding:20px;background:var(--surface, #ffffff);color:var(--foreground, #171717);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-cust-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;} .ds-cust-head h2{margin:0;font-size:16px;font-weight:600;} .ds-tok{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted, #6b6b6b);} .ds-custody ul{list-style:none;margin:12px 0 0;padding:0;border-top:1px solid var(--border, #e7e5e4);} .ds-custody li{display:grid;grid-template-columns:10px 1fr;column-gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--border, #e7e5e4);font-size:14px;} .ds-custody b{font-weight:500;} .ds-custody em{display:block;font-style:normal;color:var(--muted, #6b6b6b);} .ds-sq{display:inline-block;width:10px;height:10px;} .ds-phone{background:var(--accent, #ff5f0f);} .ds-kit{background:var(--foreground, #171717);} .ds-fig{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-variant-numeric:tabular-nums;} .ds-cust-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:12px;font-size:14px;} .ds-cust-links a{color:var(--accent-ink, #c2410c);font-weight:500;text-decoration:none;} .ds-cust-links a:hover{text-decoration:underline;} .ds-cust-links a.ds-out{color:var(--muted, #6b6b6b);font-weight:400;} .ds-cust-links a.ds-out:hover{color:var(--foreground, #171717);text-decoration:none;} .ds-cust-links a:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;}"
+    },
+    {
+      "name": "Lock-out Countdown Plate",
+      "kind": "custom",
+      "refersTo": "plate",
+      "description": "A pending lock-out as a live onchain object: mono countdown, ten delay cells lit as time elapses, start and effect times, rows, Basescan link. No seal.",
+      "html": "<section class=\"ds-lock\"><p class=\"ds-lock-tok\"><i></i>Lock-out · live onchain</p><p class=\"ds-lock-fig\">2 d 14 h</p><p class=\"ds-lock-sub\">until the old phone is locked out</p><div class=\"ds-lock-cells\"><span class=\"ds-on\"></span><span class=\"ds-on\"></span><span class=\"ds-on\"></span><span class=\"ds-on\"></span><span></span><span></span><span></span><span></span><span></span><span></span></div><p class=\"ds-lock-times\"><span>Started Sat 10:42</span><span>Takes effect Sat 10:42</span></p><dl><div><dt>Old phone</dt><dd>0x3f2a…91c4</dd></div><div><dt>New device</dt><dd>This device</dd></div><div><dt>Can stop it</dt><dd>The old phone + your Kit</dd></div></dl><a href=\"#\">Lock-out on Basescan</a></section>",
+      "css": ".ds-lock{position:relative;background:var(--hero, #171717);color:var(--hero-fg, #fafafa);border:1px solid var(--hero-2, #232323);border-radius:10px;padding:24px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-lock-tok{display:flex;align-items:center;gap:8px;margin:0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--hero-muted, #a3a3a3);} .ds-lock-tok i{width:6px;height:6px;background:var(--success, #0f7a55);} .ds-lock-fig{margin:16px 0 0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:60px;font-weight:600;line-height:1;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;} .ds-lock-sub{margin:4px 0 0;font-size:14px;color:var(--hero-muted, #a3a3a3);} .ds-lock-cells{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:20px;} .ds-lock-cells span{height:24px;border-radius:3px;background:var(--hero-2, #232323);transition:background-color 300ms;} .ds-lock-cells span.ds-on{background:var(--accent, #ff5f0f);} .ds-lock-times{display:flex;justify-content:space-between;gap:12px;margin:8px 0 0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:12px;font-variant-numeric:tabular-nums;color:var(--hero-muted, #a3a3a3);} .ds-lock dl{margin:20px 0 0;} .ds-lock dl div{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-top:1px solid var(--hero-2, #232323);font-size:14px;} .ds-lock dl div:first-child{border-top:0;padding-top:0;} .ds-lock dt{color:var(--hero-muted, #a3a3a3);} .ds-lock dd{margin:0;font-weight:500;text-align:right;} .ds-lock a{display:inline-block;margin-top:16px;font-size:14px;color:var(--hero-muted, #a3a3a3);text-decoration:none;transition:color 150ms;} .ds-lock a:hover{color:var(--hero-fg, #fafafa);} .ds-lock a:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;}"
     }
   ],
   "narrative": {
     "northStar": "A Swiss onchain fintech at base.org's craft, with the registration plate's seal on commit moments",
-    "overview": "The wallet reads like a technical fintech, not a crypto toy and not a private bank. White ground, ink type, and one fully saturated Swissquote orange that does real work: it fills the primary action, lights the generative block field, and stamps the seal. The orange takes the place Base gives its blue. Warmth comes from that orange and from the apricot field that shows the worst case as an amount; precision comes from crisp corners, hairline borders and mono figures you can check against the chain.\n\nDensity is calm and single-column: one task per screen, the title at display size, then the facts. Live chain facts (network fee 0.00, the current Base Sepolia block, a live status square) sit beside the content as proof, never as decoration. Every moment where Face ID signs or something is committed onchain turns dark: an ink plate, registered by two crosshairs at opposite corners, with the orange Swissquote seal (\"SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY\") half off its top edge, turning slowly.\n\nThe system refuses both the purple-gradient crypto wallet and the beige private-bank page. Craft references are base.org (technical register, one committed colour, live facts, generative motion) and Phantom (warmth). The brand is a Swissquote-inspired prototype: the Swissquote name, its orange and the SQ monogram, no official assets.",
+    "overview": "The wallet reads like a technical fintech, not a crypto toy and not a private bank. White ground, ink type, and one fully saturated Swissquote orange that does real work: it fills the primary action, fills the rising candles of the generative chart, and stamps the seal. The orange takes the place Base gives its blue. Warmth comes from that orange and from the apricot field that shows the worst case as an amount; precision comes from crisp corners, hairline borders and mono figures you can check against the chain.\n\nDensity is calm and single-column: one task per screen, the title at display size, then the facts. Live chain facts (network fee 0.00, the current Base Sepolia block, a live status square) sit beside the content as proof, never as decoration. Every moment where Face ID signs or something is committed onchain turns dark: an ink plate, registered by two crosshairs at opposite corners, with the orange Swissquote seal (\"SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY\") half off its top edge, turning slowly.\n\nThe system refuses both the purple-gradient crypto wallet and the beige private-bank page. Craft references are base.org (technical register, one committed colour, live facts, generative motion) and Phantom (warmth). The brand is a Swissquote-inspired prototype: the Swissquote name, its orange and the SQ monogram, no official assets.",
     "keyCharacteristics": [
       "White and ink with one committed colour, Swissquote orange, which always carries ink text.",
       "Hanken Grotesk for UI and display, tight and large; JetBrains Mono strictly for figures, addresses and status tokens.",
       "Crisp corners (6 to 10px), hairline borders, flat surfaces: no shadows.",
-      "A generative square field of orange cells on ink as the world's signature motion.",
+      "A generative, unlabelled candlestick chart on ink as the world's signature motion: orange rising candles, Plate Grey outlined falling ones, a crosshair under the pointer.",
       "Ink plates with crosshairs and a turning seal for everything Face ID signs; the Account itself is an ink plate because it is live onchain.",
       "Today's Face ID budget drawn as a row of ten square allowance cells that drain through the day and refill at 00:00 UTC.",
       "Light by default; dark follows the OS."
@@ -589,13 +597,18 @@
       },
       {
         "name": "The Ink Plate Rule",
-        "body": "A dark plate on a light screen means Face ID will sign this, or this is now live onchain. Never use it for marketing or general grouping.",
+        "body": "A dark plate on a light screen means a factor (Face ID, the Kit) will sign this, or this is now live onchain. Never use it for marketing or general grouping.",
         "section": "elevation"
       },
       {
         "name": "The Crisp Corner Rule",
         "body": "Nothing rectangular exceeds 12px radius. The seal is the only circle in the world's vocabulary.",
         "section": "shapes"
+      },
+      {
+        "name": "The Loss Bound Truth Rule",
+        "body": "The worst case is what is left today plus one daily limit per reset during the delay, computed exactly and shown with two decimals. Never \"about\", never rounded up for effect.",
+        "section": "components"
       }
     ],
     "dos": [
@@ -605,6 +618,9 @@
       "**Do** keep live chain facts (fee, block, live status) visible in the shell: the live strip on desktop, the token bar on phones.",
       "**Do** use the Factor Code Rule squares whenever the phone, the cloud account and the Kit appear together.",
       "**Do** draw today's Face ID budget as the ten allowance cells, with the remaining, the limit and the reset time beside them.",
+      "**Do** compute the loss bound exactly (what is left today plus one daily limit per reset) and lead its day squares with a \"now\" square.",
+      "**Do** show a refusal by the Account as evidence: the approval squares that signed, the outlined one that did not, and the Safe's code in mono.",
+      "**Do** call the device in hand \"this device\" in the lost-phone flow (it may be a laptop) and the other one \"the old phone\".",
       "**Do** show every displayed USDC amount with two decimals.",
       "**Do** say which factors a payment needs in a sentence with approval squares, mono only for the figures.",
       "**Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours."

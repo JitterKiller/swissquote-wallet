@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { formatUnits, parseUnits, type Address } from 'viem'
 
+import { DaySquares } from '@/components/account/DaySquares'
 import { useWallet } from '@/components/providers/WalletProvider'
 import { Button } from '@/components/ui/button'
 import { Alert, Badge, Spinner } from '@/components/ui/feedback'
@@ -18,7 +19,7 @@ import {
   USDC_DECIMALS,
   type Level,
 } from '@/lib/config'
-import { errorMessage, formatUsdcShort } from '@/lib/format'
+import { errorMessage, formatUsdc, formatUsdcShort } from '@/lib/format'
 import { getRecoveryStatus, recoverySetupCalls } from '@/lib/recovery'
 import { kitAccounts, kitAddresses, type KitKeys, type RecoveryKitV3 } from '@/lib/recoveryKit'
 import { saveLocalKit, toPublicKey, type StoredWallet } from '@/lib/storage'
@@ -157,16 +158,16 @@ export function AccountSetupStep({
       </div>
 
       <section className="rounded-2xl bg-accent-soft p-4" aria-label="Worst case if your phone is stolen">
-        <p className="text-sm text-foreground/75">If your phone is stolen, a thief can take at most about</p>
+        <p className="text-sm text-foreground/75">If your phone is stolen, a thief can take at most</p>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <p className="font-mono text-4xl font-semibold tabular-nums tracking-tight">
-            {valid ? formatUsdcShort(dailyLimit * BigInt(days)) : '–'} <span className="font-sans text-lg">USDC</span>
+            {valid ? formatUsdc(dailyLimit * BigInt(days + 1)) : '–'} <span className="font-sans text-lg">USDC</span>
           </p>
-          <DaySquares days={days} />
+          <DaySquares days={days} today />
         </div>
         <p className="mt-2 text-sm text-foreground/75">
-          <span className="tabular-nums">{valid ? formatUsdcShort(dailyLimit) : '–'}</span> a day × {days} days, until
-          your Kit locks them out{level === 1 ? ' with a Swissquote identity check.' : '.'}
+          <span className="font-mono tabular-nums">{valid ? formatUsdc(dailyLimit) : '–'}</span> today, then again after each of the{' '}
+          {days} daily resets until your Kit locks them out{level === 1 ? ' with a Swissquote identity check.' : '.'}
           {EVICTION_DELAY_IS_DEMO && (
             <span className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap text-xs">
               <Badge tone="warning">Demo</Badge>
@@ -211,19 +212,6 @@ export function AccountSetupStep({
 }
 
 /** One square per day of exposure, the first day fully lit: the bound drawn to scale. */
-function DaySquares({ days }: { days: number }) {
-  return (
-    <div className="flex items-end gap-1" aria-hidden>
-      {Array.from({ length: days }, (_, i) => (
-        <span key={i} className="flex flex-col items-center gap-1">
-          <span className={`h-7 w-7 rounded-[3px] ${i === 0 ? 'bg-accent' : 'bg-accent/45'}`} />
-          <span className="font-mono text-[11px] tabular-nums text-foreground/70">{i + 1}</span>
-        </span>
-      ))}
-    </div>
-  )
-}
-
 function parseLimit(value: string): bigint | null {
   if (!value || !/^\d*\.?\d*$/.test(value)) return null
   try {

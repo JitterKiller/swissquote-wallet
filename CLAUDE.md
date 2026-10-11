@@ -29,3 +29,4 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - `npm run check:handles`: `@handle` checks against `npm run dev` (ADR-024)
 - `npm run check:swissquote`: Swissquote account transfer checks against `npm run dev` (ADR-025)
 - `npm run e2e:link`: "Link with Face ID" in real Chrome with a virtual passkey, then @handle and /swissquote
+- `npm run e2e:eviction`: "Phone lost or stolen?" on two phones (lock-out, thief refused, 2-factor stop, takeover after the 3-minute delay), about 6 minutes, screenshots in `web/screenshots/`

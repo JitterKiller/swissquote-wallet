@@ -10,7 +10,7 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
         const done = i < current
         const active = i === current
         return (
-          <li key={label} className={`flex items-center gap-2 ${active ? 'flex-none sm:min-w-0 sm:flex-1' : 'min-w-0 flex-1'}`}>
+          <li key={label} className={`flex items-center gap-2 ${active ? 'flex-none sm:min-w-0 sm:flex-auto' : 'min-w-0 flex-auto'}`}>
             <span
               className={`grid h-6 w-6 shrink-0 place-items-center rounded-md text-[11px] font-semibold tabular-nums transition-colors duration-200 ${
                 done

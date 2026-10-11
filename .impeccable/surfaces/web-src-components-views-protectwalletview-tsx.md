@@ -2,7 +2,7 @@
 version: 1
 slug: "web-src-components-views-protectwalletview-tsx"
 primary_target: "web/src/components/views/ProtectWalletView.tsx"
-related_targets: ["web/src/components/views/AccountSetupStep.tsx","web/src/components/shell/OnboardingShell.tsx"]
+related_targets: ["web/src/components/views/AccountSetupStep.tsx","web/src/components/shell/OnboardingShell.tsx","web/src/components/ui/candle-field.tsx"]
 ---
 
 # Surface brief: Protect flow (onboarding, issue #10)
@@ -18,11 +18,11 @@ related_targets: ["web/src/components/views/AccountSetupStep.tsx","web/src/compo
 
 THESIS: A Swiss onchain fintech at base.org's craft: white ground, ink, one fully saturated Swissquote orange that does real work, live chain facts, crisp corners. It refuses both the purple-gradient crypto wallet and the beige private-bank page.
 
-OWN-WORLD: White and ink (#171717) with P3 Swissquote orange as the only committed colour (orange fills carry ink text); apricot fields for loss bounds; ink plates for anything Face ID signs. Hanken Grotesk for UI and display, JetBrains Mono for figures, addresses and status tokens. Corners 6–8px, hairline borders, flat surfaces. Signature: a generative square field (orange cells lighting in waves) and, on every commit moment, a registered ink plate with crosshairs and a turning seal "SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY".
+OWN-WORLD: White and ink (#171717) with P3 Swissquote orange as the only committed colour (orange fills carry ink text); apricot fields for loss bounds; ink plates for anything Face ID signs. Hanken Grotesk for UI and display, JetBrains Mono for figures, addresses and status tokens. Corners 6–8px, hairline borders, flat surfaces. Signature: a generative candlestick chart on the ink panel (user request 2026-10-11, replacing the square field: orange candles close up, ink candles with a grey outline close down, constant left scroll, crosshair under the pointer, no asset or price labels) and, on every commit moment, a registered ink plate with crosshairs and a turning seal "SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY".
 
 STORY: The visitor understands they hold the majority, sees the worst case as an amount before committing, and signs once with Face ID; nothing about Swissquote's role is hidden.
 
-FIRST VIEWPORT: Desktop: left ink panel (40%) with the SQ logo, the generative square field, the tagline and a live strip (fees 0.00 · Base Sepolia block · ● live). Right: a mono token bar (PROTECT · STEP 04/04 · BASE SEPOLIA ● LIVE), the step title at display size, the limit field with mono figures and presets, the loss bound as seven squares on apricot, the Face ID review as a registered ink plate with the seal half off its corner, and the orange "Activate protection" button with ink text. Mobile: the panel collapses to the logo row; the token bar stays.
+FIRST VIEWPORT: Desktop: left ink panel (40%) with the SQ logo, the live candlestick chart, the tagline and a live strip (fees 0.00 · Base Sepolia block · ● live). Right: a mono token bar (PROTECT · STEP 04/04 · BASE SEPOLIA ● LIVE), the step title at display size, the limit field with mono figures and presets, the loss bound as seven squares on apricot, the Face ID review as a registered ink plate with the seal half off its corner, and the orange "Activate protection" button with ink text. Mobile: the panel collapses to the logo row; the token bar stays.
 
 FORM: The onchain fintech standard (Base · Phantom), the canon card taken by the user, raised with the registration plate's seal, crosshairs, ink plate and token bar on commit moments; seed key ba373c50 (re-roll 2, bolder).
 

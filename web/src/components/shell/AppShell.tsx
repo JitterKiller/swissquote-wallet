@@ -19,10 +19,11 @@ import { useWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
 import { Badge, Skeleton } from '@/components/ui/feedback'
 import { TokenBar } from '@/components/ui/live'
-import { loadLocalRecovery } from '@/lib/storage'
+import { getPendingEviction, isEvicted } from '@/lib/eviction'
+import { loadLocalEviction, loadLocalRecovery } from '@/lib/storage'
 
 import { Logo } from './Logo'
-import { RecoveryAlert, RevokedScreen } from './SecurityBanners'
+import { EvictionAlert, RecoveryAlert, RevokedScreen } from './SecurityBanners'
 
 type NavItem = { href: string; label: string; icon: LucideIcon; soon?: boolean }
 
@@ -47,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (ready && !wallet) router.replace(loadLocalRecovery() ? '/recover' : '/welcome')
+    if (ready && !wallet) router.replace(loadLocalEviction() ? '/lost' : loadLocalRecovery() ? '/recover' : '/welcome')
   }, [ready, wallet, router])
 
   if (!ready || !wallet) return <ShellSkeleton />
@@ -55,6 +56,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (chain.isOwner === false) {
     return (
       <RevokedScreen
+        account={wallet.account && isEvicted(chain.account, wallet.address) ? wallet.account : null}
         onForget={() => {
           forget()
           router.replace('/welcome')
@@ -63,6 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     )
   }
 
+  const lockOut = wallet.account ? getPendingEviction(chain.account, wallet.address) : null
   const initials = wallet.name.trim().slice(0, 2).toUpperCase() || 'SQ'
   const levelLabel = !wallet.account ? 'Not protected yet' : wallet.level === 1 ? 'Swissquote client · level 1' : 'Free · level 0'
 
@@ -99,6 +102,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
+        {lockOut && (
+          <div className="mb-6">
+            <EvictionAlert pending={lockOut} />
+          </div>
+        )}
         {chain.recovery?.pending && (
           <div className="mb-6">
             <RecoveryAlert pending={chain.recovery.pending} />

@@ -209,7 +209,7 @@ components:
 
 **Creative North Star: "A Swiss onchain fintech at base.org's craft, with the registration plate's seal on commit moments"**
 
-The wallet reads like a technical fintech, not a crypto toy and not a private bank. White ground, ink type, and one fully saturated Swissquote orange that does real work: it fills the primary action, lights the generative block field, and stamps the seal. The orange takes the place Base gives its blue. Warmth comes from that orange and from the apricot field that shows the worst case as an amount; precision comes from crisp corners, hairline borders and mono figures you can check against the chain.
+The wallet reads like a technical fintech, not a crypto toy and not a private bank. White ground, ink type, and one fully saturated Swissquote orange that does real work: it fills the primary action, fills the rising candles of the generative chart, and stamps the seal. The orange takes the place Base gives its blue. Warmth comes from that orange and from the apricot field that shows the worst case as an amount; precision comes from crisp corners, hairline borders and mono figures you can check against the chain.
 
 Density is calm and single-column: one task per screen, the title at display size, then the facts. Live chain facts (network fee 0.00, the current Base Sepolia block, a live status square) sit beside the content as proof, never as decoration. Every moment where Face ID signs or something is committed onchain turns dark: an ink plate, registered by two crosshairs at opposite corners, with the orange Swissquote seal ("SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY") half off its top edge, turning slowly.
 
@@ -219,7 +219,7 @@ The system refuses both the purple-gradient crypto wallet and the beige private-
 - White and ink with one committed colour, Swissquote orange, which always carries ink text.
 - Hanken Grotesk for UI and display, tight and large; JetBrains Mono strictly for figures, addresses and status tokens.
 - Crisp corners (6 to 10px), hairline borders, flat surfaces: no shadows.
-- A generative square field of orange cells on ink as the world's signature motion.
+- A generative, unlabelled candlestick chart on ink as the world's signature motion: orange rising candles, Plate Grey outlined falling ones, a crosshair under the pointer.
 - Ink plates with crosshairs and a turning seal for everything Face ID signs; the Account itself is an ink plate because it is live onchain.
 - Today's Face ID budget drawn as a row of ten square allowance cells that drain through the day and refill at 00:00 UTC.
 - Light by default; dark follows the OS.
@@ -229,7 +229,7 @@ The system refuses both the purple-gradient crypto wallet and the beige private-
 A neutral white-and-ink ground with a single saturated orange, apricot tints for bounds, and status colours held to signals.
 
 ### Primary
-- **Swissquote Orange** (accent; `color(display-p3 1 0.38 0.06)` on P3 screens, hex fallback in the frontmatter): fills for the primary button, the selected preset, the active stepper step, the SQ logo mark, the seal disc, lit cells in the block field, the first day square, and text selection. A fill, never a text colour on white.
+- **Swissquote Orange** (accent; `color(display-p3 1 0.38 0.06)` on P3 screens, hex fallback in the frontmatter): fills for the primary button, the selected preset, the active stepper step, the SQ logo mark, the seal disc, rising candles in the candle field, lit allowance and delay cells, the "now" day square, and text selection. A fill, never a text colour on white.
 - **Pressed Orange** (accent-hover; P3 `color(display-p3 0.95 0.33 0.02)`): hover state of orange fills.
 - **Ember Ink** (accent-ink): the orange that is legible as text on light grounds (AA): focus rings, caret, link-like accents, the accent badge text, the focused input border. In dark mode it lightens to #ff8a4c.
 - **Apricot Field** (accent-soft): the ground for loss bounds and the accent badge, and the soft focus ring around inputs. In dark mode it becomes orange at 14% alpha.
@@ -240,7 +240,7 @@ A neutral white-and-ink ground with a single saturated orange, apricot tints for
 - **Stone Wash** (surface-2): hover ground for secondary and ghost controls, neutral badges, info alerts, the file drop zone, skeletons.
 - **Graphite** (muted): secondary copy, hints, inactive tokens.
 - **Hairline Stone** (border): 1px borders on cards, inputs, chips and list rules.
-- **Plate Ink / Plate Rule / Plate White / Plate Grey** (hero, hero-2, hero-fg, hero-muted): the onboarding panel and every ink plate. hero-2 is the plate's border and its row rules, and the unlit cell colour of the block field.
+- **Plate Ink / Plate Rule / Plate White / Plate Grey** (hero, hero-2, hero-fg, hero-muted): the onboarding panel and every ink plate. hero-2 is the plate's border and its row rules, the unlit allowance and delay cells, and the candle field's grid rules. hero-muted outlines the candle field's falling candles and draws its last-price line and crosshair.
 
 ### Status
 - **Ledger Green** (success, success-soft), **Signal Red** (danger, danger-soft), **Amber Note** (warning, warning-soft): validation, alerts, badges, the strength meter and the live square. Each has a lighter dark-mode value.
@@ -283,7 +283,9 @@ Dark mode (OS setting) swaps the ground to near-black (#0c0c0c, surfaces #151515
 
 ## Layout
 
-Onboarding is a two-column split from 1024px: an ink panel on the left (0.9fr) holding the logo, the block field (200 to 340px tall), the tagline, and the live strip; content on the right (1.1fr) in a single column, top-anchored, max 560px wide (35rem). Below 1024px the panel disappears: a logo row with the mono token bar sits on top and the column narrows to 448px (28rem).
+Onboarding is a two-column split from 1024px: an ink panel on the left (0.9fr) holding the logo, the candle field (200 to 340px tall), the tagline, and the live strip; content on the right (1.1fr) in a single column, top-anchored, max 560px wide (35rem). Below 1024px the panel disappears: a logo row with the mono token bar sits on top and the column narrows to 448px (28rem).
+
+The quiet variant of the same shell serves the lost-phone flow (`/lost`): the panel steps back to the logo and the live strip, with no candle chart and no tagline, and narrows to 0.7fr against 1.3fr for the content, so the lock-out leads.
 
 Inside a step, vertical rhythm is 24px between blocks (title, form, action), 16 to 20px inside forms, 6px between a label and its field. Plates take extra top margin (64px) so the seal's overhang has room. Panel padding is 40px (48px from 1280px). Lists use hairline top and bottom rules rather than boxes. Primary actions run full width at the bottom of the column. Breakpoints are Tailwind's 640, 1024 and 1280px.
 
@@ -294,11 +296,11 @@ The system is flat. The card shadow token is deliberately `none`, and no compone
 ### Named Rules
 **The Flat Ground Rule.** No box shadows, no blurs, no glass. If something needs to stand out, it is either orange (action) or ink (commitment).
 
-**The Ink Plate Rule.** A dark plate on a light screen means Face ID will sign this, or this is now live onchain. Never use it for marketing or general grouping.
+**The Ink Plate Rule.** A dark plate on a light screen means a factor (Face ID, the Kit) will sign this, or this is now live onchain. Never use it for marketing or general grouping.
 
 ## Shapes
 
-Rectangles are crisp: 6px for small controls (small buttons, chips, badges, the logo mark, stepper squares), 8px for buttons and inputs, 10px for cards, plates and the apricot field, 12px at most. Data cells go sharper still: day squares and allowance cells at 3px, strength-meter bars at 2px, block-field cells and factor codes square. Status markers in the token bar and live strip are small squares, not dots. The one deliberate circle is the Swissquote seal: an orange disc with mono ink type set on a ring around the SQ mark. Crosshairs (14px, 1px ink strokes) register plates at the top-left and bottom-right corners, overhanging by 7px.
+Rectangles are crisp: 6px for small controls (small buttons, chips, badges, the logo mark, stepper squares), 8px for buttons and inputs, 10px for cards, plates and the apricot field, 12px at most. Data cells go sharper still: day squares and allowance cells at 3px, strength-meter bars at 2px, candle bodies and factor codes square. Status markers in the token bar and live strip are small squares, not dots. The one deliberate circle is the Swissquote seal: an orange disc with mono ink type set on a ring around the SQ mark. Crosshairs (14px, 1px ink strokes) register plates at the top-left and bottom-right corners, overhanging by 7px.
 
 ### Named Rules
 **The Crisp Corner Rule.** Nothing rectangular exceeds 12px radius. The seal is the only circle in the world's vocabulary.
@@ -338,10 +340,10 @@ Small 6px tags, 12px medium text: neutral (Stone Wash with a hairline), accent (
 - **Amount field:** 60px tall with a 1.5px ink border, the value in 48px mono semibold, the unit as a token pinned right.
 
 ### Navigation (stepper)
-A row of 24px squares (6px corners) joined by hairlines: done is ink with a check, active is orange with ink numerals, pending is a hairline outline. Labels are tokens; on phones only the active label stays.
+A row of 24px squares (6px corners) joined by hairlines: done is ink with a check, active is orange with ink numerals, pending is a hairline outline. Labels are tokens; on phones only the active label stays. Items size from their labels (flex-auto), so a label is never cut with an ellipsis while the row has room.
 
 ### Ink Plate (signature)
-The commit surface. Plate Ink ground, Plate Rule border, 10px corners, 20 to 24px padding, crosshairs at two corners, a 120px seal overhanging the top edge by 56px at the right. Its title is a token in Plate Grey; its content is a definition list of rows (label in Plate Grey left, fact in Plate White right, hairline rules between). Addresses inside it use the hero-toned address chip.
+The commit surface. Plate Ink ground, Plate Rule border, 10px corners, 20 to 24px padding, crosshairs at two corners, a 120px seal overhanging the top edge by 56px at the right. Its title is a token in Plate Grey, and it reserves room for the seal on the right only when the plate carries one; its content is a definition list of rows (label in Plate Grey left, fact in Plate White right, hairline rules between). Addresses inside it use the hero-toned address chip. The plate's title names who approves ("Face ID and your Kit will approve"), and the seal goes only on the commit that needs both factors and is the step's own action: a plate signed by the Kit alone ("Your Kit will start the lock-out") or one set inside an alert ("Face ID and your Kit will stop it") carries none.
 
 ### Account Plate (signature)
 The Account as a live object, under the Ink Plate Rule. Header: a token in Plate Grey ("Account · live onchain") led by a 6px live square (Ledger Green when the chain answers, Plate Grey otherwise), and the hero-toned address pill at the right from 640px (on phones the top bar carries the address). Then the balance in the Balance figure, the allowance cells at the large size, and the action row: Send (primary), Receive (hero), Earn. Padding 20px, 24px from 640px. No seal: the seal stays on commit plates.
@@ -358,15 +360,31 @@ A white card that says who can move the money: "Wallet protected" as the title w
 ### Seal (signature)
 120px orange disc; the ring text "SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY" in 9-unit mono semibold ink, fitted exactly to the ring, turning once every 28s (still under reduced motion); "SQ" centred in 700 grotesk. Appears only on plates.
 
-### Block Field (signature)
-A canvas of 14px square cells with 4px gaps on the ink panel. Unlit cells are Plate Rule; orange cells light in slow diagonal waves, a few stay lit, and cells gather around the pointer. Drawn in Display P3 where available, capped at about 30fps, paused off screen or in a hidden tab, a single still frame under reduced motion, hidden from assistive tech.
+### Candle Field (signature)
+A canvas on the onboarding ink panel: a generative candlestick chart, unlabelled (no asset, no prices, no axes). It evokes the trading bank; it is never market data. Candles sit on a 16px pitch with 10px bodies. A rising candle is filled Swissquote Orange (P3 where available), body and wick; a falling candle is a 1px Plate Grey outline over the ink ground, its wick split around the body. Four Plate Rule hairlines stand in for a grid. The last price is a Plate Grey dashed hairline at 40%; only its 6px square marker at the right edge takes the live candle's colour. Under the pointer, a full-bleed Plate Grey crosshair (the plates' registration mark at chart scale), with the hovered candle boxed in a 1px outline. Candles fade out over their last 48px on the left.
+
+The price is a seeded, range-bound walk with no drift: the chart must never imply performance. One candle forms every 1.6s while a pixel-snapped layer slides left at a constant linear pace, redrawn every frame; the live close glides over 90ms and the vertical scale eases over 450ms, so a new high never snaps the chart. Under reduced motion it is one still frame with a half-formed newest candle. The loop runs only while the canvas is on screen and the tab is visible. Hidden from assistive tech (aria-hidden).
 
 ### Live facts
 - **Token bar:** a wrapping line of tokens in Graphite separated by middots, ending with "Base Sepolia", the block number, and a green square with "Live" ("Connecting" in grey after a missed poll). Shown on phones above the content.
 - **Live strip:** on the ink panel, three columns under a Plate Rule line: Network fee "0.00", Base Sepolia block, Status, each a 12px Plate Grey label over a 20px mono figure.
 
 ### Loss bound
-An apricot field: a 14px sentence, the worst case as a 36px mono figure with its unit, and one 28px square per day of exposure (the first day solid orange, the rest orange at 45%), numbered in 11px mono.
+An apricot field: a 14px sentence, the worst case as a 36px mono figure with its unit, and a row of 28px squares numbered in 11px mono: a leading solid orange "now" square for what can still go today, then one square at orange 45% per daily reset during the delay. A closing sentence spells the sum out with its mono figures. Used at setup and on the lock-out step.
+
+**The Loss Bound Truth Rule.** The worst case is what is left today plus one daily limit per reset during the delay, computed exactly and shown with two decimals. Never "about", never rounded up for effect.
+
+### Lock-out Countdown Plate
+The pending lock-out as a live object, under the Ink Plate Rule and without a seal (it is live onchain, not a commit). Title: the token "Lock-out · live onchain" led by the 6px live square. Then the remaining time in the Balance figure register (mono 600, 3.75rem, -0.04em), counting exactly to the onchain deadline, a muted line "until the old phone is locked out", and ten delay cells in the allowance cells' grammar (24px tall, 6px gaps, 3px corners) lit orange from the left as the delay elapses, Plate Rule when unlit. Under them "Started" and "Takes effect" clock times in 12px mono at either end. Rows: Old phone (address and what it can still spend a day), New device ("This device" and its address), Can stop it (approval squares and "The old phone + your Kit"). It closes with a Plate Grey Basescan link.
+
+### Lock-out alert (old phone)
+A Signal Red banner on danger-soft (danger at 30% for the border, 10px corners) above the content on every page of the old phone: a 44px Signal Red icon tile, "Someone asked to lock this phone out" in semibold, the remaining time as a mono figure in the sentence, and a danger button "This wasn't me". It opens a panel inside the banner, under a danger hairline: the Kit passphrase field, the stop plate as the last block, the danger button, and the ghost "Demo: try with Face ID only" button.
+
+### Refusal as evidence
+When the Account refuses a single-factor attempt, the proof is shown, not paraphrased: an orange factor square beside an outlined empty square (1 of 2), "Refused by your Account" in Signal Red semibold, the Safe's code as mono data ("GS020 · 1 of 2 factors"), then one muted sentence of why. It scrolls into view when it lands.
+
+### Locked-out screen
+A centred white card on the page ground: a Signal Red icon on danger-soft, "This phone was locked out", one muted paragraph, a muted Basescan link to the Account's owners, and a secondary button to remove the wallet from the phone.
 
 ### Motion
 Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale from 0.9 over 320ms, both on cubic-bezier(0.23, 1, 0.32, 1). State changes run 150 to 200ms. Allowance cells change over 300ms, draining from the right with a 30ms stagger. Reduced motion collapses all of it.
@@ -380,6 +398,9 @@ Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale fro
 - **Do** keep live chain facts (fee, block, live status) visible in the shell: the live strip on desktop, the token bar on phones.
 - **Do** use the Factor Code Rule squares whenever the phone, the cloud account and the Kit appear together.
 - **Do** draw today's Face ID budget as the ten allowance cells, with the remaining, the limit and the reset time beside them.
+- **Do** compute the loss bound exactly (what is left today plus one daily limit per reset) and lead its day squares with a "now" square.
+- **Do** show a refusal by the Account as evidence: the approval squares that signed, the outlined one that did not, and the Safe's code in mono.
+- **Do** call the device in hand "this device" in the lost-phone flow (it may be a laptop) and the other one "the old phone".
 - **Do** show every displayed USDC amount with two decimals.
 - **Do** say which factors a payment needs in a sentence with approval squares, mono only for the figures.
 - **Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours.
