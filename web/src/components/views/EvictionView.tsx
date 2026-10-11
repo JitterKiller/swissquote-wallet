@@ -28,6 +28,7 @@ import { findSecurityKey, signWithSecurityKey } from '@/lib/securityKey'
 import {
   clearLocalEviction,
   loadLocalEviction,
+  saveKitTestedAt,
   saveLocalEviction,
   saveLocalKit,
   serializePublicKey,
@@ -199,6 +200,8 @@ export function EvictionView() {
 
     // The encrypted Kit stays on this device (ADR-018): the takeover and later Kit payments need it.
     saveLocalKit(parsed.kit)
+    // The cloud file just opened with its passphrase: that is a Kit test on this device (#9).
+    saveKitTestedAt()
     setKit(opened)
     const ours = local && same(local.account, account) ? local : null
     if (state.pendingEviction) {

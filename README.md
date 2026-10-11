@@ -31,7 +31,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Third guardian (trusted contact) | ⏳ |
 | Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ✅ (Account created at onboarding #10; Overview with today's Face ID budget #11; Send: Face ID alone within the limit, Kit passphrase + Face ID above it #12) |
 | One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019, ADR-030) | ✅ ("Phone lost or stolen?" on the new phone #15, alert and 2-factor stop on the old phone #16, `npm run e2e:eviction`; legacy `/wallet/recover` until #33) |
-| Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step | ✅ ("test your Kit" reminder ⏳) |
+| Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step; "Test your Kit" every 90 days from the Security page, with an Overview reminder (the cloud file + passphrase, keys checked onchain; ADR-041, #9, `npm run e2e:kit`) | ✅ |
 | Open wallet for everyone + Swissquote link as the upgrade (PDR-015): level 0 for everyone, level 1 for linked clients (3-day lock-out with a Swissquote identity check), from the Security page or right after linking (ADR-036, #21, `npm run e2e:level`) | ✅ (KYC and the Swissquote sign-in are MOCK; no way back to level 0 yet) |
 | Offers page: Free, Client and Premium "Theft protection" compared for your own Account (worst case from your daily limit, what your own key does in every offer), your offer and its one next step; one line on Send's receipt after the first payment that needed the Kit (PDR-019, ADR-039, #22) | ✅ (Premium subscription and key order are MOCK; key tap for large payments and Kit replacement "Soon") |
 | Security key as a third owner, at every level: added from the Security page with Face ID + the Kit (the phone itself is refused); with the Kit, it locks a lost phone out at once in "Phone lost or stolen?", even while a lock-out runs (PDR-017, PDR-019, ADR-038, #17, `npm run e2e:key`) | ✅ (any authenticator in the demo; a key tap for large payments ⏳) |
@@ -129,6 +129,7 @@ npm run e2e:earn       # Earn: Aave deposit with Kit + Face ID, withdraw, unlist
 npm run e2e:swap       # Swap: USDC ↔ EURC, USDC ↔ ETH, Activity (~2 min, funded treasury)
 npm run e2e:limit      # daily limit raised and lowered with Kit + Face ID (~1.5 min, 0.10 USDC from the treasury)
 npm run e2e:level      # level 1 upgrade: link with Face ID, upgrade with Kit + Face ID (~30 s)
+npm run e2e:kit        # "Test your Kit": Demo skip, Overview reminder, wrong file and passphrase refused, test passes, Kit saved again (~40 s)
 npm run e2e:key        # security key: the phone refused as its own key, a USB key added, lost phone locked out at once with Kit + key (~1 min)
 ```
 

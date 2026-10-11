@@ -87,3 +87,6 @@ export const EVICTION_DELAY_IS_DEMO = process.env.NEXT_PUBLIC_EVICTION_DELAYS !=
  * user's own phone: the point is a factor independent from it.
  */
 export const DEMO_ANY_AUTHENTICATOR = process.env.NEXT_PUBLIC_DEMO_ANY_AUTHENTICATOR !== 'false'
+
+/** "Test your Kit" (#9, PDR-016): the Overview reminds the owner when the last test on this device is this old. */
+export const KIT_TEST_INTERVAL_DAYS = 90

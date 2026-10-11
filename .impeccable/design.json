@@ -502,7 +502,7 @@
       "name": "Badge",
       "kind": "chip",
       "refersTo": "badge-accent",
-      "description": "6px tags on soft grounds; warning marks DEMO and MOCK.",
+      "description": "6px tags on soft grounds; warning marks DEMO and MOCK, and \"Due\" after a rule row's value when a periodic check is owed (the Recovery Kit row).",
       "html": "<span class=\"ds-badge ds-badge-accent\">Level 1</span> <span class=\"ds-badge ds-badge-warning\">Demo</span> <span class=\"ds-badge ds-badge-neutral\">Soon</span>",
       "css": ".ds-badge{display:inline-flex;align-items:center;gap:4px;border-radius:6px;border:1px solid transparent;padding:2px 6px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:12px;font-weight:500;} .ds-badge-accent{background:var(--accent-soft, #fff0e6);color:var(--accent-ink, #c2410c);} .ds-badge-warning{background:var(--warning-soft, #fdf1dc);color:var(--warning, #9a5b00);} .ds-badge-neutral{background:var(--surface-2, #f5f5f4);color:var(--muted, #6b6b6b);border-color:var(--border, #e7e5e4);}"
     },
@@ -630,7 +630,7 @@
       "name": "In-Row Panel",
       "kind": "custom",
       "refersTo": "button-secondary",
-      "description": "Changing a rule opens under its own hairline row with no card of its own; the row's small secondary control reads Cancel while open, hides on the receipt and gets focus back on close. One panel open at a time; ?change=limit|level opens one on each visit (level only at level 0), closing clears it, and panels close when the page is hidden. The daily limit panel stacks the field, the worst case before → after, the review plate and the Kit; the level upgrade replaces the field with Gate Blocks and adds the Third-Party Powers list before the plate.",
+      "description": "Changing a rule opens under its own hairline row with no card of its own; the row's small secondary control reads Cancel while open, hides on the receipt and gets focus back on close. One panel open at a time; ?change=limit|level|key|kit opens one on each visit (level only at level 0, key only without a key), closing clears it, and panels close when the page is hidden. The daily limit panel stacks the field, the worst case before → after, the review plate and the Kit; the level upgrade replaces the field with Gate Blocks and adds the Third-Party Powers list before the plate. The Kit test (Recovery Kit row, \"Test\") stacks the Kit file drop zone, the passphrase, Cancel / Test my Kit and two Ember Ink disclosure toggles, and ends on an ink-check list instead of a plate: it signs nothing.",
       "html": "<div class=\"ds-irp\"><div class=\"ds-irp-head\"><div><p class=\"ds-irp-l\">Daily limit</p><p class=\"ds-irp-v\"><b>0.50</b> USDC a day</p><p class=\"ds-irp-l\"><b>0.00</b> spent today · resets in 20 h 58 min</p></div><button class=\"ds-irp-btn\">Cancel</button></div><div class=\"ds-irp-panel\"><p class=\"ds-irp-l\">New daily limit · worst case before → after · plate · Kit · Cancel / Approve with Kit and biometrics</p></div></div>",
       "css": ".ds-irp{padding:16px 0;border-top:1px solid var(--border, #e7e5e4);border-bottom:1px solid var(--border, #e7e5e4);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-irp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;} .ds-irp p{margin:2px 0 0;} .ds-irp-l{font-size:14px;color:var(--muted, #6b6b6b);} .ds-irp-v{font-weight:500;} .ds-irp b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-irp-btn{height:36px;padding:0 12px;border:1px solid var(--border, #e7e5e4);border-radius:6px;background:var(--surface, #fff);font:inherit;font-size:14px;font-weight:500;flex-shrink:0;cursor:pointer;} .ds-irp-btn:hover{background:var(--surface-2, #f5f5f4);} .ds-irp-panel{margin-top:16px;} @media (max-width:639px){.ds-irp-head{flex-direction:column;gap:12px;} .ds-irp-btn{height:44px;}}"
     },
@@ -657,6 +657,22 @@
       "description": "On /swissquote after linking: a quiet white section (1px hairline, 10px corners, 20px padding), the level as the title with a muted mono token at the right, one muted sentence, and a secondary \"Shorten the lock-out to 3 days\" to /security?change=level. At level 1: \"Level 1: lock-out after 3 days\", token \"Kit + identity check\", no action. Never orange.",
       "html": "<section class=\"ds-lc\"><div class=\"ds-lc-h\"><h2>Your Account is at level 0</h2><span>Kit alone · 7 days</span></div><p>As a linked client, you can have a lost phone locked out after 3 days instead of 7, with your Kit and a Swissquote identity check. Swissquote never becomes an owner.</p><a href=\"#\">Shorten the lock-out to 3 days</a></section>",
       "css": ".ds-lc{border:1px solid var(--border, #e7e5e4);border-radius:10px;padding:20px;background:var(--surface, #fff);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-lc-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;} .ds-lc h2{margin:0;font-size:16px;font-weight:600;} .ds-lc-h span{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;color:var(--muted, #6b6b6b);} .ds-lc p{margin:4px 0 0;font-size:14px;color:var(--muted, #6b6b6b);} .ds-lc a{display:inline-flex;align-items:center;height:40px;margin-top:16px;padding:0 16px;border:1px solid var(--border, #e7e5e4);border-radius:6px;font-size:14px;font-weight:500;color:var(--foreground, #171717);text-decoration:none;} .ds-lc a:hover{background:var(--surface-2, #f5f5f4);}"
+    },
+    {
+      "name": "Kit Reminder",
+      "kind": "card",
+      "refersTo": "button-secondary",
+      "description": "Overview, only when a Kit test is due (90 days, or never on this device): the Level Callout's quiet white section led by the Kit's ink square, the 16px title \"Test your Recovery Kit\", one muted sentence, a full-width secondary \"Test my Kit\" to /wallet/security?change=kit. Under the Account plate on phones, heading the right column on desktop. Never orange.",
+      "html": "<section class=\"ds-kr\"><h2><i></i>Test your Recovery Kit</h2><p>Last tested 90 days ago. Check that you still have the file and its passphrase: on a new phone, they are what gets you back in.</p><a href=\"#\">Test my Kit</a></section>",
+      "css": ".ds-kr{border:1px solid var(--border, #e7e5e4);border-radius:10px;padding:20px;background:var(--surface, #fff);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-kr h2{display:flex;align-items:center;gap:10px;margin:0;font-size:16px;font-weight:600;} .ds-kr h2 i{width:10px;height:10px;background:var(--foreground, #171717);} .ds-kr p{margin:4px 0 0;font-size:14px;color:var(--muted, #6b6b6b);} .ds-kr a{display:flex;align-items:center;justify-content:center;height:40px;margin-top:16px;border:1px solid var(--border, #e7e5e4);border-radius:4px;font-size:14px;font-weight:500;color:var(--foreground, #171717);text-decoration:none;} .ds-kr a:hover{background:var(--surface-2, #f5f5f4);} @media (max-width:639px){.ds-kr a{height:44px;}}"
+    },
+    {
+      "name": "Kit Test Result",
+      "kind": "custom",
+      "refersTo": "button-secondary",
+      "description": "The Kit test's result under its rule row (The Unsigned Check Rule): \"Kit tested\" in ink led by the Kit's square, a muted next-test line, a hairline list of three facts with 16px ink checks and the checked keys as address pills (under the text on phones, at the right from 640px), then a large secondary Done. No plate, no green: a test signs nothing.",
+      "html": "<section class=\"ds-kt\"><p class=\"ds-kt-t\"><i></i>Kit tested</p><p class=\"ds-kt-d\">It opens with your passphrase and still guards your Account. Next test in 90 days, on 9 Jan 2027.</p><ul><li><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg><span>The file opens with your passphrase, on this device only</span></li><li><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg><span>Its owner key is an owner of your Account, onchain</span><code>0xDa0D…1517</code></li><li><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg><span>Its guardian key guards the lock-out of a lost phone, onchain</span><code>0x2757…69af</code></li></ul><button>Done</button></section>",
+      "css": ".ds-kt{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-kt p{margin:0;} .ds-kt-t{display:flex;align-items:center;gap:10px;font-weight:600;} .ds-kt-t i{width:10px;height:10px;background:var(--foreground, #171717);} .ds-kt-d{margin-top:4px !important;font-size:14px;color:var(--muted, #6b6b6b);} .ds-kt ul{margin:16px 0 0;padding:0;list-style:none;border-top:1px solid var(--border, #e7e5e4);font-size:14px;} .ds-kt li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:0 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border, #e7e5e4);} .ds-kt svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;} .ds-kt code{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:12px;padding:4px 8px;border-radius:6px;background:var(--surface-2, #f5f5f4);} .ds-kt button{width:100%;height:48px;margin-top:16px;border:1px solid var(--border, #e7e5e4);border-radius:4px;background:var(--surface, #fff);font:inherit;font-weight:500;cursor:pointer;} @media (max-width:639px){.ds-kt li{grid-template-columns:16px minmax(0,1fr);} .ds-kt code{grid-column:2;justify-self:start;margin-top:6px;}}"
     },
     {
       "name": "Phone Tour",
@@ -756,7 +772,12 @@
       },
       {
         "name": "The In-Row Panel",
-        "body": "Changing a rule opens under its own row, between the row's hairlines, with no border or card of its own; the row's control toggles Change ↔ Cancel and hides on the receipt. One panel is open at a time. The panel shows the worst case before → after on the apricot field before the review plate. The daily limit, the level upgrade and the security key follow it.",
+        "body": "Changing a rule opens under its own row, between the row's hairlines, with no border or card of its own; the row's control toggles Change ↔ Cancel and hides on the receipt. One panel is open at a time. The panel shows the worst case before → after on the apricot field before the review plate. The daily limit, the level upgrade and the security key follow it; the Kit test follows it with the file and passphrase and a checklist instead of a plate.",
+        "section": "components"
+      },
+      {
+        "name": "The Unsigned Check Rule",
+        "body": "A check that signs nothing reports on white, never on an ink plate: the factor's square leads an ink title, the facts are a hairline list with ink checks, and nothing turns green. Green and plates stay for what was signed or committed onchain.",
         "section": "components"
       },
       {
@@ -783,6 +804,8 @@
       "**Do** name an approved dApp with its short address in readable steps, and keep a transfer's recipient as the full address.",
       "**Do** show a rule change as its worst case before → after on the apricot field, the current figure muted and the new one large, before the plate.",
       "**Do** open a rule's change under its own row, inside its hairlines, with no card of its own, and give focus back to the row's control when it closes.",
+      "**Do** report a check that signs nothing (the Kit test) as an ink-check list on white, its keys as address pills, never as a plate.",
+      "**Do** keep a periodic reminder quiet: the Level Callout's white section with a secondary action, led by the factor's square, shown only when due.",
       "**Do** state a third party's powers before signing: a hairline list of what it can do (ink check) and never can do (Graphite X), above the plate.",
       "**Do** answer a task that cannot run with a Gate Block: the situation as the title, one muted line, the way forward or \"Close\".",
       "**Do** keep a power that is not built yet in place as a Soon slot: the neutral \"Soon\" badge beside its disabled small secondary button, or after its text in a comparison cell.",

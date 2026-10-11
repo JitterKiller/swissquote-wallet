@@ -33,6 +33,7 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - `npm run e2e:swap`: Swap on Base Sepolia (USDC → EURC, EURC → USDC with Max, USDC → ETH and back, Activity, funds back to the treasury), about 2 minutes
 - `npm run e2e:level`: level 1 upgrade (not-linked panel, sign in + Link with Face ID, the /wallet/swissquote call, upgrade with Kit + Face ID, level 1 on Security and /swissquote), about 30 seconds, no funds needed
 - `npm run e2e:limit`: daily limit change from the Overview's "Change" (raise to 1.00, lower to 0.25, both with Kit + Face ID) and the panel's states, about 1.5 minutes, 0.10 USDC from the treasury, returned
+- `npm run e2e:kit`: "Test your Kit" (Demo skip 90 days, the Overview reminder, a wrong file and passphrase refused, the test passes, "Save my Kit again" gives the same Kit), about 40 seconds, no funds needed
 - `npm run e2e:key`: security key (the phone refused as its own key, a USB key added with Kit + Face ID, then a lost phone locked out at once with Kit + key on a second device), about 1 minute, no funds needed
 - `node scripts/capture-offers.mts [outDir] [--send]`: captures `/wallet/offers` in every offer state (390 and 1440), with `--send` Send's receipt line too, about 1 minute (1 USDC from the treasury, returned)
 - `npm run e2e:eviction`: "Phone lost or stolen?" on two phones (lock-out, thief refused, 2-factor stop, takeover after the 3-minute delay), about 6 minutes, screenshots in `web/screenshots/`

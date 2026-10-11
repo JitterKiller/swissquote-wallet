@@ -147,7 +147,12 @@ export const saveLocalKit = (kit: RecoveryKitV3) => write(KIT_KEY, kit)
 
 /** Last successful "test your Kit" (ms), for the periodic reminder. */
 export const loadKitTestedAt = () => read<number>(KIT_TESTED_KEY)
-export const saveKitTestedAt = (at = Date.now()) => write(KIT_TESTED_KEY, at)
+/** Fired on this tab when the last Kit test changes (#9): the Overview reminder and the Security row follow it. */
+export const KIT_TESTED_EVENT = 'sq-kit-tested'
+export function saveKitTestedAt(at = Date.now()) {
+  write(KIT_TESTED_KEY, at)
+  window.dispatchEvent(new Event(KIT_TESTED_EVENT))
+}
 
 export function clearAll() {
   try {

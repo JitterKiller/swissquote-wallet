@@ -1,14 +1,16 @@
 'use client'
 
-import { ArrowUpRight, TriangleAlert } from 'lucide-react'
+import { ArrowUpRight, FastForward, TriangleAlert } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from 'react'
 import type { Address } from 'viem'
 
 import { formatDuration, nextReset } from '@/components/account/AllowanceMeter'
+import { KitTest } from '@/components/account/KitTest'
 import { LevelUpgrade } from '@/components/account/LevelUpgrade'
 import { LimitChange } from '@/components/account/LimitChange'
 import { SecurityKeyAdd } from '@/components/account/SecurityKeyAdd'
+import { daysUntilKitTest, kitTestDue, kitTestedLabel, skipKitTestInterval, useKitTestedAt } from '@/components/account/useKitTest'
 import { useOwnerKinds } from '@/components/account/useOwnerKinds'
 import { LossBound, lossBound } from '@/components/account/LossBound'
 import { chainLevel, useSwissquoteKeys, type SwissquoteKeys } from '@/components/account/useSwissquoteKeys'
@@ -64,12 +66,12 @@ export function SecurityView() {
         {!wallet.account ? (
           <LegacyRecovery keys={keys} />
         ) : !state ? (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <Skeleton className="h-80 rounded-2xl" />
             <Skeleton className="h-80 rounded-2xl" />
           </div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <OwnersPlate account={wallet.account} state={state} level={level} keys={keys} kinds={kinds} onRetry={retry} />
             <LossBound limit={limit} level={level} withKey={hasKey} roomy />
           </div>
@@ -77,14 +79,14 @@ export function SecurityView() {
       </div>
 
       {state && (
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
           <PowersMatrix limit={limit} level={level} hasKey={hasKey} />
           <Scenarios limit={limit} level={level} hasKey={hasKey} />
         </div>
       )}
 
       {state ? (
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
           {/* useSearchParams: kept inside a Suspense boundary for prerendering (Next docs). */}
           <Suspense fallback={null}>
             <AccountRules state={state} level={level} keys={keys} keyOwner={kinds.keyOwner} onRetryKeys={retry} />
@@ -472,7 +474,7 @@ function Scenarios({ limit, level, hasKey }: { limit: bigint | null; level: Leve
 
 // ── Rules (limit, lock-out delay, security key) ──────────────────────────────
 
-type RulePanel = 'limit' | 'level' | 'key'
+type RulePanel = 'limit' | 'level' | 'key' | 'kit'
 
 function AccountRules({
   state,
@@ -498,7 +500,7 @@ function AccountRules({
   const asked = searchParams.get('change')
   // ?change=level only means something at level 0 (a reload or a back after the upgrade must not reopen it).
   const wanted: RulePanel | null =
-    asked === 'limit' || (asked === 'level' && level === 0) || (asked === 'key' && !keyOwner) ? (asked as RulePanel) : null
+    asked === 'limit' || asked === 'kit' || (asked === 'level' && level === 0) || (asked === 'key' && !keyOwner) ? (asked as RulePanel) : null
   const [open, setOpen] = useState<RulePanel | null>(wanted)
   const [done, setDone] = useState(false)
   // Next keeps this page alive while hidden (Activity): follow the link's ?change= on each visit.
@@ -514,9 +516,13 @@ function AccountRules({
   const limitOpener = useRef<HTMLButtonElement>(null)
   const levelOpener = useRef<HTMLButtonElement>(null)
   const keyOpener = useRef<HTMLButtonElement>(null)
+  const kitOpener = useRef<HTMLButtonElement>(null)
   const last = useRef<RulePanel | null>(null)
+  // The Recovery Kit row (#9): when this device last opened the Kit file with its passphrase.
+  const kitTestedAt = useKitTestedAt()
+  const kitDue = kitTestDue(kitTestedAt, now)
   useEffect(() => {
-    if (open === null && last.current) ({ limit: limitOpener, level: levelOpener, key: keyOpener })[last.current].current?.focus()
+    if (open === null && last.current) ({ limit: limitOpener, level: levelOpener, key: keyOpener, kit: kitOpener })[last.current].current?.focus()
     last.current = open
   }, [open])
   // A panel is a transient task: close it when the page is hidden, so coming back never shows a stale
@@ -619,6 +625,36 @@ function AccountRules({
             ) : null
           }
           panel={open === 'key' && <SecurityKeyAdd state={state} level={level} onClose={close} onChanged={() => setDone(true)} />}
+        />
+        <RuleRow
+          name="Recovery Kit"
+          value={
+            kitDue ? (
+              <span className="inline-flex flex-wrap items-center gap-2">
+                {kitTestedLabel(kitTestedAt, now)} <Badge tone="warning">Due</Badge>
+              </span>
+            ) : (
+              kitTestedLabel(kitTestedAt, now)
+            )
+          }
+          detail={
+            kitDue || kitTestedAt === null ? (
+              'Check that you still have the file and its passphrase, before you need them.'
+            ) : (
+              <>
+                Next test in {daysUntilKitTest(kitTestedAt, now)} days: the file from your cloud drive, with its passphrase.
+                {open !== 'kit' && (
+                  <span className="mt-1 flex">
+                    <Button variant="ghost" size="sm" className="-ml-3 max-sm:h-11" onClick={() => skipKitTestInterval(kitTestedAt)}>
+                      <FastForward className="h-4 w-4" /> Demo: skip 90 days
+                    </Button>
+                  </span>
+                )}
+              </>
+            )
+          }
+          control={<RuleControl ref={kitOpener} label="Test" open={open === 'kit'} done={done} onOpen={() => openPanel('kit')} onCancel={close} />}
+          panel={open === 'kit' && <KitTest onClose={close} onTested={() => setDone(true)} />}
         />
       </ul>
     </section>

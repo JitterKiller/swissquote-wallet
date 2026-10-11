@@ -7,6 +7,7 @@ import { AllowanceMeter } from '@/components/account/AllowanceMeter'
 import { otherBalancesLine, useAssetBalances } from '@/components/account/AssetBalances'
 import { CustodyCard } from '@/components/account/CustodyCard'
 import { EarnCard } from '@/components/account/EarnCard'
+import { KitReminder } from '@/components/account/KitReminder'
 import { SwissquoteCard } from '@/components/account/SwissquoteCard'
 import { SweepNotice } from '@/components/account/SweepNotice'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
@@ -38,7 +39,7 @@ export function OverviewView() {
           <div className="order-2 empty:hidden">
             <SweepNotice />
           </div>
-          <div className="order-2">
+          <div className="order-3">
             <BalanceHistoryCard />
           </div>
           <div className="order-4">
@@ -46,6 +47,11 @@ export function OverviewView() {
           </div>
         </div>
         <div className="contents lg:block lg:space-y-6">
+          {/* "Test your Recovery Kit" (#9): only when a test is due. On phones right under the Account plate,
+              on desktop at the head of this column, above who holds the keys. */}
+          <div className="order-2 empty:hidden">
+            <KitReminder />
+          </div>
           <div className="order-3">
             <CustodyCard />
           </div>
