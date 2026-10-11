@@ -15,6 +15,7 @@
     "e2e:earn": "node scripts/e2e-earn.mts",
     "e2e:swap": "node scripts/e2e-swap.mts",
     "e2e:limit": "node scripts/e2e-limit.mts",
+    "e2e:level": "node scripts/e2e-level.mts",
     "screenshots": "node scripts/ui-screenshots.mts",
     "spike:two-safe": "node scripts/spike-two-safe.mts",
     "check:account": "tsx scripts/check-account-lib.mts",

@@ -21,7 +21,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Old device revoked after recovery | ✅ |
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity with the factors that approved each payment (ADR-029), light/dark | ✅ |
-| Security page for the two-Safe Account: owners read live onchain, "Swissquote · not an owner" checkable on Basescan, worst case as an amount, who can do what (ADR-034, #26) | ✅ (security key #17 and level upgrade #21 shown as "Soon") |
+| Security page for the two-Safe Account: owners read live onchain, "Swissquote · not an owner" checkable on Basescan, worst case as an amount, who can do what (ADR-034, #26) | ✅ (security key #17 shown as "Soon") |
 | Daily limit change, up or down, with Face ID + the Kit: worst case before → after, sealed review, one sponsored transaction (PDR-020, ADR-035, #13, `npm run e2e:limit`) | ✅ |
 | Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022), on the Send review (#12) | ✅ |
 | Approved dApps, built natively: Aave v3 and Compound III with USDC, 2 factors, sponsored only when approved (PDR-025, ADR-028); Earn screen with positions, risk acknowledgement and the unlisted-dApp demo (ADR-031, `npm run e2e:earn`) | ✅ |
@@ -32,7 +32,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Separation of powers: Account Safe (user factors, threshold 2) + Key Safe with a user-chosen daily limit (PDR-014, PDR-020, ADR-017) | ✅ (Account created at onboarding #10; Overview with today's Face ID budget #11; Send: Face ID alone within the limit, Kit passphrase + Face ID above it #12) |
 | One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019, ADR-030) | ✅ ("Phone lost or stolen?" on the new phone #15, alert and 2-factor stop on the old phone #16, `npm run e2e:eviction`; legacy `/recover` until #33) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step | ✅ ("test your Kit" reminder ⏳) |
-| Open wallet for everyone + Swissquote link as the upgrade (PDR-015) | ⏳ |
+| Open wallet for everyone + Swissquote link as the upgrade (PDR-015): level 0 for everyone, level 1 for linked clients (3-day lock-out with a Swissquote identity check), from the Security page or right after linking (ADR-036, #21, `npm run e2e:level`) | ✅ (KYC and the Swissquote sign-in are MOCK; no way back to level 0 yet) |
 | Theft protection: hardware key, guided "phone stolen" flow (PDR-017) | ⏳ |
 
 ## Architecture

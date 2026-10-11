@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T00:30:00+00:00",
+  "generatedAt": "2026-10-12T02:00:00+00:00",
   "title": "Design System: SQure",
   "extensions": {
     "colorMeta": {
@@ -606,15 +606,15 @@
       "name": "Soon Slot",
       "kind": "custom",
       "refersTo": "badge-accent",
-      "description": "A power not built yet keeps its place: the neutral Soon badge beside a disabled small secondary button naming the action, on a hairline rule row. Never orange, never hidden. The daily limit row now carries a working \"Change\" instead (see In-Row Panel); the lock-out delay and security key stay Soon.",
-      "html": "<div class=\"ds-rule\"><div><p class=\"ds-rule-l\">Daily limit</p><p class=\"ds-rule-v\"><b>0.50</b> USDC a day</p><p class=\"ds-rule-l\"><b>0.00</b> spent today · resets in 21 h 18 min</p></div><span class=\"ds-slot\"><em>Soon</em><button disabled>Change</button></span></div>",
+      "description": "A power not built yet keeps its place: the neutral Soon badge beside a disabled small secondary button naming the action, on a hairline rule row. Never orange, never hidden. The daily limit (\"Change\") and the lock-out delay (\"Upgrade to level 1\") now work as In-Row Panels; only the security key (\"Add a key\") stays Soon.",
+      "html": "<div class=\"ds-rule\"><div><p class=\"ds-rule-l\">Security key</p><p class=\"ds-rule-v\">None</p><p class=\"ds-rule-l\">A third owner you keep at home</p></div><span class=\"ds-slot\"><em>Soon</em><button disabled>Add a key</button></span></div>",
       "css": ".ds-rule{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:16px 0;border-top:1px solid var(--border, #e7e5e4);border-bottom:1px solid var(--border, #e7e5e4);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-rule p{margin:2px 0 0;} .ds-rule-l{font-size:14px;color:var(--muted, #6b6b6b);} .ds-rule-v{font-weight:500;} .ds-rule b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-slot{display:flex;align-items:center;gap:8px;flex-shrink:0;} .ds-slot em{font-style:normal;font-size:12px;font-weight:500;padding:2px 6px;border-radius:6px;background:var(--surface-2, #f5f5f4);box-shadow:inset 0 0 0 1px var(--border, #e7e5e4);} .ds-slot button{height:36px;padding:0 12px;border:1px solid var(--border, #e7e5e4);border-radius:6px;background:var(--surface, #fff);font:inherit;font-size:14px;font-weight:500;color:var(--foreground, #171717);opacity:0.45;cursor:not-allowed;} @media (max-width:639px){.ds-rule{flex-direction:column;gap:12px;} .ds-slot button{height:44px;}}"
     },
     {
       "name": "Worst Case Change",
       "kind": "card",
       "refersTo": "worst-case-change",
-      "description": "The loss bound before → after when a rule changes, on the apricot field: the current worst case muted, an arrow, the new one large, then a live sentence with the exact difference and what Face ID can still spend today.",
+      "description": "The loss bound before → after when a rule changes, on the apricot field: the current worst case muted, an arrow, the new one large, then a live sentence with the exact difference and what Face ID can still spend today. Shared by the daily limit change and the level upgrade (4.00 → 2.00 USDC, \"Locked out after 3 days instead of 7 …\").",
       "html": "<section class=\"ds-wcc\"><p class=\"ds-wcc-copy\">If your phone is stolen, a thief can take at most</p><p class=\"ds-wcc-figs\"><span class=\"ds-wcc-now\">4.00</span><span class=\"ds-wcc-arrow\" aria-hidden=\"true\">→</span><span class=\"ds-wcc-next\">8.00</span><span class=\"ds-wcc-unit\">USDC</span></p><p class=\"ds-wcc-copy\" aria-live=\"polite\"><b>4.00</b> USDC more than now. Face ID could still spend <b>1.00</b> today.</p></section>",
       "css": ".ds-wcc{background:var(--accent-soft, #fff0e6);border-radius:10px;padding:16px 20px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-wcc-copy{margin:0;font-size:14px;color:color-mix(in srgb, var(--foreground, #171717) 75%, transparent);} .ds-wcc-copy b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-wcc-figs{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:4px 0 8px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-variant-numeric:tabular-nums;} .ds-wcc-now,.ds-wcc-arrow{font-size:24px;color:color-mix(in srgb, var(--foreground, #171717) 60%, transparent);} .ds-wcc-next{font-size:36px;font-weight:600;letter-spacing:-0.025em;} .ds-wcc-unit{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:18px;}"
     },
@@ -622,9 +622,33 @@
       "name": "In-Row Panel",
       "kind": "custom",
       "refersTo": "button-secondary",
-      "description": "Changing a rule opens under its own hairline row with no card of its own; the row's small secondary control reads Cancel while open and gives focus back to Change on close. The panel stacks the field, the worst case before → after, the sealed plate and the Kit.",
+      "description": "Changing a rule opens under its own hairline row with no card of its own; the row's small secondary control reads Cancel while open, hides on the receipt and gets focus back on close. One panel open at a time; ?change=limit|level opens one on each visit (level only at level 0), closing clears it, and panels close when the page is hidden. The daily limit panel stacks the field, the worst case before → after, the sealed plate and the Kit; the level upgrade replaces the field with Gate Blocks and adds the Third-Party Powers list before the plate.",
       "html": "<div class=\"ds-irp\"><div class=\"ds-irp-head\"><div><p class=\"ds-irp-l\">Daily limit</p><p class=\"ds-irp-v\"><b>0.50</b> USDC a day</p><p class=\"ds-irp-l\"><b>0.00</b> spent today · resets in 20 h 58 min</p></div><button class=\"ds-irp-btn\">Cancel</button></div><div class=\"ds-irp-panel\"><p class=\"ds-irp-l\">New daily limit · worst case before → after · plate · Kit · Cancel / Approve with Kit and Face ID</p></div></div>",
       "css": ".ds-irp{padding:16px 0;border-top:1px solid var(--border, #e7e5e4);border-bottom:1px solid var(--border, #e7e5e4);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-irp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;} .ds-irp p{margin:2px 0 0;} .ds-irp-l{font-size:14px;color:var(--muted, #6b6b6b);} .ds-irp-v{font-weight:500;} .ds-irp b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-irp-btn{height:36px;padding:0 12px;border:1px solid var(--border, #e7e5e4);border-radius:6px;background:var(--surface, #fff);font:inherit;font-size:14px;font-weight:500;flex-shrink:0;cursor:pointer;} .ds-irp-btn:hover{background:var(--surface-2, #f5f5f4);} .ds-irp-panel{margin-top:16px;} @media (max-width:639px){.ds-irp-head{flex-direction:column;gap:12px;} .ds-irp-btn{height:44px;}}"
+    },
+    {
+      "name": "Third-Party Powers",
+      "kind": "custom",
+      "refersTo": "badge-neutral",
+      "description": "A third party's powers, stated before signing: a 14px semibold title naming the party, a hairline list of verb phrases with drawn lucide icons (Check in ink for can, X in Graphite for never can; never green or red; screen-reader \"Can:\" on can-lines only), then a muted trade-off line. No factor square for the party.",
+      "html": "<section class=\"ds-tpp\"><h3>With level 1, Swissquote</h3><ul><li><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg><span><span class=\"ds-sr\">Can: </span>has to confirm it’s you before a lost phone is locked out</span></li><li class=\"ds-no\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg><span>never moves your money</span></li><li class=\"ds-no\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg><span>never locks you out on its own</span></li><li class=\"ds-no\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg><span>never becomes an owner of your Account</span></li></ul><p>If Swissquote can’t sign, a lock-out waits for it. Before ending the service, Swissquote moves you back to 7 days with your Kit alone.</p></section>",
+      "css": ".ds-tpp{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-tpp h3{margin:0;font-size:14px;font-weight:600;} .ds-tpp ul{margin:8px 0 0;padding:0;list-style:none;border-top:1px solid var(--border, #e7e5e4);font-size:14px;} .ds-tpp li{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border, #e7e5e4);} .ds-tpp svg{width:16px;height:16px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;} .ds-tpp .ds-no svg{color:var(--muted, #6b6b6b);} .ds-tpp p{margin:8px 0 0;font-size:14px;color:var(--muted, #6b6b6b);} .ds-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}"
+    },
+    {
+      "name": "Gate Block",
+      "kind": "custom",
+      "refersTo": "button-primary",
+      "description": "When a task cannot run yet, a plain block in place of the form, no card or alert: a 16px medium title stating the situation, one muted 14px line, then the way forward as primary beside a secondary Not now / Close (a dead end gets only Close).",
+      "html": "<div class=\"ds-gate\"><p class=\"ds-gate-t\">Level 1 is for Swissquote clients who linked this wallet</p><p class=\"ds-gate-d\">Linking proves this wallet is yours with one Face ID. Swissquote can then check it’s you before a lock-out, and your lost phone is locked out after 3 days instead of 7.</p><div class=\"ds-gate-a\"><button class=\"ds-p\">Link your Swissquote account</button><button class=\"ds-s\">Not now</button></div></div>",
+      "css": ".ds-gate{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-gate p{margin:0;} .ds-gate-t{font-weight:500;} .ds-gate-d{margin-top:12px !important;font-size:14px;color:var(--muted, #6b6b6b);} .ds-gate-a{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;} .ds-gate button{height:40px;padding:0 16px;border-radius:6px;font:inherit;font-size:14px;font-weight:500;cursor:pointer;} .ds-gate .ds-p{border:0;background:var(--accent, #ff5f0f);color:var(--accent-fg, #171717);} .ds-gate .ds-s{border:1px solid var(--border, #e7e5e4);background:var(--surface, #fff);color:var(--foreground, #171717);}"
+    },
+    {
+      "name": "Level Callout",
+      "kind": "card",
+      "refersTo": "button-secondary",
+      "description": "On /swissquote after linking: a quiet white section (1px hairline, 10px corners, 20px padding), the level as the title with a muted mono token at the right, one muted sentence, and a secondary \"Shorten the lock-out to 3 days\" to /security?change=level. At level 1: \"Level 1: lock-out after 3 days\", token \"Kit + identity check\", no action. Never orange.",
+      "html": "<section class=\"ds-lc\"><div class=\"ds-lc-h\"><h2>Your Account is at level 0</h2><span>Kit alone · 7 days</span></div><p>As a linked client, you can have a lost phone locked out after 3 days instead of 7, with your Kit and a Swissquote identity check. Swissquote never becomes an owner.</p><a href=\"#\">Shorten the lock-out to 3 days</a></section>",
+      "css": ".ds-lc{border:1px solid var(--border, #e7e5e4);border-radius:10px;padding:20px;background:var(--surface, #fff);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-lc-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;} .ds-lc h2{margin:0;font-size:16px;font-weight:600;} .ds-lc-h span{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;color:var(--muted, #6b6b6b);} .ds-lc p{margin:4px 0 0;font-size:14px;color:var(--muted, #6b6b6b);} .ds-lc a{display:inline-flex;align-items:center;height:40px;margin-top:16px;padding:0 16px;border:1px solid var(--border, #e7e5e4);border-radius:6px;font-size:14px;font-weight:500;color:var(--foreground, #171717);text-decoration:none;} .ds-lc a:hover{background:var(--surface-2, #f5f5f4);}"
     }
   ],
   "narrative": {
@@ -692,7 +716,12 @@
       },
       {
         "name": "The In-Row Panel",
-        "body": "Changing a rule opens under its own row, between the row's hairlines, with no border or card of its own; the row's control toggles Change ↔ Cancel and hides on the receipt. The panel shows the worst case before → after on the apricot field before the sealed plate. Later rule-change panels follow it.",
+        "body": "Changing a rule opens under its own row, between the row's hairlines, with no border or card of its own; the row's control toggles Change ↔ Cancel and hides on the receipt. One panel is open at a time. The panel shows the worst case before → after on the apricot field before the sealed plate. The daily limit and the level upgrade follow it; the security key's panel will.",
+        "section": "components"
+      },
+      {
+        "name": "Third-Party Powers",
+        "body": "Whenever a change gives an outside party a role on the Account, state its powers before signing: a hairline list of what it can do (ink check) and never can do (Graphite X), never green or red, then the trade-off in one muted line, above the plate.",
         "section": "components"
       }
     ],
@@ -714,6 +743,8 @@
       "**Do** name an approved dApp with its short address in readable steps, and keep a transfer's recipient as the full address.",
       "**Do** show a rule change as its worst case before → after on the apricot field, the current figure muted and the new one large, before the plate.",
       "**Do** open a rule's change under its own row, inside its hairlines, with no card of its own, and give focus back to the row's control when it closes.",
+      "**Do** state a third party's powers before signing: a hairline list of what it can do (ink check) and never can do (Graphite X), above the plate.",
+      "**Do** answer a task that cannot run with a Gate Block: the situation as the title, one muted line, the way forward or \"Close\".",
       "**Do** keep a power that is not built yet in place as a Soon slot: the neutral \"Soon\" badge beside its disabled small secondary button.",
       "**Do** say who can do what as a powers matrix of factor squares and a few words, a table from 640px and a list on phones.",
       "**Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours."
@@ -726,6 +757,7 @@
       "**Don't** round rectangles beyond 12px or turn markers into pills; the seal is the only circle.",
       "**Don't** place the seal anywhere but on a commit plate, and never more than one per screen.",
       "**Don't** give the Swissquote guardian a factor square; it is never an owner.",
+      "**Don't** colour a can / never-can list green and red; the check is ink, the X Graphite.",
       "**Don't** set \"Soon\" or other non-data labels as mono tokens; use the kit's neutral badge.",
       "**Don't** round a balance or a minimum up, or show a signed amount at list precision.",
       "**Don't** let a plate row's label wrap; the value wraps.",

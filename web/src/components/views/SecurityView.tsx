@@ -2,12 +2,14 @@
 
 import { ArrowUpRight, TriangleAlert } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from 'react'
 import type { Address } from 'viem'
 
 import { formatDuration, nextReset } from '@/components/account/AllowanceMeter'
+import { LevelUpgrade } from '@/components/account/LevelUpgrade'
 import { LimitChange } from '@/components/account/LimitChange'
 import { LossBound, lossBound } from '@/components/account/LossBound'
+import { chainLevel, useSwissquoteKeys, type SwissquoteKeys } from '@/components/account/useSwissquoteKeys'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
 import { Button, ButtonLink } from '@/components/ui/button'
@@ -17,9 +19,8 @@ import { useBlockNumber } from '@/components/ui/live'
 import { PageHeader } from '@/components/ui/page'
 import { Plate } from '@/components/ui/plate'
 import type { AccountState } from '@/lib/account'
-import { api } from '@/lib/api'
 import { EVICTION_DAYS, EVICTION_DELAY_IS_DEMO, EVICTION_DELAY_SECONDS, EXPLORER_URL, RECOVERY_DELAY_LABEL, type Level } from '@/lib/config'
-import { evictionLevel, getPendingEviction } from '@/lib/eviction'
+import { getPendingEviction } from '@/lib/eviction'
 import { formatDelay, formatUsdc, shortAddress } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
 import { kitAddresses } from '@/lib/recoveryKit'
@@ -38,46 +39,19 @@ const Loading = () => (
   </>
 )
 
-type SwissquoteKeys = { status: 'loading' } | { status: 'error' } | { status: 'ok'; guardian: Address; treasury: Address }
-
-/** Swissquote's own addresses (guardian key, treasury): the level comes from them, and they must not be owners. */
-function useSwissquoteKeys() {
-  const [keys, setKeys] = useState<SwissquoteKeys>({ status: 'loading' })
-  const [attempt, setAttempt] = useState(0)
-  useEffect(() => {
-    let cancelled = false
-    api<{ guardian: Address; relayer: Address }>('/api/guardian')
-      .then(({ guardian, relayer }) => !cancelled && setKeys({ status: 'ok', guardian, treasury: relayer }))
-      .catch(() => !cancelled && setKeys({ status: 'error' }))
-    return () => {
-      cancelled = true
-    }
-  }, [attempt])
-  const retry = () => {
-    setKeys({ status: 'loading' })
-    setAttempt((a) => a + 1)
-  }
-  return { keys, retry }
-}
-
 /**
  * Security (#26, ADR-034, surface brief web-src-components-views-securityview-tsx): a proof, not a
  * settings list. The Account's owners as the chain reports them, "Swissquote · not an owner", the
- * worst case as an amount, then who can do what (PDR-013, PDR-014, PDR-018). The one thing signed
- * here is a new daily limit (#13, ADR-035); the security key (#17) and the level upgrade (#21) are "Soon".
+ * worst case as an amount, then who can do what (PDR-013, PDR-014, PDR-018). Two rules change here,
+ * each in a panel under its row: the daily limit (#13, ADR-035) and the level (#21, ADR-036). The
+ * security key (#17) is "Soon".
  */
 export function SecurityView() {
   const { wallet, chain } = useLoadedWallet()
   const { keys, retry } = useSwissquoteKeys()
   const state = wallet.account ? chain.account : null
   // The level the chain enforces: level 1 when Swissquote's guardian guards the lock-out (as the eviction API reads it).
-  const level: Level = state
-    ? keys.status === 'ok'
-      ? evictionLevel(state, keys.guardian)
-      : state.guardians.length > 1
-        ? 1
-        : 0
-    : 0
+  const level: Level = state ? chainLevel(state, keys) : 0
   const limit = state?.allowance?.amount ?? null
 
   return (
@@ -110,7 +84,7 @@ export function SecurityView() {
         <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
           {/* useSearchParams: kept inside a Suspense boundary for prerendering (Next docs). */}
           <Suspense fallback={null}>
-            <AccountRules state={state} level={level} />
+            <AccountRules state={state} level={level} keys={keys} onRetryKeys={retry} />
           </Suspense>
           <div className="space-y-8">
             <ThisPhone />
@@ -463,22 +437,60 @@ function Scenarios({ limit, level }: { limit: bigint | null; level: Level }) {
 
 // ── Rules (limit, lock-out delay, security key) ──────────────────────────────
 
-function AccountRules({ state, level }: { state: AccountState; level: Level }) {
+type RulePanel = 'limit' | 'level'
+
+function AccountRules({ state, level, keys, onRetryKeys }: { state: AccountState; level: Level; keys: SwissquoteKeys; onRetryKeys: () => void }) {
   const now = useNow(30_000)
   const allowance = state.allowance
   const days = EVICTION_DAYS[level]
-  // "Change" beside the Overview's Face ID meter lands here with the panel open (/security?change=limit).
-  // The router's search params, not window.location: on a client navigation the URL updates after this renders.
+  // "Change" beside the Overview's Face ID meter (?change=limit) and the level call on /swissquote
+  // (?change=level) land here with that panel open. The router's search params, not window.location:
+  // on a client navigation the URL updates after this renders.
   const searchParams = useSearchParams()
-  const [changing, setChanging] = useState(() => searchParams.get('change') === 'limit')
-  const [changed, setChanged] = useState(false)
-  // Closing the panel (Cancel, Done) gives focus back to "Change".
-  const changeButton = useRef<HTMLButtonElement>(null)
-  const closed = useRef(false)
+  const router = useRouter()
+  const asked = searchParams.get('change')
+  // ?change=level only means something at level 0 (a reload or a back after the upgrade must not reopen it).
+  const wanted: RulePanel | null = asked === 'limit' || (asked === 'level' && level === 0) ? asked : null
+  const [open, setOpen] = useState<RulePanel | null>(wanted)
+  const [done, setDone] = useState(false)
+  // Next keeps this page alive while hidden (Activity): follow the link's ?change= on each visit.
+  const [seen, setSeen] = useState(asked)
+  if (asked !== seen) {
+    setSeen(asked)
+    if (wanted) {
+      setOpen(wanted)
+      setDone(false)
+    }
+  }
+  // Closing a panel (Cancel, Done) gives focus back to the control that opened it.
+  const limitOpener = useRef<HTMLButtonElement>(null)
+  const levelOpener = useRef<HTMLButtonElement>(null)
+  const last = useRef<RulePanel | null>(null)
   useEffect(() => {
-    if (!changing && closed.current) changeButton.current?.focus()
-    closed.current = changing
-  }, [changing])
+    if (open === null && last.current) (last.current === 'limit' ? limitOpener : levelOpener).current?.focus()
+    last.current = open
+  }, [open])
+  // A panel is a transient task: close it when the page is hidden, so coming back never shows a stale
+  // form or receipt (a link with ?change= reopens it). Next's guide on preserving UI state.
+  useLayoutEffect(
+    () => () => {
+      last.current = null
+      setOpen(null)
+      setSeen(null)
+    },
+    [],
+  )
+
+  const close = () => {
+    setOpen(null)
+    // Drop ?change= so a reload doesn't reopen a finished task.
+    if (asked) router.replace('/security', { scroll: false })
+  }
+  const openPanel = (panel: RulePanel) => {
+    setDone(false)
+    setOpen(panel)
+  }
+
   return (
     <section aria-labelledby="rules-title">
       <h2 id="rules-title" className="text-lg font-semibold tracking-tight">
@@ -502,30 +514,17 @@ function AccountRules({ state, level }: { state: AccountState; level: Level }) {
             )
           }
           control={
-            changing ? (
-              // Once the receipt shows, the change is done: its own "Done" closes it.
-              !changed && (
-                <Button variant="secondary" size="sm" className="max-sm:h-11" onClick={() => setChanging(false)}>
-                  Cancel
-                </Button>
-              )
-            ) : (
-              <Button
-                ref={changeButton}
-                variant="secondary"
-                size="sm"
-                className="max-sm:h-11"
-                disabled={!allowance}
-                onClick={() => {
-                  setChanged(false)
-                  setChanging(true)
-                }}
-              >
-                Change
-              </Button>
-            )
+            <RuleControl
+              ref={limitOpener}
+              label="Change"
+              open={open === 'limit'}
+              done={done}
+              disabled={!allowance}
+              onOpen={() => openPanel('limit')}
+              onCancel={close}
+            />
           }
-          panel={changing && <LimitChange state={state} level={level} onClose={() => setChanging(false)} onChanged={() => setChanged(true)} />}
+          panel={open === 'limit' && <LimitChange state={state} level={level} onClose={close} onChanged={() => setDone(true)} />}
         />
         <RuleRow
           name="Lock-out delay"
@@ -535,7 +534,20 @@ function AccountRules({ state, level }: { state: AccountState; level: Level }) {
               ? 'Level 1: your Kit and a Swissquote identity check.'
               : 'Level 0: your Kit alone. Linked clients: 3 days, your Kit plus a Swissquote identity check.'
           }
-          action={level === 0 ? 'Upgrade to level 1' : null}
+          // At level 1 the row keeps the panel only to show its receipt.
+          control={
+            level === 0 || open === 'level' ? (
+              <RuleControl
+                ref={levelOpener}
+                label="Upgrade to level 1"
+                open={open === 'level'}
+                done={done}
+                onOpen={() => openPanel('level')}
+                onCancel={close}
+              />
+            ) : null
+          }
+          panel={open === 'level' && <LevelUpgrade state={state} keys={keys} onRetryKeys={onRetryKeys} onClose={close} onChanged={() => setDone(true)} />}
         />
         <RuleRow
           name="Security key"
@@ -545,6 +557,38 @@ function AccountRules({ state, level }: { state: AccountState; level: Level }) {
         />
       </ul>
     </section>
+  )
+}
+
+/** A rule's control: the opener, or "Cancel" while its panel is open (hidden once the receipt shows). */
+function RuleControl({
+  ref,
+  label,
+  open,
+  done,
+  disabled = false,
+  onOpen,
+  onCancel,
+}: {
+  ref: Ref<HTMLButtonElement>
+  label: string
+  open: boolean
+  done: boolean
+  disabled?: boolean
+  onOpen: () => void
+  onCancel: () => void
+}) {
+  if (open) {
+    return done ? null : (
+      <Button variant="secondary" size="sm" className="max-sm:h-11" onClick={onCancel}>
+        Cancel
+      </Button>
+    )
+  }
+  return (
+    <Button ref={ref} variant="secondary" size="sm" className="max-sm:h-11" disabled={disabled} onClick={onOpen}>
+      {label}
+    </Button>
   )
 }
 

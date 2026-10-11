@@ -1,6 +1,6 @@
 # ADR-034: Security page for the two-Safe Account: owners read live onchain, "Swissquote · not an owner", worst case, who can do what
 
-- **Status:** Accepted, amended by [ADR-035](ADR-035-daily-limit-change.md) (the daily limit's "Change" works)
+- **Status:** Accepted, amended by [ADR-035](ADR-035-daily-limit-change.md) (the daily limit's "Change" works) and [ADR-036](ADR-036-level-1-upgrade.md) ("Upgrade to level 1" works)
 - **Date:** 2026-10-11
 - **Related:** [PDR-012](../product/PDR-012-web-first-banking-ux.md), [PDR-013](../product/PDR-013-key-management-user-majority.md), [PDR-014](../product/PDR-014-separation-of-powers.md), [PDR-018](../product/PDR-018-time-locked-eviction.md), [PDR-020](../product/PDR-020-daily-limit-chosen-by-user.md), [ADR-017](ADR-017-two-safe-account.md), [ADR-019](ADR-019-account-eviction-module.md), [ADR-027](ADR-027-visual-world-swiss-onchain-fintech.md), issue #26
 

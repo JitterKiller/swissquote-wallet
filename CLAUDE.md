@@ -31,5 +31,6 @@ Hackathon prototype: self-custody wallet (Safe + passkeys + gasless + guardian r
 - `npm run e2e:link`: "Link with Face ID" in real Chrome with a virtual passkey, then @handle and /swissquote
 - `npm run e2e:earn`: Earn on Base Sepolia (deposit to Aave with Kit + Face ID, withdraw, unlisted-dApp demo, funds back to the treasury), about 2 minutes
 - `npm run e2e:swap`: Swap on Base Sepolia (USDC → EURC, EURC → USDC with Max, USDC → ETH and back, Activity, funds back to the treasury), about 2 minutes
+- `npm run e2e:level`: level 1 upgrade (not-linked panel, sign in + Link with Face ID, the /swissquote call, upgrade with Kit + Face ID, level 1 on Security and /swissquote), about 30 seconds, no funds needed
 - `npm run e2e:limit`: daily limit change from the Overview's "Change" (raise to 1.00, lower to 0.25, both with Kit + Face ID) and the panel's states, about 1.5 minutes, 0.10 USDC from the treasury, returned
 - `npm run e2e:eviction`: "Phone lost or stolen?" on two phones (lock-out, thief refused, 2-factor stop, takeover after the 3-minute delay), about 6 minutes, screenshots in `web/screenshots/`

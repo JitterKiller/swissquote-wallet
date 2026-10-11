@@ -1,11 +1,12 @@
 'use client'
 
-import { ArrowRight, ExternalLink, KeyRound, Upload } from 'lucide-react'
+import { ExternalLink, KeyRound, Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { formatUnits } from 'viem'
 
 import { dailyLimitError, LimitPicker, parseDailyLimit } from '@/components/account/LimitPicker'
 import { lossBound } from '@/components/account/LossBound'
+import { WorstCaseChange } from '@/components/account/WorstCaseChange'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { Button } from '@/components/ui/button'
 import { ApprovalSquares } from '@/components/ui/factor'
@@ -145,7 +146,7 @@ export function LimitChange({
     <section ref={panel} className="scroll-mt-20 space-y-5" aria-label="Change your daily limit">
       <LimitPicker id={FIELD_ID} label="New daily limit" value={value} onChange={setValue} error={fieldError} describedBy={IMPACT_ID} />
 
-      <WorstCaseChange current={current} next={valid ? next : null} spent={spent} level={level} unchanged={unchanged} invalid={!!fieldError} />
+      <LimitImpact current={current} next={valid ? next : null} spent={spent} level={level} unchanged={unchanged} invalid={!!fieldError} />
 
       {valid && next !== null && (
         <Plate title="Face ID and your Kit will approve" className="!mt-16">
@@ -220,7 +221,8 @@ export function LimitChange({
 }
 
 /** The worst case now and with the new limit, on the Apricot Field: a raise is never just a bigger number in a field. */
-function WorstCaseChange({
+/** The limit's worst case before → after (shared Worst Case Change), with what the change means today. */
+function LimitImpact({
   current,
   next,
   spent,
@@ -240,52 +242,28 @@ function WorstCaseChange({
   const leftToday = next !== null ? (next > spent ? next - spent : 0n) : null
   const showAfter = !unchanged && !invalid && after !== null
   return (
-    <section className="rounded-2xl bg-accent-soft p-4 sm:p-5" aria-label="Worst case if your phone is stolen, now and with the new limit">
-      <p className="text-sm text-foreground/75">If your phone is stolen, a thief can take at most</p>
-      <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono tabular-nums">
-        <span className="text-2xl text-foreground/60">
-          <span className="sr-only">Now </span>
-          {before !== null ? formatUsdc(before) : '–'}
-        </span>
-        {showAfter && (
-          <>
-            <ArrowRight className="h-5 w-5 shrink-0 self-center text-foreground/60" aria-hidden />
-            <span className="text-4xl font-semibold tracking-tight">
-              <span className="sr-only">with the new limit </span>
-              {formatUsdc(after)}
-            </span>
-          </>
-        )}
-        <span className="font-sans text-lg">USDC</span>
-      </p>
-      <p id={IMPACT_ID} aria-live="polite" className="mt-2 text-sm text-foreground/75">
-        {showAfter && before !== null && (
-          <span className="sr-only">
-            Worst case {formatUsdc(before)} to {formatUsdc(after)} USDC.{' '}
-          </span>
-        )}
-        {unchanged ? (
-          'That is your current limit: pick a new one.'
-        ) : invalid ? (
-          'Choose a limit from 0.01 to 1,000,000 USDC to see your new worst case.'
-        ) : before !== null && after !== null ? (
-          <>
-            <span className="font-mono tabular-nums">{formatUsdc(after > before ? after - before : before - after)}</span> USDC{' '}
-            {after > before ? 'more' : 'less'} than now.{' '}
-            {leftToday === 0n ? (
-              <>
-                You spent <span className="font-mono tabular-nums">{formatUsdc(spent)}</span> today: Face ID can’t spend more until the reset.
-              </>
-            ) : (
-              <>
-                Face ID could still spend <span className="font-mono tabular-nums">{formatUsdc(leftToday ?? 0n)}</span> today.
-              </>
-            )}
-          </>
-        ) : (
-          'Type a new limit to see your new worst case.'
-        )}
-      </p>
-    </section>
+    <WorstCaseChange before={before} after={showAfter ? after : null} label="the new limit" id={IMPACT_ID}>
+      {unchanged ? (
+        'That is your current limit: pick a new one.'
+      ) : invalid ? (
+        'Choose a limit from 0.01 to 1,000,000 USDC to see your new worst case.'
+      ) : before !== null && after !== null ? (
+        <>
+          <span className="font-mono tabular-nums">{formatUsdc(after > before ? after - before : before - after)}</span> USDC{' '}
+          {after > before ? 'more' : 'less'} than now.{' '}
+          {leftToday === 0n ? (
+            <>
+              You spent <span className="font-mono tabular-nums">{formatUsdc(spent)}</span> today: Face ID can’t spend more until the reset.
+            </>
+          ) : (
+            <>
+              Face ID could still spend <span className="font-mono tabular-nums">{formatUsdc(leftToday ?? 0n)}</span> today.
+            </>
+          )}
+        </>
+      ) : (
+        'Type a new limit to see your new worst case.'
+      )}
+    </WorstCaseChange>
   )
 }

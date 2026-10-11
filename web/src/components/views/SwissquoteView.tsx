@@ -4,16 +4,18 @@ import { ArrowDownLeft, ArrowUpRight, Landmark } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { parseUnits, type Address } from 'viem'
 
+import { levelDemoNote } from '@/components/account/LevelUpgrade'
+import { chainLevel, useSwissquoteKeys } from '@/components/account/useSwissquoteKeys'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { SwissquoteLinkCard } from '@/components/swissquote/SwissquoteLinkCard'
 import { useSwissquoteLink } from '@/components/swissquote/useSwissquoteLink'
 import { ExplorerLink } from '@/components/ui/address'
-import { Button } from '@/components/ui/button'
+import { Button, ButtonLink } from '@/components/ui/button'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Alert, Badge, Skeleton } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
 import { PageHeader } from '@/components/ui/page'
-import { USDC_DECIMALS } from '@/lib/config'
+import { EVICTION_DAYS, USDC_DECIMALS } from '@/lib/config'
 import { errorMessage, formatUsdc } from '@/lib/format'
 import { cleanAmount } from '@/lib/inputs'
 import { getAccountOverview, moveToSwissquote, moveToWallet, type AccountOverview } from '@/lib/swissquoteAccount'
@@ -109,6 +111,7 @@ export function SwissquoteView() {
                   </p>
                 </CardBody>
               </Card>
+              <LevelCallout />
 
               <Card>
                 <CardHeader icon={<ArrowDownLeft className="h-[18px] w-[18px]" />} title="Move to my wallet" description="Swissquote sends USDC on-chain to your self-custody wallet." />
@@ -178,5 +181,39 @@ export function SwissquoteView() {
         </Card>
       </div>
     </div>
+  )
+}
+
+/**
+ * The Account's level, right after the link (PDR-015 funnel, #21): at level 0 a linked client can have a
+ * lost phone locked out after 3 days instead of 7, with an identity check. The upgrade itself is signed
+ * on the Security page, in the "Lock-out delay" row's panel.
+ */
+function LevelCallout() {
+  const { wallet, chain } = useLoadedWallet()
+  const { keys } = useSwissquoteKeys()
+  const state = wallet.account ? chain.account : null
+  if (!state) return null
+  const level = chainLevel(state, keys)
+  const demo = levelDemoNote()
+  return (
+    <section aria-labelledby="level-title" className="rounded-2xl border border-border p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 id="level-title" className="font-semibold">
+          {level === 1 ? 'Level 1: lock-out after 3 days' : 'Your Account is at level 0'}
+        </h2>
+        <span className="token text-muted">{level === 1 ? 'Kit + identity check' : 'Kit alone · 7 days'}</span>
+      </div>
+      <p className="mt-1 text-sm text-muted">
+        {level === 1
+          ? `A lost phone is locked out after ${EVICTION_DAYS[1]} days${demo}, with your Kit and a Swissquote identity check. Swissquote is not an owner of your Account.`
+          : `As a linked client, you can have a lost phone locked out after ${EVICTION_DAYS[1]} days instead of ${EVICTION_DAYS[0]}${demo}, with your Kit and a Swissquote identity check. Swissquote never becomes an owner.`}
+      </p>
+      {level === 0 && (
+        <ButtonLink href="/security?change=level" variant="secondary" className="mt-4">
+          Shorten the lock-out to 3 days
+        </ButtonLink>
+      )}
+    </section>
   )
 }

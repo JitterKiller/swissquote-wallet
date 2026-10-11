@@ -28,8 +28,12 @@ export function useSwissquoteLink(wallet: StoredWallet) {
 
   useEffect(() => {
     let cancelled = false
-    lookup(session).then((entry) => {
+    // Re-read the session each time: Next keeps a page alive while it is hidden (Activity, Cache
+    // Components) and re-runs its effects when it shows again, possibly after a sign-in elsewhere.
+    const current = getSession()
+    lookup(current).then((entry) => {
       if (cancelled) return
+      setSession(current)
       setLinked(entry)
       setChecked(true)
     })
