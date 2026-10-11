@@ -24,6 +24,7 @@ import { useNow } from '@/lib/hooks'
 import { cleanName } from '@/lib/inputs'
 import { createPasskey } from '@/lib/passkey'
 import { KitPassphraseError, decryptKit, parseKitFile, unlockKit, type KitAccounts } from '@/lib/recoveryKit'
+import { requestKeySignature } from '@/lib/keyRelay'
 import { findSecurityKey, signWithSecurityKey } from '@/lib/securityKey'
 import {
   clearLocalEviction,
@@ -142,12 +143,34 @@ export function EvictionView() {
         })
         const kitSig = await kitSignature(owner, eviction.account, replace, state.nonce)
         if (kitSig.kind !== 'ecdsa') throw new Error('The Kit did not sign')
-        setBusy('Use your security key…')
         // The directory names the key's credential: trust it only for the key that is an owner now,
         // otherwise the authenticator offers its keys.
         const record = await findSecurityKey(eviction.account)
-        const credentialId = record && same(record.proxy, keyProxy) ? record.credentialId : undefined
-        const keySignature = await signWithSecurityKey(accountTxDigest(eviction.account, replace, state.nonce), credentialId)
+        const listed = record && same(record.proxy, keyProxy) ? record : null
+        let keySignature: `0x${string}`
+        if (listed?.kind === 'demo') {
+          // MOCK (ADR-043): another phone plays the key; the request reaches it through the relay.
+          setBusy('Waiting for your key… Open SQure Key on the other phone.')
+          keySignature = await requestKeySignature(
+            {
+              proxy: keyProxy,
+              account: eviction.account,
+              call: replace,
+              nonce: state.nonce,
+              title: 'Lock out a lost phone',
+              lines: [
+                { label: 'Old phone', figure: shortAddress(eviction.oldKeySafe), note: 'Locked out at once' },
+                { label: 'New device', figure: shortAddress(eviction.newKeySafe), note: 'Takes the daily limit' },
+                ...(state.pendingEviction ? [{ label: 'Running lock-out', value: 'Cancelled', note: 'No longer needed' }] : []),
+                { label: 'With', value: 'Your Kit', note: 'It already signed' },
+              ],
+            },
+            { onSeen: () => setBusy('Your key shows the request. Touch it to approve.') },
+          )
+        } else {
+          setBusy('Use your security key…')
+          keySignature = await signWithSecurityKey(accountTxDigest(eviction.account, replace, state.nonce), listed?.credentialId)
+        }
         setBusy('Locking the old phone out…')
         const { txHash } = await api<{ txHash: string }>('/api/evict-now', {
           account: eviction.account,

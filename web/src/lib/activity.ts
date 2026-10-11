@@ -1,4 +1,4 @@
-import { createPublicClient, http, parseAbiItem } from 'viem'
+import { createPublicClient, http, parseAbiItem, size, sliceHex, type Hex } from 'viem'
 import { baseSepolia } from 'viem/chains'
 
 import { ASSETS, ASSET_IDS, assetByAddress, type AssetId } from './assets'
@@ -12,7 +12,9 @@ import { ALLOWANCE_MODULE_ADDRESS, LOGS_NODE_URL, USDC_ADDRESS } from './config'
  * For an Account, each outgoing transfer also says which factors approved it:
  * a payment within today's limit is executed by the Allowance Module (Face ID
  * alone, one ExecuteAllowanceTransfer event in the same transaction); any other
- * transfer out of the Account needs its 2 of 2 (Face ID + the Kit).
+ * transfer out of the Account needs two owners: Face ID + the Kit, or Face ID +
+ * the security key (ADR-043). The Account is a SafeL2, so its SafeMultiSigTransaction
+ * event carries the signatures: a contract signature (v = 0) is the key's.
  *
  * Swaps (ADR-032): the same queries read EURC and WETH too. A transaction where USDC
  * leaves and another asset arrives (or the reverse) is one swap: its USDC row carries
@@ -22,6 +24,9 @@ import { ALLOWANCE_MODULE_ADDRESS, LOGS_NODE_URL, USDC_ADDRESS } from './config'
 const TRANSFER = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)')
 const ALLOWANCE_TRANSFER = parseAbiItem(
   'event ExecuteAllowanceTransfer(address indexed safe, address delegate, address token, address to, uint96 value, uint16 nonce)',
+)
+const SAFE_TRANSACTION = parseAbiItem(
+  'event SafeMultiSigTransaction(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, bytes signatures, bytes additionalInfo)',
 )
 const client = createPublicClient({ chain: baseSepolia, transport: http(LOGS_NODE_URL) })
 
@@ -37,8 +42,8 @@ export type Transfer = {
   txHash: `0x${string}`
   blockNumber: bigint
   timestamp: number // ms
-  /** Outgoing only: Face ID alone, or Face ID + the Kit. */
-  via?: 'face-id' | 'face-id+kit'
+  /** Outgoing only: Face ID alone, Face ID + the Kit, or Face ID + the security key. */
+  via?: 'face-id' | 'face-id+kit' | 'face-id+key'
   /** A swap: the other asset, received for this USDC (out) or given for it (in). */
   swap?: { asset: AssetId; amount: bigint }
 }
@@ -55,7 +60,7 @@ export async function fetchTransfers(address: `0x${string}`, fromBlock: bigint, 
   }
 
   const tokens = ASSET_IDS.map((id) => ASSETS[id].address)
-  const [logs, limitLogs] = await Promise.all([
+  const [logs, limitLogs, safeLogs] = await Promise.all([
     Promise.all(
       ranges.flatMap(([from, to]) => [
         client.getLogs({ address: tokens, event: TRANSFER, args: { from: address }, fromBlock: from, toBlock: to }),
@@ -69,8 +74,13 @@ export async function fetchTransfers(address: `0x${string}`, fromBlock: bigint, 
           ),
         )
       : [],
+    kind === 'account'
+      ? Promise.all(ranges.map(([from, to]) => client.getLogs({ address, event: SAFE_TRANSACTION, fromBlock: from, toBlock: to })))
+      : [],
   ])
   const withinLimit = new Set(limitLogs.flat().map((log) => log.transactionHash))
+  const withKey = new Set(safeLogs.flat().filter((log) => log.args.signatures && signedByContract(log.args.signatures)).map((log) => log.transactionHash))
+  const twoFactors = (txHash: string) => (withKey.has(txHash as Hex) ? 'face-id+key' : 'face-id+kit')
 
   const me = address.toLowerCase()
   const usdc = USDC_ADDRESS.toLowerCase()
@@ -100,15 +110,26 @@ export async function fetchTransfers(address: `0x${string}`, fromBlock: bigint, 
       // A swap back to USDC took the other asset out of the Account: Face ID + the Kit as well.
       via: outgoing
         ? kind === 'account' && !withinLimit.has(log.transactionHash)
-          ? 'face-id+kit'
+          ? twoFactors(log.transactionHash)
           : 'face-id'
         : kind === 'account' && leg?.outgoing
-          ? 'face-id+kit'
+          ? twoFactors(log.transactionHash)
           : undefined,
       swap: leg && leg.outgoing !== outgoing ? { asset: leg.asset, amount: leg.amount } : undefined,
     })
   }
   return { transfers: [...byId.values()], toBlock }
+}
+
+/** A Safe signature blob holds a contract signature (v = 0 in a 65-byte static part): the security key's (ADR-038). */
+function signedByContract(signatures: Hex) {
+  // Static parts come first, and only a contract signature has a dynamic part after them: the first v = 0
+  // met in order is still a static part.
+  for (let at = 0; at + 65 <= size(signatures); at += 65) {
+    const v = Number(sliceHex(signatures, at + 64, at + 65))
+    if (v === 0) return true
+  }
+  return false
 }
 
 export function mergeTransfers(current: Transfer[], incoming: Transfer[]) {

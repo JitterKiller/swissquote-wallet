@@ -1,6 +1,6 @@
 # PDR-017: "Theft protection" offer — a hardware key as third factor
 
-- **Status:** Accepted, amended by [PDR-018](PDR-018-time-locked-eviction.md) (the hardware key is the fast eviction, no longer the only one) and [PDR-020](PDR-020-daily-limit-chosen-by-user.md) (no "higher daily limit" perk); refined by [PDR-019](PDR-019-offer-tiers.md) (Premium for linked clients only, self-service key at every level)
+- **Status:** Accepted, amended by [PDR-018](PDR-018-time-locked-eviction.md) (the hardware key is the fast eviction, no longer the only one) and [PDR-020](PDR-020-daily-limit-chosen-by-user.md) (no "higher daily limit" perk); refined by [PDR-019](PDR-019-offer-tiers.md) (Premium for linked clients only, self-service key at every level); demo options amended by [ADR-043](../architecture/ADR-043-demo-key-and-key-approvals.md) (another phone plays the key on `/wallet/key`, through a MOCK relay)
 - **Date:** 2026-10-10
 - **Related:** [PDR-013](PDR-013-key-management-user-majority.md), [PDR-014](PDR-014-separation-of-powers.md), [PDR-015](PDR-015-open-wallet-and-levels.md), [PDR-016](PDR-016-recovery-kit-encrypted-cloud-backup.md), [ADR-017](../architecture/ADR-017-two-safe-account.md)
 

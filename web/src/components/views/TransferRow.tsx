@@ -10,6 +10,7 @@ import { formatTime, formatUsdc, shortAddress } from '@/lib/format'
 const VIA_LABEL: Record<NonNullable<Transfer['via']>, string> = {
   'face-id': 'Approved with Face ID alone',
   'face-id+kit': 'Approved with Face ID and your Recovery Kit',
+  'face-id+key': 'Approved with Face ID and your security key',
 }
 
 /** Key for the factor squares on outgoing rows; shown once a list has some. */
@@ -23,6 +24,11 @@ export function ApprovalLegend({ transfers }: { transfers: Transfer[] }) {
       <span className="inline-flex items-center gap-1.5">
         <ApprovalSquares kit size="sm" /> Face ID + Kit
       </span>
+      {transfers.some((t) => t.via === 'face-id+key') && (
+        <span className="inline-flex items-center gap-1.5">
+          <ApprovalSquares kit second="key" size="sm" /> Face ID + key
+        </span>
+      )}
     </p>
   )
 }
@@ -51,7 +57,7 @@ export function TransferRow({ transfer }: { transfer: Transfer }) {
           {other ? `Swapped ${incoming ? 'from' : 'to'} ${other.symbol}` : incoming ? 'Received USDC' : 'Sent USDC'}
           {transfer.via && (
             <span title={VIA_LABEL[transfer.via]} className="inline-flex">
-              <ApprovalSquares kit={transfer.via === 'face-id+kit'} size="sm" />
+              <ApprovalSquares kit={transfer.via !== 'face-id'} second={transfer.via === 'face-id+key' ? 'key' : 'kit'} size="sm" />
               <span className="sr-only">{VIA_LABEL[transfer.via]}</span>
             </span>
           )}

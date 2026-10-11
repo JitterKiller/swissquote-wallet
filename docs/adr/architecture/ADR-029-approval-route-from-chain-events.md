@@ -1,6 +1,6 @@
 # ADR-029: Activity shows which factors approved each payment, read from the Allowance Module's events
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-043](ADR-043-demo-key-and-key-approvals.md) ("Face ID + key", from the `SafeMultiSigTransaction` signatures)
 - **Date:** 2026-10-11
 - **Amends:** [ADR-015](ADR-015-activity-from-chain-logs.md) (one more log source for Accounts)
 - **Related:** [PDR-014](../product/PDR-014-separation-of-powers.md), [PDR-020](../product/PDR-020-daily-limit-chosen-by-user.md), [ADR-017](ADR-017-two-safe-account.md), [ADR-027](ADR-027-visual-world-swiss-onchain-fintech.md)

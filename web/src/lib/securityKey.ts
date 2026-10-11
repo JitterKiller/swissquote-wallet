@@ -2,8 +2,10 @@ import { SafeMultiChainSigAccountV1 as SafeAccount, webauthnSignatureFromAsserti
 import { WebAuthnP256 } from 'ox'
 import type { Address, Hex } from 'viem'
 
+import type { KeyApprover } from './account'
 import { api } from './api'
 import { DEMO_ANY_AUTHENTICATOR } from './config'
+import { requestKeySignature, type KeyRequestLine } from './keyRelay'
 import type { SecurityKeyRecord } from './storage'
 
 /**
@@ -28,13 +30,18 @@ export const deployKeyProxyCall = (key: Pick<NewSecurityKey, 'publicKey'>): Meta
  * so the phone can't become its own second factor (PDR-017). The key is discoverable, so a new device
  * can find it even without its credential id.
  */
-export async function createSecurityKey(label: string, phoneCredentialId: string): Promise<NewSecurityKey> {
+export async function createSecurityKey(
+  label: string,
+  phoneCredentialId: string,
+  /** `platform`: the demo key's own phone (`/wallet/key`, ADR-043), whose Face ID plays the key's touch. */
+  attachment?: 'platform',
+): Promise<NewSecurityKey> {
   const credential = await WebAuthnP256.createCredential({
     name: `${label} · security key`,
     rp: { id: window.location.hostname, name: 'SQure' },
     excludeCredentialIds: [phoneCredentialId],
     authenticatorSelection: {
-      ...(DEMO_ANY_AUTHENTICATOR ? {} : { authenticatorAttachment: 'cross-platform' as const }),
+      ...(attachment ? { authenticatorAttachment: attachment } : DEMO_ANY_AUTHENTICATOR ? {} : { authenticatorAttachment: 'cross-platform' as const }),
       residentKey: 'required',
       userVerification: 'required',
     },
@@ -62,6 +69,32 @@ export async function signWithSecurityKey(digest: Hex, credentialId?: string): P
       signature: { r: BigInt(signature.r), s: BigInt(signature.s) },
     }),
   ) as Hex
+}
+
+/**
+ * The key as the phone's second factor (ADR-043): a FIDO2 key signs here through WebAuthn; the demo key
+ * gets the request through the MOCK relay and signs on its own phone. `describe` is what the wallet
+ * shows its owner, sent along for the demo key's screen.
+ */
+export function keyApprover(
+  key: Pick<SecurityKeyRecord, 'proxy' | 'credentialId' | 'kind'>,
+  options: { describe: { title: string; lines: KeyRequestLine[] }; signal?: AbortSignal; onWaiting?: (state: 'asked' | 'shown' | null) => void },
+): KeyApprover {
+  return {
+    proxy: key.proxy,
+    sign: async ({ account, call, nonce, digest }) => {
+      options.onWaiting?.('asked')
+      try {
+        if (key.kind !== 'demo') return await signWithSecurityKey(digest, key.credentialId || undefined)
+        return await requestKeySignature(
+          { proxy: key.proxy, account, call, nonce, ...options.describe },
+          { signal: options.signal, onSeen: () => options.onWaiting?.('shown') },
+        )
+      } finally {
+        options.onWaiting?.(null)
+      }
+    },
+  }
 }
 
 /** A key prompt that failed, in words: the authenticator holding this phone's passkey is refused on purpose. */

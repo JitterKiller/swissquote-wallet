@@ -38,7 +38,7 @@ Target: **about 6 minutes**, twelve slides including a 2-minute live demo. For 5
 | 8 | **Live demo** | 2 min | See the script below. Each step carries its bonus tag. |
 | 9 | **A business case, not a cost centre** *Bonus: business case.* | 30 s | The three offers are Free, Client and Premium at CHF 5–9 a month (to model). The levers: revenue (Premium), retention (one tap back to the trading desk), new clients (open wallet, linking as the upgrade), lower costs (ownership proven by Face ID, not screenshots). Median model: break-even at 25% of crypto-active accounts linked, +CHF 0.59 m over three years. |
 | 10 | **Every bonus point, built and live** | 20 s | One table: each of the five bonus points, how SQure does it, and where the demo shows it. |
-| 11 | **Real onchain, honest about the rest** | 20 s | What runs on Base Sepolia, what is MOCK, and the 10 e2e suites. Next: a key tap for payments, a trusted contact, a native app, Bitcoin. |
+| 11 | **Real onchain, honest about the rest** | 20 s | What runs on Base Sepolia, what is MOCK, and the 10 e2e suites. Next: a trusted contact, a native app, Bitcoin. |
 | 12 | **Your keys. Swiss security.** | 10 s | Try it at swissquote-wallet.vercel.app. |
 
 ---
@@ -51,7 +51,7 @@ Target: **about 6 minutes**, twelve slides including a 2-minute live demo. For 5
 |---|---|---|
 | Presenter | The laptop, projected | The new device |
 | Presenter, then the thief | Phone A | The client's phone, then the stolen one |
-| Teammate | A phone, through the QR code | The security key |
+| Teammate | A phone on `/wallet/key` (the demo key, MOCK relay) | The security key: it shows each request on its Demo screen, Face ID plays the touch |
 
 Use one Chrome profile (or one device) per wallet. Forgetting a wallet on a browser can only be undone through "Phone lost or stolen?".
 
@@ -59,7 +59,7 @@ Use one Chrome profile (or one device) per wallet. Forgetting a wallet on a brow
 - the treasury is topped up: the relayer Safe `0x062b012bA4582b1857C93Dcf075736Ac8DC339cD`, with Circle test USDC on Base Sepolia (https://faucet.circle.com);
 - the wallet is created and protected on phone A, and funded with a few USDC from the Swissquote page ("Move to my wallet");
 - the Kit file is on the laptop;
-- the security key is added: Security → Add a key, with the teammate's phone;
+- the security key is added: Security → Add a key → "Use a demo key on another phone", the teammate's phone types the code (or scans it) on `/wallet/key` and registers with its Face ID (ADR-043);
 - `@lea` is claimed;
 - a dedicated RPC is set in `NEXT_PUBLIC_NODE_URL` (the public Base Sepolia RPC rate-limits).
 
@@ -71,6 +71,6 @@ Use one Chrome profile (or one device) per wallet. Forgetting a wallet on a brow
 | 2 | **Pay `@lea`** 0.10 USDC within the limit: the verified name shows before Face ID approves. | Verified payee |
 | 3 | **Swap** 1 USDC to EURC: the readable preview and the checks, then the Kit passphrase → "Approve with Kit and biometrics". | Compliant dApp |
 | 4 | **The phone is stolen:** on the laptop, `/wallet/lost` → open the Kit → "Start the lock-out". On phone A, the red alert → "Demo: try with Face ID only" → refused onchain (GS020). | Attacker refused |
-| 5 | **Kit + key end the wait:** on the laptop, "Have your security key?" → "Lock out now with Kit and key" → the teammate's phone approves → phone A shows "This phone was locked out". | Recovery |
+| 5 | **Kit + key end the wait:** on the laptop, "Have your security key?" → "Lock out now with Kit and key" → the teammate's phone shows "Lock out a lost phone" and approves with "Touch the key" → phone A shows "This phone was locked out". | Recovery |
 
 **Fallbacks:** the `e2e:swap`, `e2e:eviction` and `e2e:key` screenshots and their Basescan links.

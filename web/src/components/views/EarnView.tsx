@@ -1,11 +1,12 @@
 'use client'
 
 import type { MetaTransaction } from 'abstractionkit'
-import { ArrowLeft, ExternalLink, KeyRound, ShieldX, Sprout, Upload } from 'lucide-react'
+import { ArrowLeft, ExternalLink, ShieldX, Sprout } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { parseUnits, type Address } from 'viem'
 
 import { percent, useEarnPositions } from '@/components/account/EarnCard'
+import { SECOND_FACTOR, SecondFactorIcon, SecondFactorSection, openingLabel, useSecondFactor, type SecondFactorChoice } from '@/components/account/SecondFactor'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { ComplianceChecks, type ComplianceState } from '@/components/send/ComplianceChecks'
 import { AddressPill } from '@/components/ui/address'
@@ -19,11 +20,19 @@ import { Plate, PlateRow } from '@/components/ui/plate'
 import { Stepper } from '@/components/ui/stepper'
 import { QuotaHint } from '@/components/swissquote/QuotaHint'
 import { EXPLORER_URL, USDC_DECIMALS } from '@/lib/config'
-import { APPROVED_DAPPS, UNLISTED_DEMO, dappActionCalls, dappActionSteps, unlistedDemoCalls, type Dapp, type DappAction } from '@/lib/dapps'
+import {
+  APPROVED_DAPPS,
+  UNLISTED_DEMO,
+  dappActionCalls,
+  dappActionSteps,
+  unlistedDemoCalls,
+  type Dapp,
+  type DappAction,
+} from '@/lib/dapps'
 import { errorChain, errorMessage, formatUsdc, shortAddress } from '@/lib/format'
 import { cleanAmount } from '@/lib/inputs'
-import { KitPassphraseError, unlockKit } from '@/lib/recoveryKit'
-import { loadLocalKit, toPublicKey } from '@/lib/storage'
+import { KitPassphraseError } from '@/lib/recoveryKit'
+import { toPublicKey } from '@/lib/storage'
 import { SEND_STEP_LABEL, sendCalls, type SendStep } from '@/lib/wallet'
 
 type Position = { dapp: Dapp; supplied: bigint; apy: number }
@@ -219,9 +228,9 @@ function ActionPanel({
   const [whole, setWhole] = useState(false)
   const [compliance, setCompliance] = useState<ComplianceState | null>(null)
   const [understood, setUnderstood] = useState(false)
-  const [passphrase, setPassphrase] = useState('')
-  const [kitFile, setKitFile] = useState<{ name: string; text: string } | null>(null)
-  const [hasLocalKit] = useState(() => loadLocalKit() !== null)
+  const factor = useSecondFactor(chain.account, wallet.address, account)
+  // Which factor approved, kept for the receipt.
+  const [by, setBy] = useState<SecondFactorChoice>('kit')
   const [step, setStep] = useState<SendStep | 'opening' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -247,8 +256,8 @@ function ActionPanel({
     value !== null && value > 0n && target !== null
       ? dappActionSteps({ dapp, action: kind, account, amount: target }).map((c) => ({ to: c.to, value: 0n, data: c.data }))
       : []
-  const kitReady = passphrase.length > 0 && (hasLocalKit || !!kitFile)
-  const canApprove = !!compliance && !compliance.blocked && !compliance.needsConfirmation && (!deposit || understood) && kitReady
+  const canApprove = !!compliance && !compliance.blocked && !compliance.needsConfirmation && (!deposit || understood) && factor.ready
+  const words = SECOND_FACTOR[factor.choice]
   const verb = deposit ? 'Deposit to' : 'Withdraw from'
 
   async function approve() {
@@ -257,9 +266,18 @@ function ActionPanel({
     try {
       setStep('opening')
       setSigned(value)
-      const kit = (await unlockKit(passphrase, kitFile?.text)).owner
+      const second = await factor.resolve({
+        title: `${verb} ${dapp.name}`,
+        lines: deposit
+          ? [
+              { label: 'Allow', value: `${dapp.name} to take`, figure: `${shown} USDC`, note: 'Exactly this, no more' },
+              { label: 'Supply', figure: `${shown} USDC`, note: `From your Account to ${dapp.name}` },
+            ]
+          : [{ label: 'Withdraw', ...(whole ? { value: 'Your whole position' } : { figure: `${shown} USDC` }), note: 'Back to your Account' }],
+      })
+      setBy(factor.choice)
       setStage('sending')
-      const calls = await dappActionCalls({ dapp, action: kind, account, keySafe: wallet.address, amount: target, kit })
+      const calls = await dappActionCalls({ dapp, action: kind, account, keySafe: wallet.address, amount: target, ...second })
       const result = await sendCalls({
         address: wallet.address,
         credentialId: wallet.credentialId,
@@ -268,7 +286,7 @@ function ActionPanel({
         onStep: setStep,
       })
       setTxHash(result.txHash)
-      setPassphrase('')
+      factor.clear()
       setStage('done')
       refresh()
       onLanded()
@@ -280,7 +298,6 @@ function ActionPanel({
     }
   }
 
-  const pickFile = async (file: File | undefined) => file && setKitFile({ name: file.name, text: await file.text() })
   const shown = value !== null ? formatUsdc(value) : '0.00'
 
   if (stage === 'done' && txHash) {
@@ -295,7 +312,7 @@ function ActionPanel({
             <PlateRow label={deposit ? 'Lent to' : 'Back from'}>{dapp.name}</PlateRow>
             <PlateRow label="Approved by">
               <span className="inline-flex items-center gap-2">
-                <ApprovalSquares kit tone="hero" /> Face ID + your Recovery Kit
+                <ApprovalSquares kit second={by} tone="hero" /> {SECOND_FACTOR[by].approval}
               </span>
             </PlateRow>
             <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
@@ -384,8 +401,8 @@ function ActionPanel({
           <Plate
             title={
               <span className="inline-flex items-center gap-2">
-                <ApprovalSquares kit tone="hero" />
-                Face ID and your Kit will approve
+                <ApprovalSquares kit second={factor.choice} tone="hero" />
+                {words.plate}
               </span>
             }
           >
@@ -412,7 +429,7 @@ function ActionPanel({
               )}
               <PlateRow label="Approval">
                 <span className="inline-flex items-center gap-2">
-                  <ApprovalSquares kit tone="hero" /> Face ID + your Recovery Kit
+                  <ApprovalSquares kit second={factor.choice} tone="hero" /> {words.approval}
                 </span>
               </PlateRow>
               <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
@@ -442,28 +459,7 @@ function ActionPanel({
             </section>
           )}
 
-          <section className="space-y-4 border-t border-border pt-5">
-            <div className="flex gap-3">
-              <ApprovalSquares kit className="mt-[5px]" />
-              <div>
-                <h3 className="text-sm font-semibold">Your Recovery Kit approves with Face ID</h3>
-                <p className="mt-0.5 text-sm text-muted">
-                  A protocol move is never covered by today’s Face ID limit. Your passphrase opens the encrypted Kit
-                  {hasLocalKit && !kitFile ? ' stored on this device' : ''}; it never leaves it.
-                </p>
-              </div>
-            </div>
-            {(!hasLocalKit || kitFile) && (
-              <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-surface-2 px-4 py-3 text-sm transition-colors hover:border-accent-ink focus-within:border-accent-ink focus-within:ring-4 focus-within:ring-accent-soft">
-                <Upload className="h-4 w-4 shrink-0 text-muted" />
-                <span className="min-w-0 truncate">{kitFile ? kitFile.name : 'Choose your Kit file'}</span>
-                <input type="file" accept="application/json,.json" aria-label="Recovery Kit file" className="sr-only" onChange={(e) => pickFile(e.target.files?.[0])} />
-              </label>
-            )}
-            <Field label="Kit passphrase" htmlFor="earn-kit-passphrase">
-              <Input id="earn-kit-passphrase" type="password" value={passphrase} onChange={(e) => setPassphrase(e.target.value)} autoComplete="off" />
-            </Field>
-          </section>
+          <SecondFactorSection factor={factor} idPrefix="earn" disabled={!!step} reason="A protocol move is never covered by today’s Face ID limit." />
 
           {error && (
             <Alert tone="danger" title="Not sent">
@@ -478,11 +474,11 @@ function ActionPanel({
             <Button size="lg" disabled={!canApprove || !!step} onClick={approve}>
               {step ? (
                 <>
-                  <Spinner /> {step === 'opening' ? 'Opening your Kit…' : SEND_STEP_LABEL[step]}
+                  <Spinner /> {step === 'opening' ? openingLabel(factor.choice, factor.waiting) : SEND_STEP_LABEL[step]}
                 </>
               ) : (
                 <>
-                  <KeyRound className="h-5 w-5" /> Approve with Kit and biometrics
+                  <SecondFactorIcon choice={factor.choice} /> {words.button}
                 </>
               )}
             </Button>

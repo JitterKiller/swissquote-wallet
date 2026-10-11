@@ -74,8 +74,8 @@ type Row = { id: string; label: string; detail?: ReactNode; link?: { href: strin
 /** Every row, from the user's own daily limit and Swissquote's fee quota. */
 function offerRows(limit: bigint | null, quota: number | null): { rows: Row[]; same: Row[] } {
   // A key gives the same powers at every level (PDR-019): each Free and Client cell says what the user's own
-  // key does there. "Soon" marks what the app doesn't build yet (ADR-038): a key tap for large payments,
-  // and replacing a lost Kit with the phone and the key.
+  // key does there. "Soon" marks what the app doesn't build yet (ADR-038): replacing a lost Kit with the
+  // phone and the key. The key tap for large payments is built (ADR-043).
   const soon = (text: ReactNode) => (
     <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
       {text} <Badge>Soon</Badge>
@@ -83,7 +83,7 @@ function offerRows(limit: bigint | null, quota: number | null): { rows: Row[]; s
   )
   const largePayments: Cell = {
     value: <FactorLabel factors={['phone', 'kit']}>Face ID + your Kit passphrase</FactorLabel>,
-    lines: [soon('Or a tap on your own key')],
+    lines: ['Or Face ID + a tap on your own key'],
   }
   const slowExit: Cell = { value: 'Move out day by day', lines: ['Within your daily limit, with Face ID', soon('Or replaced with your own key')] }
   const ownKey: Cell = { value: <FactorLabel factors={['key']}>Bring your own</FactorLabel>, lines: ['Any FIDO2 key, added by you'] }
@@ -146,7 +146,7 @@ function offerRows(limit: bigint | null, quota: number | null): { rows: Row[]; s
       cells: {
         free: largePayments,
         client: largePayments,
-        premium: { value: <FactorLabel factors={['phone', 'key']}>Face ID + a tap on the key</FactorLabel>, lines: [soon('The included key')] },
+        premium: { value: <FactorLabel factors={['phone', 'key']}>Face ID + a tap on the key</FactorLabel>, lines: ['The included key, no passphrase'] },
       },
     },
     {
@@ -443,7 +443,7 @@ function YourOffer({
         Add a security key
       </ButtonLink>
     )
-    mock = 'Nothing ships in this prototype.'
+    mock = 'Nothing ships in this prototype: another phone can play the key (“Use a demo key on another phone”).'
   }
 
   return (

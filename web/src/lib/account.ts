@@ -203,6 +203,9 @@ export async function accountSetupCalls(
 export const accountNonce = (account: Address) =>
   publicClient.readContract({ address: account, abi: safeAbi, functionName: 'nonce' })
 
+/** The Account's owners, one call (the demo key polls it, ADR-043). */
+export const accountOwners = (account: Address) => publicClient.readContract({ address: account, abi: safeAbi, functionName: 'getOwners' })
+
 /**
  * Full Account state. The public RPC is load-balanced: right after a transaction some nodes have not
  * seen the block yet and module reads fail, so a failed read is retried a few times.
@@ -394,21 +397,30 @@ export function accountExecCall(account: Address, call: AccountCall, signatures:
 }
 
 /**
- * One 2-factor Account transaction sent by the Key Safe: the Kit owner key signs the SafeTx at the
- * current nonce and the Key Safe approves as msg.sender (one sponsored UserOp). Used above the daily
- * limit (#12), for the limit (#13), to cancel an eviction (#16), for the handover (#15) and the level
- * upgrade (#21).
+ * A security key's approval of one Account transaction (ADR-038, ADR-043): a WebAuthn assertion over
+ * the SafeTx digest, from a FIDO2 key on this device or relayed to the demo key on another phone.
  */
-export async function twoFactorCall(params: {
-  account: Address
-  keySafe: Address
-  call: AccountCall
-  kit: KitSigner
-}): Promise<MetaTransaction> {
-  const { account, keySafe, call, kit } = params
+export type KeyApprover = {
+  proxy: Address
+  sign: (request: { account: Address; call: AccountCall; nonce: bigint; digest: Hex }) => Promise<Hex>
+}
+
+/** The factor that approves with the phone: the Kit's owner key, or the security key (any 2 of the 3 owners). */
+export type SecondFactor = { kit: KitSigner; key?: never } | { key: KeyApprover; kit?: never }
+
+/**
+ * One 2-factor Account transaction sent by the Key Safe: the Kit owner key (or the security key) signs
+ * the SafeTx at the current nonce and the Key Safe approves as msg.sender (one sponsored UserOp). Used
+ * above the daily limit (#12), for the limit (#13), to cancel an eviction (#16), for the handover (#15)
+ * and the level upgrade (#21).
+ */
+export async function twoFactorCall(params: { account: Address; keySafe: Address; call: AccountCall } & SecondFactor): Promise<MetaTransaction> {
+  const { account, keySafe, call } = params
   const nonce = await accountNonce(account)
-  const signatures = encodeSafeSignatures([await kitSignature(kit, account, call, nonce), senderSignature(keySafe)])
-  return accountExecCall(account, call, signatures)
+  const second = params.key
+    ? contractSignature(params.key.proxy, await params.key.sign({ account, call, nonce, digest: accountTxDigest(account, call, nonce) }))
+    : await kitSignature(params.kit, account, call, nonce)
+  return accountExecCall(account, call, encodeSafeSignatures([second, senderSignature(keySafe)]))
 }
 
 /** Several Account calls as one delegatecall to MultiSendCallOnly: one signature set, atomic. */

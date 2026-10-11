@@ -1,10 +1,11 @@
 'use client'
 
-import { ArrowDownUp, ArrowLeft, ChevronDown, ExternalLink, KeyRound, Repeat, Upload } from 'lucide-react'
+import { ArrowDownUp, ArrowLeft, ChevronDown, ExternalLink, Repeat } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { formatUnits, parseUnits, type Address } from 'viem'
 
 import { useAssetBalances } from '@/components/account/AssetBalances'
+import { SECOND_FACTOR, SecondFactorIcon, SecondFactorSection, openingLabel, useSecondFactor, type SecondFactorChoice } from '@/components/account/SecondFactor'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { ComplianceChecks, type ComplianceState } from '@/components/send/ComplianceChecks'
 import { AddressPill } from '@/components/ui/address'
@@ -21,8 +22,8 @@ import { EXPLORER_URL } from '@/lib/config'
 import { UNISWAP_V3_ROUTER } from '@/lib/dapps'
 import { errorMessage } from '@/lib/format'
 import { cleanAmount, INPUT_DECIMALS } from '@/lib/inputs'
-import { KitPassphraseError, unlockKit } from '@/lib/recoveryKit'
-import { loadLocalKit, toPublicKey } from '@/lib/storage'
+import { KitPassphraseError } from '@/lib/recoveryKit'
+import { toPublicKey } from '@/lib/storage'
 import { quoteSwap, receivedBy, swapCalls, swapSteps, SLIPPAGE_BPS, type Quote } from '@/lib/swap'
 import { SEND_STEP_LABEL, sendCalls, type SendStep } from '@/lib/wallet'
 
@@ -270,7 +271,7 @@ export function SwapView() {
                   )}
                   <PlateRow label="Approved by">
                     <span className="inline-flex items-center gap-2">
-                      <ApprovalSquares kit tone="hero" /> Face ID + your Recovery Kit
+                      <ApprovalSquares kit second={receipt.by} tone="hero" /> {SECOND_FACTOR[receipt.by].approval}
                     </span>
                   </PlateRow>
                   <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
@@ -349,7 +350,7 @@ function AssetPicker({ label, value, onChange }: { label: string; value: AssetId
   )
 }
 
-type SwapReceipt = { txHash: string; gave: bigint; got: bigint | null; minOut: bigint }
+type SwapReceipt = { txHash: string; gave: bigint; got: bigint | null; minOut: bigint; by: SecondFactorChoice }
 
 /** The 2-of-2 review: the exact steps, the checks, the Kit, then biometrics. */
 function SwapReview({
@@ -369,11 +370,10 @@ function SwapReview({
   onBack: () => void
   onDone: (receipt: SwapReceipt) => void
 }) {
-  const { wallet, refresh } = useLoadedWallet()
+  const { wallet, chain, refresh } = useLoadedWallet()
   const [compliance, setCompliance] = useState<ComplianceState | null>(null)
-  const [passphrase, setPassphrase] = useState('')
-  const [kitFile, setKitFile] = useState<{ name: string; text: string } | null>(null)
-  const [hasLocalKit] = useState(() => loadLocalKit() !== null)
+  const factor = useSecondFactor(chain.account, wallet.address, account)
+  const words = SECOND_FACTOR[factor.choice]
   const [step, setStep] = useState<SendStep | 'opening' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const panel = useRef<HTMLElement>(null)
@@ -385,14 +385,22 @@ function SwapReview({
 
   const steps = swapSteps({ account, tokenIn, tokenOut, quote }).map((c) => ({ to: c.to, value: 0n, data: c.data }))
   const gives = formatAssetExact(quote.amountIn, tokenIn)
-  const canApprove = !!compliance && !compliance.blocked && !compliance.needsConfirmation && passphrase.length > 0 && (hasLocalKit || !!kitFile)
+  const canApprove = !!compliance && !compliance.blocked && !compliance.needsConfirmation && factor.ready
 
   async function approve() {
     setError(null)
     try {
       setStep('opening')
-      const kit = (await unlockKit(passphrase, kitFile?.text)).owner
-      const calls = await swapCalls({ account, keySafe: wallet.address, tokenIn, tokenOut, quote, kit })
+      const by = factor.choice
+      const second = await factor.resolve({
+        title: `Swap ${tokenIn.symbol} to ${tokenOut.symbol}`,
+        lines: [
+          { label: 'You give', figure: gives, value: tokenIn.symbol, note: 'Exactly this, from your Account' },
+          { label: 'At least', figure: formatAsset(quote.minOut, tokenOut), value: tokenOut.symbol, note: 'If less, nothing happens' },
+          { label: 'Where', value: 'Uniswap v3', note: 'An approved contract' },
+        ],
+      })
+      const calls = await swapCalls({ account, keySafe: wallet.address, tokenIn, tokenOut, quote, ...second })
       const result = await sendCalls({
         address: wallet.address,
         credentialId: wallet.credentialId,
@@ -401,9 +409,9 @@ function SwapReview({
         onStep: setStep,
       })
       const got = await receivedBy(account, tokenOut, result.txHash as `0x${string}`)
-      setPassphrase('')
+      factor.clear()
       refresh()
-      onDone({ txHash: result.txHash, gave: quote.amountIn, got, minOut: quote.minOut })
+      onDone({ txHash: result.txHash, gave: quote.amountIn, got, minOut: quote.minOut, by })
     } catch (e) {
       setError(e instanceof KitPassphraseError ? 'Wrong Kit passphrase. Check it and try again.' : errorMessage(e))
     } finally {
@@ -411,15 +419,13 @@ function SwapReview({
     }
   }
 
-  const pickFile = async (file: File | undefined) => file && setKitFile({ name: file.name, text: await file.text() })
-
   return (
     <section ref={panel} className="scroll-mt-20 space-y-5" aria-label="Review swap">
       <Plate
         title={
           <span className="inline-flex items-center gap-2">
-            <ApprovalSquares kit tone="hero" />
-            Face ID and your Kit will approve
+            <ApprovalSquares kit second={factor.choice} tone="hero" />
+            {words.plate}
           </span>
         }
       >
@@ -444,7 +450,7 @@ function SwapReview({
           </PlateRow>
           <PlateRow label="Approval">
             <span className="inline-flex items-center gap-2">
-              <ApprovalSquares kit tone="hero" /> Face ID + your Recovery Kit
+              <ApprovalSquares kit second={factor.choice} tone="hero" /> {words.approval}
             </span>
           </PlateRow>
           <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
@@ -468,28 +474,7 @@ function SwapReview({
         />
       </section>
 
-      <section className="space-y-4 border-t border-border pt-5">
-        <div className="flex gap-3">
-          <ApprovalSquares kit className="mt-[5px]" />
-          <div>
-            <h3 className="text-sm font-semibold">Your Recovery Kit approves with Face ID</h3>
-            <p className="mt-0.5 text-sm text-muted">
-              A swap is never covered by today’s Face ID limit. Your passphrase opens the encrypted Kit
-              {hasLocalKit && !kitFile ? ' stored on this device' : ''}; it never leaves it.
-            </p>
-          </div>
-        </div>
-        {(!hasLocalKit || kitFile) && (
-          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-surface-2 px-4 py-3 text-sm transition-colors hover:border-accent-ink focus-within:border-accent-ink focus-within:ring-4 focus-within:ring-accent-soft">
-            <Upload className="h-4 w-4 shrink-0 text-muted" />
-            <span className="min-w-0 truncate">{kitFile ? kitFile.name : 'Choose your Kit file'}</span>
-            <input type="file" accept="application/json,.json" aria-label="Recovery Kit file" className="sr-only" onChange={(e) => pickFile(e.target.files?.[0])} />
-          </label>
-        )}
-        <Field label="Kit passphrase" htmlFor="swap-kit-passphrase">
-          <Input id="swap-kit-passphrase" type="password" value={passphrase} onChange={(e) => setPassphrase(e.target.value)} autoComplete="off" />
-        </Field>
-      </section>
+      <SecondFactorSection factor={factor} idPrefix="swap" disabled={!!step} reason="A swap is never covered by today’s Face ID limit." />
 
       {error && (
         <Alert tone="danger" title="Not swapped">
@@ -504,11 +489,11 @@ function SwapReview({
         <Button size="lg" disabled={!canApprove || !!step} onClick={approve}>
           {step ? (
             <>
-              <Spinner /> {step === 'opening' ? 'Opening your Kit…' : SEND_STEP_LABEL[step]}
+              <Spinner /> {step === 'opening' ? openingLabel(factor.choice, factor.waiting) : SEND_STEP_LABEL[step]}
             </>
           ) : (
             <>
-              <KeyRound className="h-5 w-5" /> Approve with Kit and biometrics
+              <SecondFactorIcon choice={factor.choice} /> {words.button}
             </>
           )}
         </Button>

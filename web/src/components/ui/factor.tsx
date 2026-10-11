@@ -28,14 +28,19 @@ export function FactorSquare({
   return <span aria-hidden className={`inline-block shrink-0 ${size === 'sm' ? 'h-2 w-2' : 'h-2.5 w-2.5'} ${CODES[factor][tone]} ${className}`} />
 }
 
-/** Which factors approved a payment: the phone alone (within today's limit) or the phone and the Kit. */
+/**
+ * Which factors approved a payment: the phone alone (within today's limit), or the phone and a second
+ * factor, the Kit by default or the security key (`second="key"`, ADR-043).
+ */
 export function ApprovalSquares({
   kit,
+  second = 'kit',
   tone = 'light',
   size = 'md',
   className = '',
 }: {
   kit: boolean
+  second?: 'kit' | 'key'
   tone?: 'light' | 'hero'
   size?: 'sm' | 'md'
   className?: string
@@ -43,7 +48,7 @@ export function ApprovalSquares({
   return (
     <span className={`inline-flex shrink-0 gap-1 ${className}`}>
       <FactorSquare factor="phone" tone={tone} size={size} />
-      {kit && <FactorSquare factor="kit" tone={tone} size={size} />}
+      {kit && <FactorSquare factor={second} tone={tone} size={size} />}
     </span>
   )
 }

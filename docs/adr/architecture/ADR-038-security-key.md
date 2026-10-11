@@ -1,6 +1,6 @@
 # ADR-038: Security key: a third owner through Safe's WebAuthn verifier, and the immediate lock-out with the Kit
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-043](ADR-043-demo-key-and-key-approvals.md) (the key also approves above the limit; the demo key on another phone)
 - **Date:** 2026-10-11
 - **Amends:** [ADR-034](ADR-034-security-page.md): the "Security key" slot is no longer "Soon".
 - **Related:** [PDR-017](../product/PDR-017-theft-protection-hardware-key.md), [PDR-019](../product/PDR-019-offer-tiers.md), [PDR-014](../product/PDR-014-separation-of-powers.md), [PDR-018](../product/PDR-018-time-locked-eviction.md), [ADR-002](ADR-002-passkey-signing-safe-webauthn.md), [ADR-017](ADR-017-two-safe-account.md), [ADR-019](ADR-019-account-eviction-module.md), [ADR-023](ADR-023-sponsorship-policy-proxy.md), [ADR-030](ADR-030-lost-phone-flow-ui.md), [ADR-037](ADR-037-ui-refinements-no-seal-4px-tab-bar-chart.md), issue #17

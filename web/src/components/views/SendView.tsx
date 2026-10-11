@@ -1,11 +1,12 @@
 'use client'
 
 import type { MetaTransaction } from 'abstractionkit'
-import { ArrowLeft, ExternalLink, FingerprintPattern, KeyRound, Upload } from 'lucide-react'
+import { ArrowLeft, ExternalLink, FingerprintPattern } from 'lucide-react'
 import { useState } from 'react'
 import { encodeFunctionData, erc20Abi, parseUnits, type Address } from 'viem'
 
 import { AllowanceMeter } from '@/components/account/AllowanceMeter'
+import { KeyWaiting, SECOND_FACTOR, SecondFactorIcon, SecondFactorSection, openingLabel, useSecondFactor, type SecondFactorChoice } from '@/components/account/SecondFactor'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { ComplianceChecks, type ComplianceState } from '@/components/send/ComplianceChecks'
 import { RecipientField, type Recipient } from '@/components/send/RecipientField'
@@ -18,13 +19,13 @@ import { Plate, PlateRow } from '@/components/ui/plate'
 import { ProgressList, Stepper } from '@/components/ui/stepper'
 import { QuotaHint } from '@/components/swissquote/QuotaHint'
 import { OffersHint } from '@/components/views/OffersView'
-import type { KitSigner } from '@/lib/account'
+import type { SecondFactor } from '@/lib/account'
 import { EXPLORER_URL, USDC_ADDRESS, USDC_DECIMALS } from '@/lib/config'
 import { errorMessage, formatDecimal, formatUsdc, formatUsdcExact, shortAddress } from '@/lib/format'
 import { cleanAmount, cleanRecipient, queryParam } from '@/lib/inputs'
-import { KitPassphraseError, unlockKit } from '@/lib/recoveryKit'
+import { KitPassphraseError } from '@/lib/recoveryKit'
 import { limitSpendCalls, spend, spendRoute, type SpendRoute } from '@/lib/spend'
-import { loadLocalKit, toPublicKey } from '@/lib/storage'
+import { toPublicKey } from '@/lib/storage'
 import { SEND_STEP_LABEL, sendCalls, usdcTransfer, type SendStep } from '@/lib/wallet'
 
 type Stage = 'details' | 'review' | 'sending' | 'done'
@@ -47,9 +48,7 @@ export function SendView() {
   const [recipient, setRecipient] = useState<Recipient | null>(null)
   const [amount, setAmount] = useState(() => cleanAmount(queryParam('amount'), USDC_DECIMALS))
   const [compliance, setCompliance] = useState<ComplianceState | null>(null)
-  const [passphrase, setPassphrase] = useState('')
-  const [kitFile, setKitFile] = useState<{ name: string; text: string } | null>(null)
-  const [hasLocalKit] = useState(() => loadLocalKit() !== null)
+  const factor = useSecondFactor(chain.account, wallet.address, wallet.account)
   const [opening, setOpening] = useState(false)
   const [step, setStep] = useState<SendStep>('preparing')
   const [error, setError] = useState<string | null>(null)
@@ -59,6 +58,8 @@ export function SendView() {
     to: Recipient
     route: SpendRoute | 'legacy'
     remainingBefore: bigint | null
+    /** Above the limit: which factor approved with Face ID. */
+    by: SecondFactorChoice
   } | null>(null)
 
   const account = wallet.account
@@ -85,6 +86,7 @@ export function SendView() {
   const firstTime = !!to && !!transfers && !transfers.some((t) => same(t.counterparty, to))
   const toSelf = !!to && (same(to, fundsAddress) || same(to, wallet.address))
   const needsKit = route === 'kit'
+  const words = SECOND_FACTOR[factor.choice]
 
   // What the simulation runs, from the address that will actually move the funds.
   const simulation: { from: Address; calls: MetaTransaction[] } | null =
@@ -100,21 +102,30 @@ export function SendView() {
           : { from: wallet.address, calls: [usdcTransfer(to, amount)] }
 
   const canApprove =
-    !!compliance && !compliance.blocked && !compliance.needsConfirmation && (!needsKit || (passphrase.length > 0 && (hasLocalKit || !!kitFile)))
+    !!compliance && !compliance.blocked && !compliance.needsConfirmation && (!needsKit || factor.ready)
 
   async function approve() {
     if (!to || !recipient || amountValue === null || !route || route === 'loading' || route === 'insufficient') return
     setError(null)
     try {
-      let kit: KitSigner | undefined
+      let second: SecondFactor | undefined
+      const by = factor.choice
       if (needsKit) {
         setOpening(true)
-        kit = (await unlockKit(passphrase, kitFile?.text)).owner
+        second = await factor.resolve({
+          title: `Pay ${formatUsdcExact(amountValue)} USDC`,
+          lines: [
+            recipient.verified
+              ? { label: 'To', value: `${recipient.maskedName} · @${recipient.handle}`, note: 'Verified payee' }
+              : { label: 'To', figure: shortAddress(to), note: 'An address' },
+            { label: 'From', value: 'Your Account', note: 'Above what Face ID can spend today' },
+          ],
+        })
         setOpening(false)
       }
       setStage('sending')
       const result = account
-        ? await spend({ wallet: { ...wallet, account }, to, amount: amountValue, kit, onStep: setStep })
+        ? await spend({ wallet: { ...wallet, account }, to, amount: amountValue, ...second, onStep: setStep })
         : await sendCalls({
             address: wallet.address,
             credentialId: wallet.credentialId,
@@ -128,8 +139,9 @@ export function SendView() {
         to: recipient,
         route: route as SpendRoute | 'legacy',
         remainingBefore: allowance?.remaining ?? null,
+        by,
       })
-      setPassphrase('')
+      factor.clear()
       setStage('done')
       refresh()
     } catch (e) {
@@ -145,8 +157,8 @@ export function SendView() {
     setRecipient(null)
     setAmount('')
     setCompliance(null)
-    setPassphrase('')
-    setKitFile(null)
+    factor.clear()
+    factor.setKitFile(null)
     setSent(null)
     setError(null)
   }
@@ -208,8 +220,8 @@ export function SendView() {
               <Plate
                 title={
                   <span className="inline-flex items-center gap-2">
-                    <ApprovalSquares kit={needsKit} tone="hero" />
-                    {needsKit ? 'Face ID and your Kit will approve' : 'Face ID will approve'}
+                    <ApprovalSquares kit={needsKit} second={factor.choice} tone="hero" />
+                    {needsKit ? words.plate : 'Face ID will approve'}
                   </span>
                 }
               >
@@ -225,8 +237,8 @@ export function SendView() {
                   </PlateRow>
                   <PlateRow label="Approval">
                     <span className="inline-flex items-center gap-2">
-                      <ApprovalSquares kit={needsKit} tone="hero" />
-                      {needsKit ? 'Face ID + your Recovery Kit' : 'Face ID alone'}
+                      <ApprovalSquares kit={needsKit} second={factor.choice} tone="hero" />
+                      {needsKit ? words.approval : 'Face ID alone'}
                     </span>
                     <span className="block text-xs font-normal text-hero-muted">
                       {needsKit ? 'Above what Face ID can spend today' : account ? 'Within today’s limit' : 'This phone holds the funds'}
@@ -265,57 +277,14 @@ export function SendView() {
               </section>
 
               {needsKit && (
-                <section className="space-y-4 rounded-2xl border border-border p-5">
-                  <div className="flex gap-3">
-                    <FactorSquare factor="kit" className="mt-1" />
-                    <div>
-                      <h2 className="text-sm font-semibold">Your Recovery Kit approves too</h2>
-                      <p className="mt-1 text-sm text-muted">
-                        This payment is above what Face ID can spend today. Your passphrase opens the encrypted Kit
-                        {hasLocalKit && !kitFile ? ' stored on this phone' : ''}; it never leaves this device.
-                      </p>
-                    </div>
-                  </div>
-                  {(!hasLocalKit || kitFile) && (
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-surface-2 px-4 py-3 text-sm transition-colors hover:border-accent-ink focus-within:border-accent-ink focus-within:ring-4 focus-within:ring-accent-soft">
-                      <Upload className="h-4 w-4 shrink-0 text-muted" />
-                      <span className="min-w-0 truncate">{kitFile ? kitFile.name : 'Choose your Kit file'}</span>
-                      <input
-                        type="file"
-                        accept="application/json,.json"
-                        aria-label="Recovery Kit file"
-                        className="sr-only"
-                        onChange={async (e) => {
-                          const picked = e.target.files?.[0]
-                          if (picked) setKitFile({ name: picked.name, text: await picked.text() })
-                        }}
-                      />
-                    </label>
-                  )}
-                  <Field label="Kit passphrase" htmlFor="send-kit-passphrase">
-                    <Input
-                      id="send-kit-passphrase"
-                      type="password"
-                      value={passphrase}
-                      onChange={(e) => setPassphrase(e.target.value)}
-                      autoComplete="off"
-                    />
-                  </Field>
-                  {hasLocalKit && !kitFile && (
-                    <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs text-muted hover:text-foreground">
-                      <input
-                        type="file"
-                        accept="application/json,.json"
-                        className="sr-only"
-                        onChange={async (e) => {
-                          const picked = e.target.files?.[0]
-                          if (picked) setKitFile({ name: picked.name, text: await picked.text() })
-                        }}
-                      />
-                      Use my Kit file instead
-                    </label>
-                  )}
-                </section>
+                <SecondFactorSection
+                  factor={factor}
+                  idPrefix="send"
+                  kitTitle="Your Recovery Kit approves too"
+                  reason="This payment is above what Face ID can spend today."
+                  className="space-y-4 rounded-2xl border border-border p-5"
+                  disabled={opening}
+                />
               )}
 
               {error && (
@@ -331,12 +300,12 @@ export function SendView() {
                 <Button size="lg" disabled={!canApprove || opening} onClick={approve}>
                   {opening ? (
                     <>
-                      <Spinner /> Opening your Kit…
+                      <Spinner /> {openingLabel(factor.choice, factor.waiting)}
                     </>
                   ) : (
                     <>
-                      {needsKit ? <KeyRound className="h-5 w-5" /> : <FingerprintPattern className="h-5 w-5" />}
-                      {needsKit ? 'Approve with Kit and biometrics' : 'Approve with biometrics'}
+                      {needsKit ? <SecondFactorIcon choice={factor.choice} /> : <FingerprintPattern className="h-5 w-5" />}
+                      {needsKit ? words.button : 'Approve with biometrics'}
                     </>
                   )}
                 </Button>
@@ -352,6 +321,7 @@ export function SendView() {
                 </p>
                 <p className="text-sm text-muted">Approve with Face ID or Touch ID when prompted.</p>
               </div>
+              <KeyWaiting waiting={factor.waiting} demo={factor.key?.kind === 'demo'} />
               <ProgressList steps={SEND_STEPS.map((s) => SEND_STEP_LABEL[s])} current={SEND_STEPS.indexOf(step)} />
             </section>
           )}
@@ -368,8 +338,8 @@ export function SendView() {
                   </PlateRow>
                   <PlateRow label="Approved by">
                     <span className="inline-flex items-center gap-2">
-                      <ApprovalSquares kit={sent.route === 'kit'} tone="hero" />
-                      {sent.route === 'kit' ? 'Face ID + your Recovery Kit' : 'Face ID alone'}
+                      <ApprovalSquares kit={sent.route === 'kit'} second={sent.by} tone="hero" />
+                      {sent.route === 'kit' ? SECOND_FACTOR[sent.by].approval : 'Face ID alone'}
                     </span>
                   </PlateRow>
                   <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
@@ -384,7 +354,7 @@ export function SendView() {
                 </a>
               </Plate>
               {/* Under the plate, never on it (the Ink Plate Rule): the one Client → Premium trigger (PDR-019, #22). */}
-              {sent.route === 'kit' && <OffersHint />}
+              {sent.route === 'kit' && sent.by === 'kit' && <OffersHint />}
               <div className="grid gap-3 sm:grid-cols-2">
                 <Button variant="secondary" size="lg" onClick={reset}>
                   Send another

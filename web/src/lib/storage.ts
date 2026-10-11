@@ -53,6 +53,21 @@ export type SecurityKeyRecord = {
   publicKey: { x: string; y: string }
   proxy: `0x${string}`
   addedAt: number
+  /** `demo`: another phone plays the key on `/wallet/key`, reached through the MOCK relay (ADR-043). Default: a FIDO2 key. */
+  kind?: 'fido2' | 'demo'
+}
+
+/**
+ * MOCK, on the phone that PLAYS the security key (`/wallet/key`, ADR-043): which credential it holds and
+ * for which Account. Public data only; the private key stays in this phone's authenticator.
+ */
+export type DemoKeyRecord = {
+  account: `0x${string}`
+  label: string
+  credentialId: string
+  publicKey: { x: string; y: string }
+  proxy: `0x${string}`
+  addedAt: number
 }
 
 const WALLET_KEY = 'sq-wallet:v1'
@@ -62,6 +77,8 @@ const RECOVERY_KEY = 'sq-recovery:v1'
 const KIT_KEY = 'sq-kit:v3'
 const EVICTION_KEY = 'sq-eviction:v1'
 const SECURITY_KEY_KEY = 'sq-security-key:v1'
+// On a phone that plays a demo key (ADR-043). Not cleared with the wallet: it belongs to the key, not to a wallet.
+const DEMO_KEY_KEY = 'sq-demo-key:v1'
 // The Account whose first Kit payment already showed the Offers line on this device (#22): a convenience, public.
 const OFFERS_HINT_KEY = 'sq-offers-hint:v1'
 const KIT_TESTED_KEY = 'sq-kit-tested:v1'
@@ -107,6 +124,14 @@ export const loadLocalKit = () => read<RecoveryKitV3>(KIT_KEY)
 
 export const loadSecurityKey = () => read<SecurityKeyRecord>(SECURITY_KEY_KEY)
 export const saveSecurityKey = (key: SecurityKeyRecord) => write(SECURITY_KEY_KEY, key)
+
+export const loadDemoKey = () => read<DemoKeyRecord>(DEMO_KEY_KEY)
+export const saveDemoKey = (key: DemoKeyRecord) => write(DEMO_KEY_KEY, key)
+export function clearDemoKey() {
+  try {
+    window.localStorage.removeItem(DEMO_KEY_KEY)
+  } catch {}
+}
 
 export function offersHintSeen(account: string) {
   try {

@@ -1,6 +1,6 @@
 # ADR-039: Offers page and the upgrade funnel: a comparison table at /offers, the user's offer and its next step, a MOCK Premium in the store, one conversion trigger on Send's receipt
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-043](ADR-043-demo-key-and-key-approvals.md) (the key tap for large payments is built)
 - **Amends:** [ADR-036](ADR-036-level-1-upgrade.md): the funnel towards level 1 also runs from the fee quota, the end of the protect flow and the Overview card.
 - **Date:** 2026-10-11
 - **Related:** [PDR-019](../product/PDR-019-offer-tiers.md) (the offers), [PDR-015](../product/PDR-015-open-wallet-and-levels.md), [PDR-017](../product/PDR-017-theft-protection-hardware-key.md), [PDR-018](../product/PDR-018-time-locked-eviction.md), [PDR-020](../product/PDR-020-daily-limit-chosen-by-user.md), [ADR-020](ADR-020-deployment-vercel-upstash.md) (store), [ADR-021](ADR-021-wallet-registry.md) (registry), [ADR-023](ADR-023-sponsorship-policy-proxy.md) (fee quota), [ADR-034](ADR-034-security-page.md), [ADR-036](ADR-036-level-1-upgrade.md), [ADR-037](ADR-037-ui-refinements-no-seal-4px-tab-bar-chart.md), [ADR-038](ADR-038-security-key.md) (security key, #17), issue #22

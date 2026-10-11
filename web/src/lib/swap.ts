@@ -11,7 +11,7 @@ import {
   type Hex,
 } from 'viem'
 
-import { batchCalls, twoFactorCall, type AccountCall, type KitSigner } from './account'
+import { batchCalls, twoFactorCall, type AccountCall, type SecondFactor } from './account'
 import { assetByAddress, formatAsset, formatAssetExact, type Asset } from './assets'
 import { UNISWAP_V3_ROUTER } from './dapps'
 import { publicClient } from './wallet'
@@ -89,17 +89,13 @@ export function swapSteps(params: { account: Address; tokenIn: Asset; tokenOut: 
   ]
 }
 
-/** One 2-factor Key Safe UserOp for the swap (Kit owner key + Key Safe as msg.sender). */
-export async function swapCalls(params: {
-  account: Address
-  keySafe: Address
-  tokenIn: Asset
-  tokenOut: Asset
-  quote: Quote
-  kit: KitSigner
-}): Promise<MetaTransaction[]> {
-  const { account, keySafe, kit } = params
-  return [await twoFactorCall({ account, keySafe, call: batchCalls(swapSteps(params)), kit })]
+/** One 2-factor Key Safe UserOp for the swap (Kit owner key or security key + Key Safe as msg.sender). */
+export async function swapCalls(
+  params: { account: Address; keySafe: Address; tokenIn: Asset; tokenOut: Asset; quote: Quote } & SecondFactor,
+): Promise<MetaTransaction[]> {
+  const { account, keySafe } = params
+  const call = batchCalls(swapSteps(params))
+  return [await twoFactorCall(params.key ? { account, keySafe, call, key: params.key } : { account, keySafe, call, kit: params.kit })]
 }
 
 /**

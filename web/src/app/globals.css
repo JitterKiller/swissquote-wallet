@@ -166,6 +166,22 @@ textarea {
   animation: tour-progress 6.4s linear both;
 }
 
+/* The demo key's contact while a request waits (ADR-043): two rings leave it. Under reduced motion the
+   rings stay still, a static double outline. */
+@keyframes key-pulse {
+  from {
+    transform: scale(0.85);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+.animate-key-pulse {
+  animation: key-pulse 1.8s var(--ease-out) infinite;
+}
+
 /* Phones: a tap answers at once. Controls skip the double-tap zoom wait, and draw their own
    pressed state instead of the grey tap flash. */
 html {

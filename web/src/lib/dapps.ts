@@ -1,7 +1,7 @@
 import type { MetaTransaction } from 'abstractionkit'
 import { encodeFunctionData, erc20Abi, getAddress, maxUint256, parseAbi, parseUnits, type Address } from 'viem'
 
-import { batchCalls, twoFactorCall, type AccountCall, type KitSigner } from './account'
+import { batchCalls, twoFactorCall, type AccountCall, type SecondFactor } from './account'
 import { USDC_ADDRESS, USDC_DECIMALS } from './config'
 import { formatUsdc } from './format'
 import { publicClient } from './wallet'
@@ -116,17 +116,13 @@ export function dappActionCall(params: ActionParams): AccountCall {
   return steps.length === 1 ? steps[0] : batchCalls(steps)
 }
 
-/** The 2-factor Key Safe UserOp calls for a dApp action (Kit owner key + Key Safe as msg.sender). */
-export async function dappActionCalls(params: {
-  dapp: Dapp
-  action: DappAction
-  account: Address
-  keySafe: Address
-  amount: bigint | 'max'
-  kit: KitSigner
-}): Promise<MetaTransaction[]> {
-  const { dapp, action, account, keySafe, amount, kit } = params
-  return [await twoFactorCall({ account, keySafe, call: dappActionCall({ dapp, action, account, amount }), kit })]
+/** The 2-factor Key Safe UserOp calls for a dApp action (Kit owner key or security key + Key Safe as msg.sender). */
+export async function dappActionCalls(
+  params: { dapp: Dapp; action: DappAction; account: Address; keySafe: Address; amount: bigint | 'max' } & SecondFactor,
+): Promise<MetaTransaction[]> {
+  const { dapp, action, account, keySafe, amount } = params
+  const call = dappActionCall({ dapp, action, account, amount })
+  return [await twoFactorCall(params.key ? { account, keySafe, call, key: params.key } : { account, keySafe, call, kit: params.kit })]
 }
 
 /** Readable preview lines, shown before Face ID with the simulation and screening (PDR-023). */

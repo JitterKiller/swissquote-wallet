@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Partial<SecurityKeyRecord>
-    const { account, credentialId, publicKey, proxy } = body
+    const { account, credentialId, publicKey, proxy, kind } = body
     if (!account || !isAddress(account) || !proxy || !isAddress(proxy) || !credentialId || !publicKey?.x || !publicKey?.y) {
       return Response.json({ error: 'Invalid security key' }, { status: 400 })
     }
@@ -37,7 +37,15 @@ export async function POST(request: Request) {
     if (existing && isOwner(existing.proxy) && existing.credentialId !== credentialId) {
       return Response.json({ error: 'A key is already registered for this Account' }, { status: 409 })
     }
-    const record: SecurityKeyRecord = { account, credentialId, publicKey: { x: publicKey.x, y: publicKey.y }, proxy, addedAt: Date.now() }
+    const record: SecurityKeyRecord = {
+      account,
+      credentialId,
+      publicKey: { x: publicKey.x, y: publicKey.y },
+      proxy,
+      addedAt: Date.now(),
+      // A demo key on another phone (ADR-043) is reached through the MOCK relay instead of WebAuthn here.
+      kind: kind === 'demo' ? 'demo' : 'fido2',
+    }
     await store().set('securityKeys', account.toLowerCase(), record)
     return Response.json(record)
   } catch (error) {

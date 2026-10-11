@@ -16,6 +16,7 @@
     "e2e:limit": "node scripts/e2e-limit.mts",
     "e2e:level": "node scripts/e2e-level.mts",
     "e2e:key": "node scripts/e2e-key.mts",
+    "e2e:demo-key": "node scripts/e2e-demo-key.mts",
     "e2e:kit": "node scripts/e2e-kit.mts",
     "screenshots": "node scripts/ui-screenshots.mts",
     "spike:two-safe": "node scripts/spike-two-safe.mts",

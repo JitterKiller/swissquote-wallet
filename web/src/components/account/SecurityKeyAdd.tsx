@@ -1,7 +1,8 @@
 'use client'
 
-import { ExternalLink, KeyRound, Upload } from 'lucide-react'
+import { ExternalLink, KeyRound, Smartphone, Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import QRCode from 'react-qr-code'
 
 import { lossBound } from '@/components/account/LossBound'
 import { WorstCaseChange } from '@/components/account/WorstCaseChange'
@@ -9,14 +10,15 @@ import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
 import { Button } from '@/components/ui/button'
 import { ApprovalSquares, FactorSquare } from '@/components/ui/factor'
-import { Alert, Spinner } from '@/components/ui/feedback'
+import { Alert, Badge, Spinner } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
 import { Plate, PlateRow } from '@/components/ui/plate'
 import { addOwnerCall, twoFactorCall, type AccountState } from '@/lib/account'
 import { DEMO_ANY_AUTHENTICATOR, EVICTION_DAYS, EXPLORER_URL, type Level } from '@/lib/config'
-import { errorMessage, formatUsdc } from '@/lib/format'
+import { errorMessage, formatUsdc, shortAddress } from '@/lib/format'
+import { startPairing, waitForPairing, type KeyPairing } from '@/lib/keyRelay'
 import { KitPassphraseError, unlockKit } from '@/lib/recoveryKit'
-import { createSecurityKey, deployKeyProxyCall, keyErrorMessage, registerSecurityKey, type NewSecurityKey } from '@/lib/securityKey'
+import { createSecurityKey, deployKeyProxyCall, keyErrorMessage, keyProxyAddress, registerSecurityKey, type NewSecurityKey } from '@/lib/securityKey'
 import { loadLocalKit, saveSecurityKey, toPublicKey, type SecurityKeyRecord } from '@/lib/storage'
 import { isDeployed, SEND_STEP_LABEL, sendCalls, type SendStep } from '@/lib/wallet'
 
@@ -52,14 +54,16 @@ export function SecurityKeyAdd({
 }) {
   const { wallet, refresh } = useLoadedWallet()
   const limit = state.allowance?.amount ?? null
-  const [key, setKey] = useState<NewSecurityKey | null>(null)
+  const [key, setKey] = useState<(NewSecurityKey & { kind: 'fido2' | 'demo' }) | null>(null)
+  // MOCK (ADR-043): another phone plays the key on /wallet/key, paired with a code through the relay.
+  const [pairing, setPairing] = useState<KeyPairing | null>(null)
   const [passphrase, setPassphrase] = useState('')
   const [kitFile, setKitFile] = useState<{ name: string; text: string } | null>(null)
   const [hasLocalKit] = useState(() => loadLocalKit() !== null)
   const [step, setStep] = useState<SendStep | 'opening' | 'registering' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [registerError, setRegisterError] = useState<string | null>(null)
-  const [receipt, setReceipt] = useState<{ txHash: string; proxy: `0x${string}`; listed: boolean } | null>(null)
+  const [receipt, setReceipt] = useState<{ txHash: string; proxy: `0x${string}`; listed: boolean; demo: boolean } | null>(null)
   const panel = useRef<HTMLElement>(null)
 
   // Opened below the row (or from Offers): bring it into view. On the receipt, bring the whole row back
@@ -79,13 +83,42 @@ export function SecurityKeyAdd({
     setRegisterError(null)
     setStep('registering')
     try {
-      setKey(await createSecurityKey(wallet.name, wallet.credentialId))
+      setKey({ ...(await createSecurityKey(wallet.name, wallet.credentialId)), kind: 'fido2' })
     } catch (e) {
       setRegisterError(keyErrorMessage(e))
     } finally {
       setStep(null)
     }
   }
+
+  async function pairDemoKey() {
+    if (!wallet.account) return
+    setRegisterError(null)
+    try {
+      setPairing(await startPairing({ account: wallet.account, label: wallet.name, excludeCredentialId: wallet.credentialId }))
+    } catch (e) {
+      setRegisterError(errorMessage(e))
+    }
+  }
+
+  // While the code shows, wait for the other phone to register its key on it.
+  useEffect(() => {
+    if (!pairing) return
+    const controller = new AbortController()
+    waitForPairing(pairing.code, controller.signal)
+      .then((registered) => {
+        const x = BigInt(registered.publicKey.x)
+        const y = BigInt(registered.publicKey.y)
+        setKey({ credentialId: registered.credentialId, publicKey: { x, y }, proxy: keyProxyAddress(x, y), kind: 'demo' })
+        setPairing(null)
+      })
+      .catch((e) => {
+        if (controller.signal.aborted) return
+        setRegisterError(errorMessage(e))
+        setPairing(null)
+      })
+    return () => controller.abort()
+  }, [pairing])
 
   async function approve() {
     if (!key || !wallet.account) return
@@ -110,12 +143,13 @@ export function SecurityKeyAdd({
         publicKey: { x: key.publicKey.x.toString(), y: key.publicKey.y.toString() },
         proxy: key.proxy,
         addedAt: Date.now(),
+        kind: key.kind,
       }
       saveSecurityKey(record)
       // A new device asks Swissquote's directory which credential to use: wait for it, say so if it failed.
       const listed = (await listKey(record)) !== null
       refresh()
-      setReceipt({ txHash: result.txHash, proxy: key.proxy, listed })
+      setReceipt({ txHash: result.txHash, proxy: key.proxy, listed, demo: key.kind === 'demo' })
       onChanged?.()
     } catch (e) {
       setError(e instanceof KitPassphraseError ? 'Wrong Kit passphrase. Check it and try again.' : errorMessage(e))
@@ -162,8 +196,9 @@ export function SecurityKeyAdd({
           </a>
         </Plate>
         <p className="text-sm text-muted">
-          Keep the key at home, apart from this phone. If the phone is lost or stolen, open “Phone lost or stolen?” on a new device: your Kit and
-          this key lock it out as soon as you act.
+          {receipt.demo
+            ? 'In this demo the other phone plays your key: keep SQure Key open there. Above your daily limit, a touch on it now replaces your Kit passphrase, and with your Kit it locks a lost phone out as soon as you act.'
+            : 'Keep the key at home, apart from this phone. Above your daily limit, a touch on it replaces your Kit passphrase. If the phone is lost or stolen, open “Phone lost or stolen?” on a new device: your Kit and this key lock it out as soon as you act.'}
         </p>
         {!receipt.listed && (
           <Alert tone="warning" title="Not listed with Swissquote yet">
@@ -204,31 +239,43 @@ export function SecurityKeyAdd({
         {key ? (
           <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border py-3 text-sm">
             <span>
-              <span className="block font-medium">Key registered</span>
-              <span className="block text-muted">It becomes an owner when you approve below.</span>
+              <span className="flex items-center gap-2 font-medium">
+                {key.kind === 'demo' ? 'Demo key registered' : 'Key registered'}
+                {key.kind === 'demo' && <Badge tone="warning">MOCK</Badge>}
+              </span>
+              <span className="block text-muted">
+                {key.kind === 'demo' ? 'Check the other phone shows the same address. ' : ''}It becomes an owner when you approve below.
+              </span>
             </span>
             <span className="flex items-center gap-2">
               <AddressPill address={key.proxy} />
-              <Button variant="ghost" size="sm" disabled={!!step} onClick={() => setKey(null)}>
+              <Button variant="ghost" size="sm" disabled={!!step} onClick={() => setKey(null)} className="max-sm:h-11">
                 Use another key
               </Button>
             </span>
           </div>
+        ) : pairing ? (
+          <DemoKeyPairing pairing={pairing} onCancel={() => setPairing(null)} />
         ) : (
           <>
             <p className="text-sm text-muted">
               A FIDO2 key you keep at home, never this phone.
               {DEMO_ANY_AUTHENTICATOR && ' In this demo another device can play it: a computer’s Touch ID, or a teammate’s phone through the QR code.'}
             </p>
-            <Button variant="secondary" disabled={!!step} onClick={register}>
-              {step === 'registering' ? (
-                <>
-                  <Spinner /> Waiting for your key…
-                </>
-              ) : (
-                'Register a security key'
-              )}
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="secondary" disabled={!!step} onClick={register}>
+                {step === 'registering' ? (
+                  <>
+                    <Spinner /> Waiting for your key…
+                  </>
+                ) : (
+                  'Register a security key'
+                )}
+              </Button>
+              <Button variant="ghost" disabled={!!step} onClick={pairDemoKey}>
+                <Smartphone className="h-4 w-4" /> Use a demo key on another phone
+              </Button>
+            </div>
             {registerError && (
               <p role="alert" className="text-sm text-danger">
                 {registerError}
@@ -318,5 +365,45 @@ export function SecurityKeyAdd({
         </Button>
       </div>
     </section>
+  )
+}
+
+/**
+ * MOCK (ADR-043): the code and QR code the phone playing the key reads on /wallet/key. The key it
+ * registers comes back through the relay; the wallet computes its address from its public key.
+ */
+function DemoKeyPairing({ pairing, onCancel }: { pairing: KeyPairing; onCancel: () => void }) {
+  const url = `${window.location.origin}/wallet/key?pair=${pairing.code}`
+  return (
+    <div className="space-y-4 rounded-2xl border border-border p-4 sm:p-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <h4 className="text-sm font-semibold">Pair a demo key</h4>
+        <Badge tone="warning">MOCK</Badge>
+      </div>
+      <p className="text-sm text-muted">
+        Another phone plays your key: never this one. On it, scan this code, or open <span className="font-mono text-foreground">/wallet/key</span> and type the
+        code. Its Face ID registers the key.
+      </p>
+      <div className="flex flex-wrap items-center gap-5">
+        <div className="rounded-lg border border-border bg-white p-2">
+          <QRCode value={url} size={128} fgColor="#171717" bgColor="#ffffff" aria-label="QR code to pair the demo key" />
+        </div>
+        <div>
+          <p className="text-xs text-muted">Code</p>
+          <p className="font-mono text-3xl font-semibold tracking-[0.3em]" aria-live="polite">
+            {pairing.code}
+          </p>
+          <p className="mt-2 flex items-center gap-2 text-sm text-muted" role="status">
+            <Spinner /> Waiting for the other phone…
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            For Account <span className="font-mono">{shortAddress(pairing.account)}</span>, valid 10 minutes
+          </p>
+        </div>
+      </div>
+      <Button variant="ghost" size="sm" className="max-sm:h-11" onClick={onCancel}>
+        Cancel
+      </Button>
+    </div>
   )
 }
