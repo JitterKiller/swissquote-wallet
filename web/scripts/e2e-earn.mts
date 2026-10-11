@@ -5,7 +5,7 @@
  *  1. Protect a wallet (Kit, 0.50 USDC daily limit) and fund it with 1 USDC from the Swissquote treasury.
  *  2. Deposit 0.50 USDC to Aave v3 with Face ID + the Kit (exact approval + supply, risks acknowledged).
  *  3. Withdraw the whole position back to the Account.
- *  4. "Demo: try an unlisted dApp": the paymaster refuses to sponsor Uniswap.
+ *  4. "Demo: try an unlisted router": the paymaster refuses to sponsor Uniswap's Universal Router.
  *  5. Send the USDC back to the treasury.
  *
  * Prereqs: `npm run dev`, Google Chrome, a funded demo treasury. About 2 minutes.
@@ -154,12 +154,12 @@ try {
   const withdrawn = await approve(P, 'earn-05-withdraw', false)
   log(`Withdrew the whole Aave position back to the Account → ${withdrawn} ✓`)
 
-  await P.getByRole('button', { name: /Demo: try Uniswap/ }).click()
+  await P.getByRole('button', { name: /Demo: try an unlisted router/ }).click()
   const verdict = P.getByText(/Not sponsored by Swissquote|Not sent/)
   await verdict.waitFor({ timeout: 90_000 })
   await shot(P, 'earn-06-unlisted', true)
   await desk(P, 'earn-06-unlisted')
-  if ((await verdict.textContent())?.startsWith('Not sponsored')) log('Unlisted dApp (Uniswap): Swissquote refused to sponsor it ✓')
+  if ((await verdict.textContent())?.startsWith('Not sponsored')) log('Unlisted contract (Uniswap Universal Router): Swissquote refused to sponsor it ✓')
   else failures.push(`unlisted demo: ${await P.getByRole('alert').last().textContent()}`)
 
   // Back to the treasury (Kit route: the balance is above today's limit).

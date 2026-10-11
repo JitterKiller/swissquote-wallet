@@ -30,7 +30,7 @@ export function ActivityView() {
     <div className="space-y-6">
       <PageHeader
         title="Activity"
-        description="USDC transfers, read directly from the blockchain."
+        description="USDC transfers and swaps, read directly from the blockchain."
         actions={
           <div className="inline-flex rounded-xl border border-border bg-surface p-1" role="tablist">
             {FILTERS.map((f) => (

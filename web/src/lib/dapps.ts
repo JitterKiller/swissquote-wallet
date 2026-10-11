@@ -48,10 +48,20 @@ export const APPROVED_DAPPS: Dapp[] = [
   },
 ]
 
-const APPROVED_CONTRACTS = new Set(APPROVED_DAPPS.flatMap((d) => d.contracts.map((c) => c.toLowerCase())))
+/** Uniswap v3 SwapRouter02 on Base Sepolia: the swap venue (PDR-028, ADR-032). Approved for swaps only. */
+export const UNISWAP_V3_ROUTER = '0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4' as const
+
+/** Every contract Swissquote approved, with the name the app shows: the Earn protocols and the swap router. */
+export const APPROVED_CONTRACTS: { name: string; address: Address }[] = [
+  ...APPROVED_DAPPS.flatMap((d) => d.contracts.map((address) => ({ name: d.name, address }))),
+  { name: 'Uniswap v3', address: UNISWAP_V3_ROUTER },
+]
 
 /** Used by the sponsorship policy (server) and the UI. */
-export const isApprovedContract = (address: string) => APPROVED_CONTRACTS.has(address.toLowerCase())
+export const isApprovedContract = (address: string) => APPROVED_CONTRACTS.some((c) => c.address.toLowerCase() === address.toLowerCase())
+
+export const approvedContractName = (address: string) =>
+  APPROVED_CONTRACTS.find((c) => c.address.toLowerCase() === address.toLowerCase())?.name ?? null
 
 export const dappById = (id: DappId) => {
   const dapp = APPROVED_DAPPS.find((d) => d.id === id)
@@ -129,11 +139,12 @@ export function describeDappAction(dapp: Dapp, action: DappAction, amount: bigin
 }
 
 /**
- * Demo (issue #25): a real dApp that is not on the list, the Uniswap v3 router on Base Sepolia. The
- * Key Safe asks to approve it; the paymaster refuses to sponsor it (`unapproved-dapp`) before any
- * Face ID prompt. Friction, not a veto: the client could still pay the network fee.
+ * Demo (issue #25): a real contract that is not on the list, Uniswap's Universal Router on Base Sepolia
+ * (any route, Permit2 signatures; only SwapRouter02 is approved, for swaps). The Key Safe asks to
+ * approve it; the paymaster refuses to sponsor it (`unapproved-dapp`) before any Face ID prompt.
+ * Friction, not a veto: the client could still pay the network fee.
  */
-export const UNLISTED_DEMO = { name: 'Uniswap v3', contract: '0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4' as Address }
+export const UNLISTED_DEMO = { name: 'Uniswap Universal Router', contract: '0x492E6456D9528771018DeB9E87ef7750EF184104' as Address }
 
 export const unlistedDemoCalls = (): MetaTransaction[] => [
   {

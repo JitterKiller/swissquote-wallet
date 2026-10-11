@@ -1,6 +1,6 @@
 # PDR-025: Compliant dApp interaction — a short list of approved dApps, built natively, 2 factors
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [PDR-028](PDR-028-swaps.md) (a swap venue joins the approved list)
 - **Date:** 2026-10-10
 - **Related:** [PDR-001](PDR-001-non-custodial-model.md), [PDR-014](PDR-014-separation-of-powers.md), [PDR-019](PDR-019-offer-tiers.md), [PDR-023](PDR-023-compliance-as-friction.md), [ADR-028](../architecture/ADR-028-approved-dapps-native-integration.md), issue #25
 

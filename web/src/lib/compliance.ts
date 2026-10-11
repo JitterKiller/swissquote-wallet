@@ -2,9 +2,11 @@ import type { MetaTransaction } from 'abstractionkit'
 import { BaseError, decodeFunctionData, erc20Abi, formatUnits, getAddress, parseAbi, parseUnits, type Address } from 'viem'
 
 import { api } from './api'
-import { ALLOWANCE_MODULE_ADDRESS, USDC_ADDRESS, USDC_DECIMALS } from './config'
-import { APPROVED_DAPPS } from './dapps'
-import { formatUsdc, shortAddress } from './format'
+import { assetByAddress } from './assets'
+import { ALLOWANCE_MODULE_ADDRESS, USDC_DECIMALS } from './config'
+import { approvedContractName, UNISWAP_V3_ROUTER } from './dapps'
+import { formatDecimal, formatUsdcExact, shortAddress } from './format'
+import { describeSwap } from './swap'
 import { publicClient } from './wallet'
 
 /**
@@ -18,9 +20,12 @@ export const screenRecipient = (address: string) => api<Screening>('/api/complia
 
 export const HIGH_VALUE_USDC = parseUnits('5000', USDC_DECIMALS)
 
-/** ≥ 50% of the balance or ≥ 5,000 USDC: the user types the amount to confirm. */
-export const needsHighValueConfirmation = (amount: bigint, balance: bigint | null) =>
-  amount >= HIGH_VALUE_USDC || (balance !== null && balance > 0n && amount * 2n >= balance)
+/**
+ * ≥ 50% of the balance or ≥ 5,000 (USDC, or EURC for a swap): the user types the amount to confirm.
+ * `largeAt` null keeps only the balance rule (ETH, whose amounts are not in dollars).
+ */
+export const needsHighValueConfirmation = (amount: bigint, balance: bigint | null, largeAt: bigint | null = HIGH_VALUE_USDC) =>
+  (largeAt !== null && amount >= largeAt) || (balance !== null && balance > 0n && amount * 2n >= balance)
 
 /**
  * Address poisoning: same first 4 and last 4 hex characters as a past counterparty, but a
@@ -36,31 +41,34 @@ const allowanceAbi = parseAbi([
   'function executeAllowanceTransfer(address safe, address token, address to, uint96 amount, address paymentToken, uint96 payment, address delegate, bytes signature)',
 ])
 
-const approvedDapp = (address: string) =>
-  APPROVED_DAPPS.find((d) => d.contracts.some((c) => c.toLowerCase() === address.toLowerCase())) ?? null
-
-/** "Aave v3 (0x07eA…814b)" for an approved dApp's contract, the short address otherwise. */
+/** "Aave v3 (0x07eA…814b)" for an approved contract, the short address otherwise. */
 const dappLabel = (address: string) => {
-  const dapp = approvedDapp(address)
-  return dapp ? `${dapp.name} (${shortAddress(address)})` : shortAddress(address)
+  const name = approvedContractName(address)
+  return name ? `${name} (${shortAddress(address)})` : shortAddress(address)
 }
 
-/** Human-readable summary of a call: what leaves the wallet, to whom. */
+/** Human-readable summary of a call: what leaves the wallet, to whom. Amounts to the last unit: they are what is signed. */
 export function describeCall(call: MetaTransaction): string {
   try {
-    if (getAddress(call.to) === getAddress(USDC_ADDRESS)) {
+    const asset = assetByAddress(call.to)
+    if (asset) {
       const { functionName, args } = decodeFunctionData({ abi: erc20Abi, data: call.data as `0x${string}` })
-      if (functionName === 'transfer') return `Send ${formatUsdc(args[1])} USDC to ${args[0]}`
-      if (functionName === 'approve') return `Allow ${dappLabel(args[0])} to spend ${formatUsdc(args[1])} USDC`
+      const amount = (value: bigint) => `${formatDecimal(value, asset.decimals, { round: 'down' })} ${asset.symbol}`
+      if (functionName === 'transfer') return `Send ${amount(args[1])} to ${args[0]}`
+      if (functionName === 'approve') return `Allow ${dappLabel(args[0])} to spend ${amount(args[1])}`
     }
     if (getAddress(call.to) === getAddress(ALLOWANCE_MODULE_ADDRESS)) {
       const { args } = decodeFunctionData({ abi: allowanceAbi, data: call.data as `0x${string}` })
-      return `Send ${formatUsdc(args[3])} USDC to ${args[2]} from today's limit`
+      return `Send ${formatUsdcExact(args[3])} USDC to ${args[2]} from today's limit`
+    }
+    if (getAddress(call.to) === getAddress(UNISWAP_V3_ROUTER)) {
+      const swap = describeSwap(call.data as `0x${string}`)
+      if (swap) return `${swap} at ${dappLabel(call.to)}`
     }
   } catch {
     // fall through
   }
-  if (approvedDapp(call.to)) return `Call ${dappLabel(call.to)}`
+  if (approvedContractName(call.to)) return `Call ${dappLabel(call.to)}`
   return `Call ${call.to}${call.value ? ` with ${formatUnits(call.value, 18)} ETH` : ''}`
 }
 

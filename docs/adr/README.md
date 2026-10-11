@@ -8,7 +8,7 @@ A **Safe smart account** (ERC-4337) on **Base Sepolia**, owned by a **passkey** 
 
 ## Target design (decided, being built)
 
-**The user always holds the majority, Swissquote never does** (PDR-013). Funds move to an **Account Safe** whose owners are only the user's factors: the **Key Safe** (today's passkey Safe, which holds no funds), the **Recovery Kit** (a passphrase-encrypted cloud backup, PDR-016) and, optionally, a **hardware key** (PDR-017). Threshold 2. Face ID alone can only spend up to a **daily limit**; anything else needs 2 factors, so a thief with an unlocked phone cannot empty the account or block anything on it (PDR-014, ADR-017). The user chooses the limit (PDR-020). A **lost or stolen phone** goes through one flow: the Kit evicts it after **7 days** (3 days for linked clients, immediately with a hardware key), and the thief cannot cancel (PDR-018, PDR-021, ADR-019). The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Swissquote is **never an owner**. **Shipped so far:** the Account at onboarding (#10), Overview and Send on the Account (#11, #12), the "Phone lost or stolen?" lock-out with the alert and 2-factor stop on the old phone (#15, #16, ADR-030). The legacy Key Safe recovery described above stays reachable until #33.
+**The user always holds the majority, Swissquote never does** (PDR-013). Funds move to an **Account Safe** whose owners are only the user's factors: the **Key Safe** (today's passkey Safe, which holds no funds), the **Recovery Kit** (a passphrase-encrypted cloud backup, PDR-016) and, optionally, a **hardware key** (PDR-017). Threshold 2. Face ID alone can only spend up to a **daily limit**; anything else needs 2 factors, so a thief with an unlocked phone cannot empty the account or block anything on it (PDR-014, ADR-017). The user chooses the limit (PDR-020). A **lost or stolen phone** goes through one flow: the Kit evicts it after **7 days** (3 days for linked clients, immediately with a hardware key), and the thief cannot cancel (PDR-018, PDR-021, ADR-019). The wallet is **open to everyone** (level 0), and linking a Swissquote account is the upgrade (level 1, PDR-015). Swissquote is **never an owner**. **Shipped so far:** the Account at onboarding (#10), Overview and Send on the Account (#11, #12), the "Phone lost or stolen?" lock-out with the alert and 2-factor stop on the old phone (#15, #16, ADR-030), Earn (#25, ADR-031) and Swap (PDR-028, ADR-032). The legacy Key Safe recovery described above stays reachable until #33.
 
 ## Two kinds of records
 
@@ -47,9 +47,10 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-022](product/PDR-022-wallet-registry-ownership-proof.md) | Wallet registry for linked clients; proof of ownership = one Face ID on an EIP-712 statement (FINMA travel rule) | Accepted |
 | [PDR-023](product/PDR-023-compliance-as-friction.md) | Compliance as friction: sanctions screening, readable preview with simulation, high-value and look-alike checks | Accepted |
 | [PDR-024](product/PDR-024-swissquote-account-transfers.md) | Transfers between the Swissquote account and the wallet: one tap each way, deposits auto-credited from the linked wallet, travel rule filled in | Accepted |
-| [PDR-025](product/PDR-025-approved-dapps.md) | Compliant dApp interaction: a short list of approved dApps (Aave v3, Compound III) built natively, 2 factors, preview and screening, sponsored only when approved | Accepted |
+| [PDR-025](product/PDR-025-approved-dapps.md) | Compliant dApp interaction: a short list of approved dApps (Aave v3, Compound III) built natively, 2 factors, preview and screening, sponsored only when approved | Accepted, amended by PDR-028 |
 | [PDR-026](product/PDR-026-product-name-squre.md) | Product name: SQure (by Swissquote), "Your keys. Swiss security." | Accepted, amended by PDR-027 |
 | [PDR-027](product/PDR-027-logo-two-square-mark.md) | Logo: the two-square mark (orange square = phone, ink square = Kit), "SQure" in one piece, the mark as app icon | Accepted |
+| [PDR-028](product/PDR-028-swaps.md) | Swaps: USDC ↔ EURC and USDC ↔ ETH (held as WETH) at Uniswap v3, from the Account, 2 factors, exact approval, at least the minimum (0.5% slippage) or nothing happens; honest amounts (exact when signed, never rounded up) | Accepted (amends PDR-025) |
 
 ## Architecture decisions
 
@@ -69,23 +70,25 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-012](architecture/ADR-012-testing-real-chain-real-webauthn.md) | Testing on the real chain with real Chrome WebAuthn | Accepted |
 | [ADR-013](architecture/ADR-013-vault-allowance-module.md) | Vault: second Safe + Safe Allowance Module, the Spending Safe as delegate | Superseded by ADR-017 |
 | [ADR-014](architecture/ADR-014-routing-and-wallet-state.md) | Route groups `(wallet)` / `(onboarding)` + shared `WalletProvider` | Accepted |
-| [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted, amended by ADR-029 |
+| [ADR-015](architecture/ADR-015-activity-from-chain-logs.md) | Activity read from on-chain USDC Transfer logs | Accepted, amended by ADR-029 and ADR-032 |
 | [ADR-016](architecture/ADR-016-design-system.md) | Design system: Tailwind tokens + in-house component kit | Accepted, amended by ADR-027 |
 | [ADR-017](architecture/ADR-017-two-safe-account.md) | Two-Safe account: Account Safe (user factors, threshold 2) + Key Safe with a daily allowance | Accepted (spike C1–C4 passed on 2026-10-10), amended by ADR-019 |
 | [ADR-018](architecture/ADR-018-recovery-kit-encryption-and-storage.md) | Recovery Kit: Ethereum keystore V3 via ethers, cloud + local encrypted copies | Accepted, amended by ADR-019 |
 | [ADR-019](architecture/ADR-019-account-eviction-module.md) | Account eviction: Candide recovery module on the Account, guardian = the Kit's second key | Accepted (spike C5 passed; amends ADR-017, ADR-018) |
 | [ADR-020](architecture/ADR-020-deployment-vercel-upstash.md) | Deployment: Vercel + Upstash Redis behind an async `store()`, one fixed demo domain (passkey rpId) | Accepted |
 | [ADR-021](architecture/ADR-021-wallet-registry.md) | Wallet registry: passkey-signed EIP-712 statement, verified with ox + on-chain owner checks | Accepted |
-| [ADR-022](architecture/ADR-022-compliance-checks.md) | Compliance checks: server screening (mock list + optional Chainalysis), client preview, look-alike and high-value warnings | Accepted, amended by ADR-031 |
+| [ADR-022](architecture/ADR-022-compliance-checks.md) | Compliance checks: server screening (mock list + optional Chainalysis), client preview, look-alike and high-value warnings | Accepted, amended by ADR-031 and ADR-032 |
 | [ADR-023](architecture/ADR-023-sponsorship-policy-proxy.md) | Sponsorship policy: ERC-7677 paymaster proxy (quota, security operations, sanctions, stolen-device reports) | Accepted, amended by ADR-028 |
 | [ADR-024](architecture/ADR-024-handle-directory.md) | `@handle` directory: exact-match resolution for linked clients, visibility and contacts, `RecipientField`, MOCK session | Accepted |
 | [ADR-025](architecture/ADR-025-swissquote-transfers.md) | Swissquote account transfers: treasury = relayer Safe, deposits verified from on-chain logs, MOCK balances | Accepted |
 | [ADR-026](architecture/ADR-026-transitional-legacy-key-safe-recovery.md) | Transitional: the protect flow keeps the legacy Key Safe recovery (same Kit guardian key) until the eviction flow ships | Accepted (temporary, #33) |
 | [ADR-027](architecture/ADR-027-visual-world-swiss-onchain-fintech.md) | Visual world: Swiss onchain fintech (white, ink, one Swissquote orange, sealed ink plates), recorded in DESIGN.md through impeccable | Accepted |
-| [ADR-028](architecture/ADR-028-approved-dapps-native-integration.md) | Approved dApps: native call builders (`lib/dapps.ts`), 2-factor Account transactions, paymaster allowlist | Accepted |
+| [ADR-028](architecture/ADR-028-approved-dapps-native-integration.md) | Approved dApps: native call builders (`lib/dapps.ts`), 2-factor Account transactions, paymaster allowlist | Accepted, amended by ADR-032 |
 | [ADR-029](architecture/ADR-029-approval-route-from-chain-events.md) | Activity shows which factors approved each payment (Face ID alone vs Face ID + Kit), read from the Allowance Module's `ExecuteAllowanceTransfer` events | Accepted |
 | [ADR-030](architecture/ADR-030-lost-phone-flow-ui.md) | "Phone lost or stolen?" in the app: `/lost` on the new phone (Kit, Face ID, lock-out, live countdown, takeover in one action), red alert and 2-factor stop on the old phone, "Demo: try with Face ID only" refused (GS020), `npm run e2e:eviction` | Accepted |
-| [ADR-031](architecture/ADR-031-earn-screen.md) | Earn screen: positions plate, approved-protocol cards, 2-factor review with risk acknowledgement, "Demo: try an unlisted dApp" (paymaster refusal), chained simulation (eth_simulateV1), `npm run e2e:earn` | Accepted |
+| [ADR-031](architecture/ADR-031-earn-screen.md) | Earn screen: positions plate, approved-protocol cards, 2-factor review with risk acknowledgement, "Demo: try an unlisted dApp" (paymaster refusal), chained simulation (eth_simulateV1), `npm run e2e:earn` | Accepted, amended by ADR-032 |
+| [ADR-032](architecture/ADR-032-swaps-and-assets.md) | Swaps and multi-asset balances: `lib/assets.ts`, `lib/swap.ts` (QuoterV2 best fee tier, SwapRouter02 in one 2-factor UserOp), one approved-contracts registry, exact amounts and `formatDecimal`, swaps in Activity, `npm run e2e:swap` | Accepted (amends ADR-015, ADR-022, ADR-028, ADR-031) |
+| [ADR-033](architecture/ADR-033-input-filtering.md) | Text fields accept only what the app accepts (`lib/inputs.ts`: amounts, `@handle`, recipient, names; passphrases free), and the payment request link fills Send | Accepted |
 
 ## Open questions (future records)
 

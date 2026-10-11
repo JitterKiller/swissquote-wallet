@@ -1,6 +1,6 @@
 # ADR-028: Approved dApps — native call builders, 2-factor Account transactions, paymaster allowlist
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-032](ADR-032-swaps-and-assets.md) (one registry of approved contracts, with the swap router)
 - **Date:** 2026-10-10
 - **Amends:** [ADR-023](ADR-023-sponsorship-policy-proxy.md) (the sponsorship policy also checks dApp contracts)
 - **Related:** [PDR-025](../product/PDR-025-approved-dapps.md), [ADR-017](ADR-017-two-safe-account.md), [ADR-022](ADR-022-compliance-checks.md), issue #25

@@ -7,6 +7,7 @@ import { getAddress, isAddress } from 'viem'
 import { Field, Input } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/feedback'
 import { looksLikeHandle, normalizeHandle, resolveHandle } from '@/lib/handles'
+import { cleanRecipient } from '@/lib/inputs'
 import { getSession } from '@/lib/session'
 
 /**
@@ -88,16 +89,18 @@ export function RecipientField({
           id="to"
           placeholder="0x… or @handle"
           value={value}
-          onChange={(e) => onChange(e.target.value.trim())}
+          onChange={(e) => onChange(cleanRecipient(e.target.value))}
           className="pr-24 font-mono"
           autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
           spellCheck={false}
         />
         <button
           type="button"
           onClick={async () => {
             try {
-              onChange((await navigator.clipboard.readText()).trim())
+              onChange(cleanRecipient(await navigator.clipboard.readText()))
             } catch {}
           }}
           className="absolute right-1.5 top-1.5 inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-medium text-muted hover:bg-surface-2 hover:text-foreground"

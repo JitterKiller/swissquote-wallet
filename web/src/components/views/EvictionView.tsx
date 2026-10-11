@@ -21,6 +21,7 @@ import { EVICTION_DAYS, EVICTION_DELAY_IS_DEMO, EVICTION_DELAY_SECONDS, EXPLORER
 import { evictionLevel, finalizeEviction, handoverCalls, startEviction } from '@/lib/eviction'
 import { errorChain, errorMessage, formatDelay, formatUsdc, shortAddress } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
+import { cleanName } from '@/lib/inputs'
 import { createPasskey } from '@/lib/passkey'
 import { KitPassphraseError, decryptKit, parseKitFile, unlockKit, type KitAccounts } from '@/lib/recoveryKit'
 import {
@@ -427,7 +428,7 @@ function PasskeyStep({ account, busy, onCreate }: { account: Address; busy: stri
       }
     >
       <Field label="Your name" htmlFor="lost-name">
-        <Input id="lost-name" placeholder="e.g. Alice" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input id="lost-name" placeholder="e.g. Alice" value={name} onChange={(e) => setName(cleanName(e.target.value))} autoComplete="given-name" />
       </Field>
       <Button size="lg" className="w-full" disabled={!!busy || !name.trim()} onClick={() => onCreate(name.trim())}>
         <BusyLabel busy={busy}>

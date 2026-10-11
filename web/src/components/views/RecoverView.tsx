@@ -16,6 +16,7 @@ import { api } from '@/lib/api'
 import { NODE_URL, RECOVERY_DELAY_SECONDS } from '@/lib/config'
 import { errorMessage, formatCountdown, shortAddress } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
+import { cleanName } from '@/lib/inputs'
 import { createPasskey } from '@/lib/passkey'
 import {
   getRecoveryStatus,
@@ -326,7 +327,7 @@ function PasskeyStep({ wallet, busy, onCreate }: { wallet: string; busy: string 
       }
     >
       <Field label="Your name" htmlFor="recover-name">
-        <Input id="recover-name" aria-label="Name" placeholder="e.g. Alice" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input id="recover-name" aria-label="Name" placeholder="e.g. Alice" value={name} onChange={(e) => setName(cleanName(e.target.value))} autoComplete="given-name" />
       </Field>
       <Button size="lg" className="w-full" disabled={!!busy || !name.trim()} onClick={() => onCreate(name.trim())}>
         {busy ? <Spinner /> : <FingerprintPattern className="h-5 w-5" />}

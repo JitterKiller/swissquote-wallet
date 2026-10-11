@@ -36,9 +36,9 @@ const NAV: NavItem[] = [
   { href: '/send', label: 'Send', icon: ArrowUpRight },
   { href: '/receive', label: 'Receive', icon: ArrowDownLeft },
   { href: '/earn', label: 'Earn', icon: Sprout },
+  { href: '/swap', label: 'Swap', icon: Repeat },
   { href: '/handle', label: 'Handle', icon: AtSign },
   { href: '/swissquote', label: 'Swissquote', icon: Landmark },
-  { href: '/swap', label: 'Swap', icon: Repeat, soon: true },
   { href: '/activity', label: 'Activity', icon: Clock },
   { href: '/security', label: 'Security', icon: ShieldCheck },
 ]

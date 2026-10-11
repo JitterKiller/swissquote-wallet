@@ -1,5 +1,14 @@
 import type { ComponentProps, ReactNode } from 'react'
 
+/**
+ * Phones: the big mono amount steps down a size (36 → 30 → 24 px) before it would clip. `fits` is
+ * how many characters the field shows at 36 px; each step down shows about 20% more.
+ */
+export function amountFit(text: string, fits: number) {
+  if (text.length <= fits) return ''
+  return text.length <= Math.floor(fits * 1.2) ? 'max-sm:!text-3xl' : 'max-sm:!text-2xl'
+}
+
 export function Field({
   label,
   htmlFor,

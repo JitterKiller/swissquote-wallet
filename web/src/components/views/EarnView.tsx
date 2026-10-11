@@ -20,6 +20,7 @@ import { Stepper } from '@/components/ui/stepper'
 import { EXPLORER_URL, USDC_DECIMALS } from '@/lib/config'
 import { APPROVED_DAPPS, UNLISTED_DEMO, dappActionCalls, dappActionSteps, unlistedDemoCalls, type Dapp, type DappAction } from '@/lib/dapps'
 import { errorChain, errorMessage, formatUsdc, shortAddress } from '@/lib/format'
+import { cleanAmount } from '@/lib/inputs'
 import { KitPassphraseError, unlockKit } from '@/lib/recoveryKit'
 import { loadLocalKit, toPublicKey } from '@/lib/storage'
 import { SEND_STEP_LABEL, sendCalls, type SendStep } from '@/lib/wallet'
@@ -348,7 +349,7 @@ function ActionPanel({
                 value={whole ? formatUsdc(position).replace(/,/g, '') : amount}
                 onChange={(e) => {
                   setWhole(false)
-                  setAmount(e.target.value.replace(',', '.'))
+                  setAmount(cleanAmount(e.target.value, USDC_DECIMALS))
                 }}
                 className="h-16 border-[1.5px] border-foreground pr-32 font-mono !text-4xl font-semibold tabular-nums tracking-tight"
                 autoComplete="off"
@@ -522,12 +523,12 @@ function UnlistedDemo() {
       <div>
         <h2 className="font-semibold">Only approved dApps are sponsored</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted">
-          Swissquote reviews a protocol (audits, track record, legal) before it pays its network fees. Anything else is not
-          blocked: you would pay the fee yourself.
+          Swissquote reviews each contract (audits, track record, legal) before it pays its network fees: it approves
+          contracts, not brands. Anything else is not blocked: you would pay the fee yourself.
         </p>
       </div>
       <Button variant="secondary" disabled={busy} onClick={tryUnlisted}>
-        {busy ? <Spinner /> : <ShieldX className="h-4 w-4" />} Demo: try {UNLISTED_DEMO.name} (not listed)
+        {busy ? <Spinner /> : <ShieldX className="h-4 w-4" />} Demo: try an unlisted router
       </Button>
       {outcome && (
         <div ref={answer} className="scroll-mb-28">
@@ -537,7 +538,7 @@ function UnlistedDemo() {
               <div className="min-w-0">
                 <p className="font-semibold">Not sponsored by Swissquote</p>
                 <p className="mt-0.5 font-mono text-xs tabular-nums">
-                  unapproved-dapp · {UNLISTED_DEMO.name} router {shortAddress(UNLISTED_DEMO.contract)}
+                  unapproved-dapp · {UNLISTED_DEMO.name} {shortAddress(UNLISTED_DEMO.contract)}
                 </p>
                 <p className="mt-1 text-sm text-muted [overflow-wrap:anywhere]">{outcome.message}</p>
               </div>

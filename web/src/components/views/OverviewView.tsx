@@ -1,9 +1,10 @@
 'use client'
 
-import { ArrowDownLeft, ArrowUpRight, ChevronRight, Sprout } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, Repeat, Sprout } from 'lucide-react'
 import Link from 'next/link'
 
 import { AllowanceMeter } from '@/components/account/AllowanceMeter'
+import { otherBalancesLine, useAssetBalances } from '@/components/account/AssetBalances'
 import { CustodyCard } from '@/components/account/CustodyCard'
 import { EarnCard } from '@/components/account/EarnCard'
 import { SwissquoteCard } from '@/components/account/SwissquoteCard'
@@ -64,6 +65,8 @@ function AccountPlate() {
   const { live } = useBlockNumber()
   const address = wallet.account ?? wallet.address
   const allowance = chain.account?.allowance ?? null
+  // EURC and ETH from swaps (ADR-032), under the USDC balance when the Account holds some.
+  const others = otherBalancesLine(useAssetBalances(wallet.account ?? null))
 
   return (
     <section className="rounded-2xl border border-hero-2 bg-hero p-5 text-hero-fg sm:p-6">
@@ -84,6 +87,11 @@ function AccountPlate() {
       ) : (
         <p className="mt-1 font-mono text-5xl font-semibold tabular-nums tracking-[-0.04em] sm:text-6xl">
           {formatUsdc(chain.balance)} <span className="font-sans text-xl font-normal tracking-normal text-hero-muted">USDC</span>
+        </p>
+      )}
+      {others && (
+        <p className="mt-1 text-sm text-hero-muted">
+          + <span className="font-mono tabular-nums">{others}</span>
         </p>
       )}
       {chain.balance === 0n && (
@@ -108,12 +116,15 @@ function AccountPlate() {
         <Skeleton className="mt-6 h-16 w-full bg-hero-2" />
       ) : null}
 
-      <div className="mt-6 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+      <div className="mt-6 grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
         <ButtonLink href="/send" size="action">
           <ArrowUpRight className="h-5 w-5" /> Send
         </ButtonLink>
         <ButtonLink href="/receive" size="action" variant="hero">
           <ArrowDownLeft className="h-5 w-5" /> Receive
+        </ButtonLink>
+        <ButtonLink href="/swap" size="action" variant="hero">
+          <Repeat className="h-5 w-5" /> Swap
         </ButtonLink>
         <ButtonLink href="/earn" size="action" variant="hero">
           <Sprout className="h-5 w-5" /> Earn

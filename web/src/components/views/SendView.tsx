@@ -12,13 +12,14 @@ import { RecipientField, type Recipient } from '@/components/send/RecipientField
 import { Button, ButtonLink } from '@/components/ui/button'
 import { ApprovalSquares, FactorSquare } from '@/components/ui/factor'
 import { Alert, Badge, Spinner } from '@/components/ui/feedback'
-import { Field, Input } from '@/components/ui/field'
+import { amountFit, Field, Input } from '@/components/ui/field'
 import { PageHeader } from '@/components/ui/page'
 import { Plate, PlateRow } from '@/components/ui/plate'
 import { ProgressList, Stepper } from '@/components/ui/stepper'
 import type { KitSigner } from '@/lib/account'
 import { EXPLORER_URL, USDC_ADDRESS, USDC_DECIMALS } from '@/lib/config'
-import { errorMessage, formatUsdc, formatUsdcShort, shortAddress } from '@/lib/format'
+import { errorMessage, formatDecimal, formatUsdc, formatUsdcExact, shortAddress } from '@/lib/format'
+import { cleanAmount, cleanRecipient, queryParam } from '@/lib/inputs'
 import { KitPassphraseError, unlockKit } from '@/lib/recoveryKit'
 import { limitSpendCalls, spend, spendRoute, type SpendRoute } from '@/lib/spend'
 import { loadLocalKit, toPublicKey } from '@/lib/storage'
@@ -39,9 +40,10 @@ const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
 export function SendView() {
   const { wallet, chain, transfers, refresh } = useLoadedWallet()
   const [stage, setStage] = useState<Stage>('details')
-  const [raw, setRaw] = useState('')
+  // A payment link (/send?to=@handle&amount=20, PDR-010) fills the form, through the same filters as typing.
+  const [raw, setRaw] = useState(() => cleanRecipient(queryParam('to')))
   const [recipient, setRecipient] = useState<Recipient | null>(null)
-  const [amount, setAmount] = useState('')
+  const [amount, setAmount] = useState(() => cleanAmount(queryParam('amount'), USDC_DECIMALS))
   const [compliance, setCompliance] = useState<ComplianceState | null>(null)
   const [passphrase, setPassphrase] = useState('')
   const [kitFile, setKitFile] = useState<{ name: string; text: string } | null>(null)
@@ -173,8 +175,8 @@ export function SendView() {
                     inputMode="decimal"
                     placeholder="0.00"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value.replace(',', '.'))}
-                    className="h-16 border-[1.5px] border-foreground pr-32 font-mono !text-4xl font-semibold tabular-nums tracking-tight"
+                    onChange={(e) => setAmount(cleanAmount(e.target.value, USDC_DECIMALS))}
+                    className={`h-16 border-[1.5px] border-foreground pr-32 font-mono !text-4xl font-semibold tabular-nums tracking-tight ${amountFit(amount, 7)}`}
                     autoComplete="off"
                   />
                   <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
@@ -203,7 +205,7 @@ export function SendView() {
             <div className="space-y-5">
               <Plate title={needsKit ? 'Face ID and your Kit will approve' : 'Face ID will approve'} seal={needsKit} className={needsKit ? '!mt-16' : ''}>
                 <p className="font-mono text-4xl font-semibold tabular-nums tracking-[-0.04em] sm:text-5xl">
-                  {formatUsdc(amountValue)} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">USDC</span>
+                  {formatUsdcExact(amountValue)} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">USDC</span>
                 </p>
                 <dl className="mt-5">
                   <PlateRow label="To">
@@ -336,7 +338,7 @@ export function SendView() {
             <section className="space-y-6 rounded-2xl border border-border p-5 sm:p-6">
               <div>
                 <p className="font-semibold">
-                  Sending <span className="font-mono tabular-nums">{amountValue !== null && formatUsdc(amountValue)}</span> USDC
+                  Sending <span className="font-mono tabular-nums">{amountValue !== null && formatUsdcExact(amountValue)}</span> USDC
                 </p>
                 <p className="text-sm text-muted">Approve with Face ID or Touch ID when prompted.</p>
               </div>
@@ -348,7 +350,7 @@ export function SendView() {
             <div className="space-y-5">
               <Plate title="Sent · live onchain" seal={false} className="animate-enter">
                 <p className="font-mono text-4xl font-semibold tabular-nums tracking-[-0.04em] sm:text-5xl">
-                  {formatUsdc(sent.amount)} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">USDC</span>
+                  {formatUsdcExact(sent.amount)} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">USDC</span>
                 </p>
                 <dl className="mt-5">
                   <PlateRow label="To">
@@ -480,7 +482,7 @@ function parseAmount(amount: string): bigint | null {
   }
 }
 
-/** Whole balance, formatted for the input. */
+/** Whole balance for the input, to the last unit: rounding "0.999512" to "1" would be more than the balance. */
 function maxAmount(balance: bigint) {
-  return formatUsdcShort(balance).replace(/,/g, '')
+  return formatDecimal(balance, USDC_DECIMALS, { round: 'down', group: false, min: 0 })
 }

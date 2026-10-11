@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Alert, Badge } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
+import { cleanName } from '@/lib/inputs'
 
 import type { SwissquoteLink } from './useSwissquoteLink'
 
@@ -33,7 +34,7 @@ export function SwissquoteLinkCard({ link, description }: { link: SwissquoteLink
             }}
           >
             <Field label="Name on your Swissquote account" htmlFor="name" hint="Mock e-banking sign-in for the demo.">
-              <Input id="name" placeholder="Adam Meier" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input id="name" placeholder="Adam Meier" value={name} onChange={(e) => setName(cleanName(e.target.value, { digits: true }))} autoComplete="name" />
             </Field>
             <Button type="submit" className="w-full" disabled={name.trim().length < 2}>
               Sign in with Swissquote

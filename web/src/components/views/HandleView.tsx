@@ -27,6 +27,7 @@ import {
   type MyHandle,
   type Visibility,
 } from '@/lib/handles'
+import { cleanAmount, cleanHandle } from '@/lib/inputs'
 import { usdcTransfer } from '@/lib/wallet'
 
 const VISIBILITY: { value: Visibility; label: string; hint: string }[] = [
@@ -97,7 +98,7 @@ export function HandleView() {
                     act('claim', async () => setMine(await claimHandle(session.clientId, handle, mine?.visibility)))
                   }}
                 >
-                  <Input placeholder={mine ? 'Change handle' : 'adam'} value={handle} onChange={(e) => setHandle(e.target.value)} />
+                  <HandleInput aria-label={mine ? 'New handle' : 'Your handle'} placeholder={mine ? 'Change handle' : 'adam'} value={handle} onChange={setHandle} />
                   <Button type="submit" disabled={busy !== null || handle.trim().length < 3}>
                     {mine ? 'Change' : 'Claim'}
                   </Button>
@@ -140,7 +141,7 @@ export function HandleView() {
                   >
                     <Field label="Add a contact" htmlFor="contact" hint={`${mine.contacts} contact(s) can find you.`}>
                       <div className="flex gap-2">
-                        <Input id="contact" placeholder="@lea" value={contact} onChange={(e) => setContact(e.target.value)} />
+                        <HandleInput id="contact" placeholder="lea" value={contact} onChange={setContact} />
                         <Button type="submit" variant="secondary" disabled={busy !== null || contact.trim().length < 3}>
                           <Users className="h-4 w-4" /> Add
                         </Button>
@@ -159,7 +160,7 @@ export function HandleView() {
               <CardHeader title="Request a payment" description="Share a link or a QR code: the payer sees your verified name before paying." />
               <CardBody className="flex flex-col items-center space-y-4 text-center">
                 <Field label="Amount (optional)" htmlFor="request-amount">
-                  <Input id="request-amount" inputMode="decimal" placeholder="20.00" value={amount} onChange={(e) => setAmount(e.target.value.replace(',', '.'))} />
+                  <Input id="request-amount" inputMode="decimal" placeholder="20.00" value={amount} onChange={(e) => setAmount(cleanAmount(e.target.value, 2))} autoComplete="off" />
                 </Field>
                 <div className="rounded-2xl border border-border bg-white p-4">
                   <QRCode value={requestUrl} size={164} fgColor="#121418" bgColor="#ffffff" />
@@ -177,7 +178,7 @@ export function HandleView() {
             <CardBody className="space-y-4">
               <RecipientField value={checkValue} onChange={setCheckValue} onRecipient={setCheckRecipient} />
               <Field label="Amount (USDC)" htmlFor="check-amount">
-                <Input id="check-amount" inputMode="decimal" placeholder="0.00" value={checkAmount} onChange={(e) => setCheckAmount(e.target.value.replace(',', '.'))} />
+                <Input id="check-amount" inputMode="decimal" placeholder="0.00" value={checkAmount} onChange={(e) => setCheckAmount(cleanAmount(e.target.value, USDC_DECIMALS))} autoComplete="off" />
               </Field>
               <ComplianceChecks
                 from={wallet.address}
@@ -203,4 +204,25 @@ function parseAmount(value: string) {
   } catch {
     return null
   }
+}
+
+/** An @handle field: the "@" is shown, and only what the directory accepts can be typed (ADR-024). */
+function HandleInput({ onChange, ...props }: Omit<React.ComponentProps<'input'>, 'onChange' | 'value'> & { value: string; onChange: (handle: string) => void }) {
+  return (
+    <div className="relative min-w-0 flex-1">
+      <span aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted">
+        @
+      </span>
+      <Input
+        {...props}
+        onChange={(e) => onChange(cleanHandle(e.target.value))}
+        className="pl-8"
+        maxLength={20}
+        autoComplete="off"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+      />
+    </div>
+  )
 }

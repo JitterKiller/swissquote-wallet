@@ -72,7 +72,7 @@ function Crosshair({ className }: { className: string }) {
 export function PlateRow({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-t border-hero-2 py-2 text-sm first:border-t-0 first:pt-0">
-      <dt className="text-hero-muted">{label}</dt>
+      <dt className="shrink-0 text-hero-muted">{label}</dt>
       <dd className="text-right font-medium">{children}</dd>
     </div>
   )

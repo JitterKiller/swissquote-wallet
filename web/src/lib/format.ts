@@ -6,18 +6,40 @@ export function shortAddress(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`
 }
 
-/** 20000000n → "20.00" (2 decimals, grouped thousands). */
+/**
+ * 20000000n → "20.00" (2 decimals, grouped thousands). Rounded down: a balance of 0.999498 reads
+ * 0.99, never more than there is (ADR-032).
+ */
 export function formatUsdc(amount: bigint) {
-  return Number(formatUnits(amount, USDC_DECIMALS)).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+  return formatDecimal(amount, USDC_DECIMALS, { places: 2, round: 'down' })
 }
 
 /** 3500000000n → "3,500" (decimals only when needed): limits and bounds. */
 export function formatUsdcShort(amount: bigint) {
   return Number(formatUnits(amount, USDC_DECIMALS)).toLocaleString('en-US', { maximumFractionDigits: 2 })
 }
+
+/**
+ * A token amount as text, computed on the integer (no float): at most `places` decimals, trailing
+ * zeros trimmed down to `min`. `round: 'down'` never shows more than the amount, which minimums
+ * and Max need ("at least 0.49", not "0.50" for 0.4965). 499512n, 6 → "0.499512".
+ */
+export function formatDecimal(
+  amount: bigint,
+  decimals: number,
+  { places = decimals, round = 'nearest', group = true, min = 2 }: { places?: number; round?: 'nearest' | 'down'; group?: boolean; min?: number } = {},
+): string {
+  if (amount < 0n) return `-${formatDecimal(-amount, decimals, { places, round, group, min })}`
+  const unit = 10n ** BigInt(Math.max(decimals - places, 0))
+  const value = ((round === 'nearest' ? amount + unit / 2n : amount) / unit) * unit
+  const [whole, fraction = ''] = formatUnits(value, decimals).split('.')
+  const digits = fraction.slice(0, places).replace(/0+$/, '').padEnd(min, '0')
+  const head = group ? BigInt(whole).toLocaleString('en-US') : whole
+  return digits ? `${head}.${digits}` : head
+}
+
+/** What is signed and moved, to the last unit: 499512n → "0.499512", 500000n → "0.50". */
+export const formatUsdcExact = (amount: bigint) => formatDecimal(amount, USDC_DECIMALS, { round: 'down' })
 
 export function formatCountdown(seconds: number) {
   if (seconds <= 0) return '0:00'

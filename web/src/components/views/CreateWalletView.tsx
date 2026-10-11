@@ -11,6 +11,7 @@ import { Field, Input } from '@/components/ui/field'
 import { Stepper } from '@/components/ui/stepper'
 import { currentBlock } from '@/lib/activity'
 import { errorMessage } from '@/lib/format'
+import { cleanName } from '@/lib/inputs'
 import { createPasskey } from '@/lib/passkey'
 import { serializePublicKey } from '@/lib/storage'
 import { predictAddress } from '@/lib/wallet'
@@ -65,7 +66,7 @@ export function CreateWalletView() {
             id="name"
             placeholder="e.g. Alice"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(cleanName(e.target.value))}
             autoComplete="given-name"
             required
           />

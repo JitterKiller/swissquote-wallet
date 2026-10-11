@@ -15,6 +15,7 @@ import { Field, Input } from '@/components/ui/field'
 import { PageHeader } from '@/components/ui/page'
 import { USDC_DECIMALS } from '@/lib/config'
 import { errorMessage, formatUsdc } from '@/lib/format'
+import { cleanAmount } from '@/lib/inputs'
 import { getAccountOverview, moveToSwissquote, moveToWallet, type AccountOverview } from '@/lib/swissquoteAccount'
 import { SEND_STEP_LABEL, type SendStep } from '@/lib/wallet'
 
@@ -113,7 +114,7 @@ export function SwissquoteView() {
                 <CardHeader icon={<ArrowDownLeft className="h-[18px] w-[18px]" />} title="Move to my wallet" description="Swissquote sends USDC on-chain to your self-custody wallet." />
                 <CardBody className="space-y-3">
                   <Field label="Amount (USDC)" htmlFor="to-wallet">
-                    <Input id="to-wallet" inputMode="decimal" placeholder="50.00" value={toWallet} onChange={(e) => setToWallet(e.target.value.replace(',', '.'))} />
+                    <Input id="to-wallet" inputMode="decimal" placeholder="50.00" value={toWallet} onChange={(e) => setToWallet(cleanAmount(e.target.value, 2))} />
                   </Field>
                   <Button
                     className="w-full"
@@ -135,7 +136,7 @@ export function SwissquoteView() {
                 <CardHeader icon={<ArrowUpRight className="h-[18px] w-[18px]" />} title="Move to Swissquote" description="Face ID sends USDC to Swissquote; your account is credited as soon as the transfer is on-chain." />
                 <CardBody className="space-y-3">
                   <Field label="Amount (USDC)" htmlFor="to-swissquote">
-                    <Input id="to-swissquote" inputMode="decimal" placeholder="20.00" value={toSwissquote} onChange={(e) => setToSwissquote(e.target.value.replace(',', '.'))} />
+                    <Input id="to-swissquote" inputMode="decimal" placeholder="20.00" value={toSwissquote} onChange={(e) => setToSwissquote(cleanAmount(e.target.value, 2))} />
                   </Field>
                   <Button
                     className="w-full"

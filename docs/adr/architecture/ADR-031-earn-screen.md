@@ -1,6 +1,6 @@
 # ADR-031: Earn screen: positions plate, approved-protocol cards, 2-factor review with risk acknowledgement, chained simulation
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-032](ADR-032-swaps-and-assets.md) (the unlisted demo targets Uniswap's Universal Router)
 - **Date:** 2026-10-11
 - **Amends:** [ADR-022](ADR-022-compliance-checks.md) (the simulation now chains the steps)
 - **Related:** [PDR-025](../product/PDR-025-approved-dapps.md), [ADR-028](ADR-028-approved-dapps-native-integration.md), [PDR-023](../product/PDR-023-compliance-as-friction.md), [ADR-027](ADR-027-visual-world-swiss-onchain-fintech.md)

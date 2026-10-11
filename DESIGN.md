@@ -150,6 +150,19 @@ components:
     typography: "{typography.figure-xl}"
     rounded: "{rounded.xl}"
     height: "60px"
+  asset-picker:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    typography: "{typography.token}"
+    rounded: "{rounded.lg}"
+    height: "36px"
+    padding: "0 28px 0 10px"
+  quote-field:
+    backgroundColor: "{colors.surface-2}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.xl}"
+    height: "64px"
+    padding: "0 8px 0 14px"
   preset-chip:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -285,7 +298,7 @@ Dark mode (OS setting) swaps the ground to near-black (#0c0c0c, surfaces #151515
 - **Title** (600, 0.875rem): section titles inside a step ("Three locks, all held by you") and card headers.
 - **Body** (400, 1rem, 1.5): step descriptions in Graphite, under the display title.
 - **Body small** (400 or 500, 0.875rem): field labels (500), list rows, plate rows, alerts. Hints and errors drop to 0.75rem.
-- **Figure XL** (JetBrains Mono 600, 3rem, tabular): the amount being chosen, inside the amount field. The loss bound sits one step down at 2.25rem with its unit in the grotesk.
+- **Figure XL** (JetBrains Mono 600, 3rem, tabular): the amount being chosen, inside the amount field. The loss bound sits one step down at 2.25rem with its unit in the grotesk, and so do the amount being given (Send, Swap) and Swap's quote, at 2.25rem with tight tracking; on phones these step down to 1.875rem, then 1.5rem, before they would clip (`amountFit`).
 - **Figure** (JetBrains Mono 400, 1.25rem, tabular): the live strip's facts (fee, block, status).
 - **Rate** (JetBrains Mono 600, 1.875rem, tabular, tight): a protocol's variable rate on its card, followed by "a year, variable" in 14px Graphite grotesk.
 - **Token** (JetBrains Mono 500, 11px, 0.12em, uppercase): stepper labels, the token bar, a plate's title, units inside fields ("USDC / DAY"), file metadata, and short verifiable status ("2 of 2 · yours", "Account · live onchain", "Lent · live onchain").
@@ -295,7 +308,13 @@ Dark mode (OS setting) swaps the ground to near-black (#0c0c0c, surfaces #151515
 ### Named Rules
 **The Mono-Is-Data Rule.** JetBrains Mono is reserved for figures, addresses, units and verifiable status. If the text is not a number, an address, a unit or a chain fact, it is set in Hanken Grotesk.
 
-**The Two Decimals Rule.** Every displayed USDC amount shows exactly two decimals (formatUsdc): balances, limits, rows, review plates, notes. Rounded short forms are for input defaults, not for display. Rates follow the same discipline: a percentage with two decimals ("1.25%"), always with "variable" beside it, never a promised return.
+**The Amount Precision Rule.** An amount is shown at one of three precisions, never by taste.
+- **Exact:** what is given, received or signed shows to the last unit, up to six decimals ("0.498962 EURC", "0.50 USDC"): the review plate's hero amount, Allow, the receipt, the simulation preview and the typed confirmation (`formatAssetExact`, `formatUsdcExact`).
+- **Asset precision:** balances, lists and quotes show two decimals for USDC and EURC and up to six for ETH, always rounded down so they never show more than there is (`formatUsdc`, `formatAsset`). Activity rows and the Account plate use this precision.
+- **Minimums** ("At least") are rounded down.
+- **Inputs** take at most six decimals, and Max fills the whole balance to the sixth decimal.
+
+Rounded short forms ("3,500") are for limits and input defaults only. Rates keep their own discipline: a percentage with two decimals ("1.25%"), always with "variable" beside it, never a promised return; a swap rate reads "1 USDC = 0.9979 EURC" with four significant decimals.
 
 **The Tight Display Rule.** Titles are semibold at 1.05 line-height with negative tracking (-0.03 to -0.035em). Display size is for the one title per screen.
 
@@ -305,7 +324,7 @@ Onboarding is a two-column split from 1024px: an ink panel on the left (0.9fr) h
 
 The quiet variant of the same shell serves the lost-phone flow (`/lost`): the panel steps back to the logo and the live strip, with no candle chart and no tagline, and narrows to 0.7fr against 1.3fr for the content, so the lock-out leads.
 
-Inside a step, vertical rhythm is 24px between blocks (title, form, action), 16 to 20px inside forms, 6px between a label and its field. Plates take extra top margin (64px) so the seal's overhang has room. Panel padding is 40px (48px from 1280px). Lists use hairline top and bottom rules rather than boxes. Primary actions run full width at the bottom of the column. Breakpoints are Tailwind's 640, 1024 and 1280px. Page gutters are 20px on phones (app header, content, onboarding), 24px from 640px, 40px on desktop content.
+Inside a step, vertical rhythm is 24px between blocks (title, form, action), 16 to 20px inside forms, 6px between a label and its field. Plates take extra top margin (64px) so the seal's overhang has room. Panel padding is 40px (48px from 1280px). Lists use hairline top and bottom rules rather than boxes. Primary actions run full width at the bottom of the column. In the app shell the sidebar runs Overview, Send, Receive, Earn, Swap, Handle, Swissquote, Activity, Security; a task screen with a reference list (Swap) puts it in a 340px aside from 1024px, under the task on phones. Breakpoints are Tailwind's 640, 1024 and 1280px. Page gutters are 20px on phones (app header, content, onboarding), 24px from 640px, 40px on desktop content.
 
 ## Elevation & Depth
 
@@ -334,7 +353,7 @@ Crisp, solid, decisive.
 - **Ghost:** no border, Stone Wash on hover.
 - **Danger:** Signal Red fill, white text.
 - **Hero:** the secondary action on an ink plate: Plate Rule fill, Plate White text, Plate White at 15% on hover. The primary on a plate stays orange.
-- **Action size:** the plate's main actions (Send, Receive, Earn). On phones a 64px tile in a three-column grid, 20px icon over the label; from 640px the 48px large button with the icon beside the label. A disabled action keeps the same size as a Plate Rule outline in Plate Grey with a "Soon" badge.
+- **Action size:** the plate's main actions (Send, Receive, Swap, Earn). On phones a 64px tile in a four-column grid, 20px icon over the label; from 640px the 48px large button with the icon beside the label. A disabled action keeps the same size as a Plate Rule outline in Plate Grey with a "Soon" badge.
 - **Icons** inside buttons never shrink.
 
 ### Chips (presets)
@@ -355,16 +374,24 @@ Small 6px tags, 12px medium text: neutral (Stone Wash with a hairline), accent (
 - **Style:** 44px, white, 1px hairline, 8px corners, 14px side padding; label above in 14px medium, hint or error below in 12px.
 - **Focus:** border turns Ember Ink with a 4px Apricot ring over 150ms; caret is Ember Ink.
 - **Error:** message in Signal Red replaces the hint.
-- **Amount field:** 60px tall with a 1.5px ink border, the value in 48px mono semibold, the unit as a token pinned right.
+- **Amount field:** 60px tall with a 1.5px ink border, the value in 48px mono semibold, the unit as a token pinned right. The amount being given (Send, Swap, Earn) is 64px with the value in 36px mono semibold; on phones it steps down to 30px, then 24px, before it would clip (`amountFit(text, fits)`, 7 characters in Send, 9 in Swap). Max is in Ember Ink: in Send beside the unit, in Swap beside the balance in the label row ("Balance 1.00 USDC  Max"), small, with its hit area enlarged by a pseudo-element.
+- **Asset picker:** a native select styled as a token chip (36px, white, hairline, 6px corners, a chevron in Graphite), pinned inside the amount field. 44px on phones.
+- **Tap targets:** every control is at least 44px on phones (`max-sm:h-11`), even when it is 36px on desktop.
+- **What a field accepts:** each field filters as it is typed or pasted (`lib/inputs.ts`, ADR-033); a refused character simply does not appear, with no error for it.
+  - **Amounts** take digits and one decimal point: a lone "," is the point, and thousands separators, spaces and apostrophes are dropped. Up to six decimals, two for the daily limit, payment requests and Swissquote transfers.
+  - **A recipient** takes a 0x address or an @handle, and pulls the address out of a pasted payment URI.
+  - **Names** take letters, spaces, apostrophes and hyphens.
+  - **Kit passphrases** accept anything.
+- **Handle field:** the "@" is printed in Graphite inside the field on the left (32px padding). Only a lowercase letter, then letters, digits or "_" can be typed, 20 at most.
 
 ### Navigation (stepper)
 A row of 24px squares (6px corners) joined by hairlines: done is ink with a check, active is orange with ink numerals, pending is a hairline outline. Labels are tokens; on phones only the active label stays. Items size from their labels (flex-auto), so a label is never cut with an ellipsis while the row has room.
 
 ### Ink Plate (signature)
-The commit surface. Plate Ink ground, Plate Rule border, 10px corners, 20 to 24px padding, crosshairs at two corners, a 120px seal overhanging the top edge by 56px at the right. Its title is a token in Plate Grey, and it reserves room for the seal on the right only when the plate carries one; its content is a definition list of rows (label in Plate Grey left, fact in Plate White right, hairline rules between). Addresses inside it use the hero-toned address chip. The plate's title names who approves ("Face ID and your Kit will approve"), and the seal goes only on the commit that needs both factors and is the step's own action: a plate signed by the Kit alone ("Your Kit will start the lock-out") or one set inside an alert ("Face ID and your Kit will stop it") carries none.
+The commit surface. Plate Ink ground, Plate Rule border, 10px corners, 20 to 24px padding, crosshairs at two corners, a 120px seal overhanging the top edge by 56px at the right. Its title is a token in Plate Grey, and it reserves room for the seal on the right only when the plate carries one; its content is a definition list of rows (label in Plate Grey left, fact in Plate White right, hairline rules between). A row's label never wraps; the fact wraps under it, right-aligned, and may carry a second 12px Plate Grey line. Addresses inside it use the hero-toned address chip. The plate's title names who approves ("Face ID and your Kit will approve"), and the seal goes only on the commit that needs both factors and is the step's own action: a plate signed by the Kit alone ("Your Kit will start the lock-out") or one set inside an alert ("Face ID and your Kit will stop it") carries none.
 
 ### Account Plate (signature)
-The Account as a live object, under the Ink Plate Rule. Header: a token in Plate Grey ("Account · live onchain") led by a 6px live square (Ledger Green when the chain answers, Plate Grey otherwise), and the hero-toned address pill at the right from 640px (on phones the top bar carries the address). Then the balance in the Balance figure, the allowance cells at the large size, and the action row: Send (primary), Receive (hero), Earn (hero). Padding 20px, 24px from 640px. No seal: the seal stays on commit plates.
+The Account as a live object, under the Ink Plate Rule. Header: a token in Plate Grey ("Account · live onchain") led by a 6px live square (Ledger Green when the chain answers, Plate Grey otherwise), and the hero-toned address pill at the right from 640px (on phones the top bar carries the address). Then the balance in the Balance figure; under it, only when the Account holds some, one 14px Plate Grey line of the other assets at asset precision ("+ 0.49 EURC · 0.000314 ETH", figures in mono). Then the allowance cells at the large size, and the action row: Send (primary), Receive, Swap and Earn (hero). Padding 20px, 24px from 640px. No seal: the seal stays on commit plates.
 
 ### Positions Plate
 What the Account has lent, under the Ink Plate Rule because it is live onchain; no seal. Title: the token "Lent · live onchain" led by the 6px live square. Then the total in the Balance figure with "USDC" in the grotesk, and one plate row per approved protocol: the amount in mono with "USDC", then the rate in mono Plate Grey. It closes with a 12px Plate Grey footnote: "Testnet rates, variable. Swissquote neither holds the positions nor promises a return."
@@ -374,6 +401,16 @@ One per approved protocol, side by side from 1024px, stacked on phones. White, 1
 
 ### Action Panel
 A protocol action opens under the cards as one bordered panel (1px ink border, 10px corners, 20 to 24px padding): the heading "Deposit to Aave v3" / "Withdraw from …" in 18px semibold with a muted Cancel at the right, then the world's stepper (Amount → Review → Done). The amount step is the Send amount field (1.5px ink border, mono figure, Max in Ember Ink, the unit as a token) and the full-width primary Continue. The review is a sealed plate, "Face ID and your Kit will approve", with the amount in the Balance figure and rows Allow (the exact amount, plus the hero address chip) and Supply, or Withdraw ("back to your Account"), then Approval (approval squares) and Network fee. Under it, hairline-ruled sections with no inner boxes: the checks, the risk checkbox (ink accent colour), and the Kit; then Back (secondary) beside "Approve with Kit and Face ID" (primary). On phones the panel scrolls into view when it opens, with the amount field focused (instant under reduced motion). The receipt is a plate without a seal, titled by the event ("Deposit confirmed · onchain" / "Withdrawal confirmed · onchain"), showing the amount that was signed, rows Lent to / Back from, Approved by, Network fee, and a Basescan link.
+
+### Swap Card
+The `/swap` details, in the same white bordered card (10px corners, 20 to 24px padding), beside an aside from 1024px (340px). "You give" is the amount field being given, holding only the asset picker; the label row carries "Balance" with the mono balance and Max. Under it, a 36px flip button (44px on phones, hairline, 6px corners, the up-down arrows) centred between the two sides. "You get about" is the quote field: a Stone Wash well (64px, 8px corners, no border) with the quote in the same mono figure, Graphite until a quote lands, announced politely (`aria-live`) and refreshed every 15 s, and the second asset picker. Then hairline-ruled rows, label in Graphite left, fact right: Rate ("1 USDC = 0.9979 EURC" in mono), At least (the minimum in mono, rounded down, "· 0.5% slippage" in Graphite), Pool ("Uniswap v3 · 0.05% fee"). When ETH is on either side, a 12px Graphite note says the testnet pool price is far from real markets. A missed quote reads "Couldn't get a quote from the network. Retrying…" in Graphite; an amount no pool can fill reads "No Uniswap pool can fill this amount right now." in Signal Red. The card closes with the full-width primary "Review swap".
+
+The aside, "Your Account holds", lists the three assets on hairline rows (name, symbol in Graphite, mono balance at asset precision) and a 12px Graphite line that swaps go through an approved contract and need Face ID and the Kit.
+
+The review replaces the card, with the Action Panel's grammar and no panel border: the sealed plate "Face ID and your Kit will approve", the amount given exact in the Balance figure with its symbol in the grotesk, rows At least (the minimum, with "Expected … · if less, nothing happens" beneath), Allow ("Uniswap v3 to take exactly … , no more" and the hero address chip), Swap ("In the 0.05% pool, back to your Account"), Approval (approval squares) and Network fee ("Covered by Swissquote"). Then the checks before Face ID, the Kit, and Back beside "Approve with Kit and Face ID". The receipt is the plate without a seal, "Swap confirmed · onchain": You gave and You got, exact, read from the transaction's own Transfer logs ("You got at least" with the minimum when they cannot be read), Approved by, Network fee, a Basescan link, then the large secondary "Swap again".
+
+### Activity Row
+One row per USDC movement: a 36px icon tile (6px corners), a 14px medium title with approval squares at the small size, a 12px Graphite subtitle that truncates, and the USDC figure in mono at asset precision at the right (Ledger Green when it comes in). Sent and received rows read "Sent USDC" / "Received USDC" with "To 0x…" / "From 0x…" and the time. A swap is one row, never two: a neutral tile (Stone Wash, ink Repeat icon) in both directions, "Swapped to EURC" or "Swapped from ETH", approval squares on both directions, and "Got 0.49 EURC · Uniswap v3 · 03:55" (or "Gave …"), the venue hidden on phones.
 
 ### Compliance Checks
 A list of checks before Face ID, each a status icon, a 14px title and mono detail lines that wrap anywhere (never cut). On a dApp action the subject is the contract, not a recipient: "Protocol contract screened: not on sanctions lists", "Simulation: these steps would succeed" with one mono line per step, and "Large amount: type the amount to confirm" (on a payment, "Large payment"). The typed confirmation compares amounts, so "0.5" matches "0.50". Simulation lines name an approved dApp with its short address ("Allow Aave v3 (0x07eA…814b) to spend 0.50 USDC"); a transfer's recipient stays the full address, because it is what the user verifies.
@@ -416,7 +453,7 @@ A Signal Red banner on danger-soft (danger at 30% for the border, 10px corners) 
 ### Refusal as evidence
 When the Account refuses a single-factor attempt, the proof is shown, not paraphrased: an orange factor square beside an outlined empty square (1 of 2), "Refused by your Account" in Signal Red semibold, the Safe's code as mono data ("GS020 · 1 of 2 factors"), then one muted sentence of why. It scrolls into view when it lands.
 
-The same grammar answers an unlisted dApp. Inside a white card "Only approved dApps are sponsored" (a muted paragraph, then a secondary button "Demo: try Uniswap v3 (not listed)"), the answer lands under a hairline: a ShieldX icon in ink, "Not sponsored by Swissquote" in semibold, the reason as a 12px mono line ("unapproved-dapp · Uniswap v3 router 0x94cC…2bc4"), then the paymaster's own message in muted 14px, wrapping anywhere. It scrolls into view when it lands.
+The same grammar answers an unlisted dApp. Inside a white card "Only approved dApps are sponsored" (a muted paragraph saying Swissquote approves contracts, not brands, then a secondary button "Demo: try an unlisted router"), the answer lands under a hairline: a ShieldX icon in ink, "Not sponsored by Swissquote" in semibold, the reason as a 12px mono line ("unapproved-dapp · Uniswap Universal Router 0x492E…4104"; Uniswap v3's SwapRouter02 is approved for swaps), then the paymaster's own message in muted 14px, wrapping anywhere. It scrolls into view when it lands.
 
 ### Locked-out screen
 A centred white card on the page ground: a Signal Red icon on danger-soft, "This phone was locked out", one muted paragraph, a muted Basescan link to the Account's owners, and a secondary button to remove the wallet from the phone.
@@ -436,7 +473,8 @@ Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale fro
 - **Do** compute the loss bound exactly (what is left today plus one daily limit per reset) and lead its day squares with a "now" square.
 - **Do** show a refusal by the Account as evidence: the approval squares that signed, the outlined one that did not, and the Safe's code in mono.
 - **Do** call the device in hand "this device" in the lost-phone flow (it may be a laptop) and the other one "the old phone".
-- **Do** show every displayed USDC amount with two decimals.
+- **Do** show what is given, received or signed exactly (up to six decimals), and balances, lists and quotes at the asset's precision, rounded down.
+- **Do** make every control at least 44px tall on phones, and step a big mono amount down a size before it would clip.
 - **Do** say which factors a payment needs in a sentence with approval squares, mono only for the figures.
 - **Do** show a rate as a percentage with two decimals and "variable", next to a footnote that it is a testnet rate and not promised.
 - **Do** mark the card or row in action with an ink border, and keep the screen's one orange fill for its primary action.
@@ -452,4 +490,6 @@ Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale fro
 - **Don't** place the seal anywhere but on a commit plate, and never more than one per screen.
 - **Don't** give the Swissquote guardian a factor square; it is never an owner.
 - **Don't** set "Soon" or other non-data labels as mono tokens; use the kit's neutral badge.
+- **Don't** round a balance or a minimum up, or show a signed amount at list precision.
+- **Don't** let a plate row's label wrap; the value wraps.
 - **Don't** wrap a bordered panel's sections in cards of their own; separate them with hairline rules (plates, alerts and the Kit drop zone stay elements inside a section).

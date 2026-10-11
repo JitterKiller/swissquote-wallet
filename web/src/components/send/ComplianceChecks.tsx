@@ -8,6 +8,7 @@ import { parseUnits, type Address } from 'viem'
 import { Input } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/feedback'
 import {
+  HIGH_VALUE_USDC,
   isLookAlike,
   needsHighValueConfirmation,
   screenRecipient,
@@ -16,7 +17,8 @@ import {
   type Simulation,
 } from '@/lib/compliance'
 import { USDC_DECIMALS } from '@/lib/config'
-import { formatUsdc } from '@/lib/format'
+import { formatDecimal } from '@/lib/format'
+import { cleanAmount, INPUT_DECIMALS } from '@/lib/inputs'
 
 export type ComplianceState = { blocked: boolean; needsConfirmation: boolean; reasons: string[] }
 
@@ -34,6 +36,8 @@ export function ComplianceChecks({
   knownRecipients,
   calls,
   subject = 'payment',
+  decimals = USDC_DECIMALS,
+  largeAt = HIGH_VALUE_USDC,
   onChange,
 }: {
   from: Address
@@ -44,6 +48,10 @@ export function ComplianceChecks({
   calls?: MetaTransaction[]
   /** A payment to a recipient, or an action on an approved dApp's contract (#25). */
   subject?: 'payment' | 'dapp'
+  /** The amount's token decimals (a swap from EURC or ETH, ADR-032); USDC by default. */
+  decimals?: number
+  /** The absolute large-amount threshold in that token, or null for the balance rule only. */
+  largeAt?: bigint | null
   onChange: (state: ComplianceState) => void
 }) {
   const dapp = subject === 'dapp'
@@ -73,9 +81,10 @@ export function ComplianceChecks({
   const screen = screening?.key === key ? screening.result : null
   const simulated = simulation?.key === key ? simulation.result : null
   const lookAlike = to ? isLookAlike(to, knownRecipients) : null
-  const highValue = amount !== null && needsHighValueConfirmation(amount, balance)
-  const amountText = amount !== null ? formatUsdc(amount).replace(/,/g, '') : ''
-  const typedOk = typed.key === key && sameAmount(typed.value, amount)
+  const highValue = amount !== null && needsHighValueConfirmation(amount, balance, largeAt)
+  // The exact amount, every decimal it has: a Max of 0.499512 is confirmed as 0.499512, not as "0.50".
+  const amountText = amount !== null ? formatDecimal(amount, decimals, { round: 'down', group: false }) : ''
+  const typedOk = typed.key === key && sameAmount(typed.value, amount, decimals)
   const ackOk = acknowledged.key === key && acknowledged.value
 
   const sanctioned = !!screen && 'status' in screen && screen.status === 'sanctioned'
@@ -155,7 +164,7 @@ export function ComplianceChecks({
             aria-label="Type the amount to confirm"
             placeholder={amountText}
             value={typed.key === key ? typed.value : ''}
-            onChange={(e) => setTyped({ key, value: e.target.value.replace(',', '.') })}
+            onChange={(e) => setTyped({ key, value: cleanAmount(e.target.value, Math.min(decimals, INPUT_DECIMALS)) })}
           />
         </Check>
       )}
@@ -183,10 +192,10 @@ function Check({ tone, title, children }: { tone: 'ok' | 'warning' | 'danger' | 
 }
 
 /** The typed confirmation matches the amount, however it is written ("0.5", "0.50"). */
-function sameAmount(text: string, amount: bigint | null) {
+function sameAmount(text: string, amount: bigint | null, decimals: number) {
   if (amount === null || !/^\d*\.?\d+$/.test(text.trim())) return false
   try {
-    return parseUnits(text.trim(), USDC_DECIMALS) === amount
+    return parseUnits(text.trim(), decimals) === amount
   } catch {
     return false
   }

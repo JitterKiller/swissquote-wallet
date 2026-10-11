@@ -20,6 +20,7 @@ import {
   type Level,
 } from '@/lib/config'
 import { errorMessage, formatUsdc, formatUsdcShort } from '@/lib/format'
+import { cleanAmount } from '@/lib/inputs'
 import { getRecoveryStatus, recoverySetupCalls } from '@/lib/recovery'
 import { kitAccounts, kitAddresses, type KitKeys, type RecoveryKitV3 } from '@/lib/recoveryKit'
 import { saveLocalKit, toPublicKey, type StoredWallet } from '@/lib/storage'
@@ -125,7 +126,7 @@ export function AccountSetupStep({
             id="daily-limit"
             inputMode="decimal"
             value={limit}
-            onChange={(e) => setLimit(e.target.value.replace(',', '.'))}
+            onChange={(e) => setLimit(cleanAmount(e.target.value, 2))}
             className="h-[60px] border-[1.5px] border-foreground pr-28 font-mono !text-5xl font-semibold tabular-nums tracking-tight"
             autoComplete="off"
           />
