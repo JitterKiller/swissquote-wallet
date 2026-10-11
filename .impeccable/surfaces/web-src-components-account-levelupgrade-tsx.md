@@ -35,9 +35,9 @@ related_targets: ["web/src/components/views/SecurityView.tsx","web/src/component
 THESIS: Level 1 is a trade the client makes with eyes open. The worst case drops (4.00 → 2.00 USDC, 7 days → 3) because Swissquote joins as a guardian that checks identity. The panel says in four lines what that guardian can do and what it can never do, before both factors sign. It refuses the upsell card ("Go Premium!"), badges and any wording that makes Swissquote sound like a custodian.
 
 OWN-WORLD:
-- DESIGN.md as built: the In-Row Panel rule, the shared Worst Case Change on the Apricot Field, the sealed 2-of-2 plate (the seal is earned) and the Kit section.
+- DESIGN.md as built: the In-Row Panel rule, the shared Worst Case Change on the Apricot Field, the 2-of-2 review plate led by the approval squares, and the Kit section.
 - The can / can't list is a hairline list with drawn icons: a check for what it can do, an X for what it can't, in ink and Graphite, never green or red.
-- The receipt plate has no seal. The CTA on `/swissquote` is a quiet white section with a secondary action.
+- The receipt is a plate. The CTA on `/swissquote` is a quiet white section with a secondary action.
 - One committed orange: the primary action.
 
 STORY:
@@ -46,15 +46,15 @@ STORY:
 3. If it is linked, the panel shows:
    - "4.00 → 2.00 USDC: locked out after 3 days instead of 7";
    - what Swissquote can (check your identity before a lock-out) and can never do (move your money, lock you out alone, become an owner);
-   - the sealed plate (new lock-out, the new guardian with its address, approval);
-   - the Kit, then "Approve with Kit and Face ID".
+   - the review plate (new lock-out, the new guardian with its address, approval);
+   - the Kit, then "Approve with Kit and biometrics".
 4. The receipt says the Account is at level 1. The row then reads "3 days", and the matrix and scenarios switch to level 1.
 5. From `/swissquote`, right after linking, the client sees their level and the way to shorten the lock-out.
 
 FIRST VIEWPORT: on the Security page at the "Lock-out delay" row, with the panel open:
 1. the worst case before → after;
 2. the can / can't list;
-3. the sealed plate;
+3. the review plate;
 4. the Kit;
 5. the actions.
 

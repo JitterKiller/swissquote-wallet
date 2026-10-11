@@ -42,7 +42,7 @@ STORY: The owner sees what is lent and where, at what variable rate, picks a pro
 FIRST VIEWPORT:
 - An ink plate "Lent · live onchain" with the total in the balance figure and one row per protocol (amount, APY).
 - Under it, the two protocol cards side by side on desktop, stacked on phones. Each card has the name, the APY in mono with "variable", one line of what it is, its risks, the position, and Deposit / Withdraw.
-- The action opens under the cards: amount, then the review plate, then the checks, the risk checkbox, the Kit, and "Approve with Kit and Face ID".
+- The action opens under the cards: amount, then the review plate, then the checks, the risk checkbox, the Kit, and "Approve with Kit and biometrics".
 
 FORM: user-picked in the shape round (positions first, risk checkbox at review, "Demo: try an unlisted dApp" proof); no roll, inside the established world.
 

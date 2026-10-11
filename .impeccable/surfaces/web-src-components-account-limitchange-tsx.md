@@ -39,16 +39,16 @@ OWN-WORLD:
 - DESIGN.md as built.
 - The onboarding's amount field and presets (shared `LimitPicker`).
 - The worst case before → after on the Apricot Field: the current figure muted, the new one large in mono, the difference in words.
-- The sealed 2-of-2 plate "Face ID and your Kit will approve" (the seal is earned: it is a 2-factor commit).
+- The 2-of-2 review plate "Face ID and your Kit will approve", led by the approval squares (it is a 2-factor commit).
 - The Kit section as in Send, Swap and Earn.
-- The receipt plate without seal.
+- The receipt plate.
 - One committed orange: the selected preset and the primary action.
 
 STORY:
 1. On the Security page the owner taps "Change" beside "0.50 USDC a day". The panel opens under the row and the amount field takes focus.
 2. They type or pick a new limit. The worst case shows "4.00 → 8.00 USDC" and "4.00 more than now", plus what Face ID can still spend today.
-3. The sealed plate lists the new limit, the new worst case and the approval.
-4. They open the Kit with its passphrase and approve with Face ID.
+3. The review plate lists the new limit, the new worst case and the approval.
+4. They open the Kit with its passphrase and approve with biometrics.
 5. The receipt says the limit changed onchain, and the row above shows the new value.
 6. From the Overview, "Change" beside the Face ID meter lands here with the panel open.
 
@@ -56,9 +56,9 @@ FIRST VIEWPORT: on the Security page at the Daily limit row, with the panel open
 1. "New daily limit" and Cancel;
 2. the amount field with "USDC / day" and the presets;
 3. the before → after worst case;
-4. the sealed plate;
+4. the review plate;
 5. the Kit;
-6. "Approve with Kit and Face ID".
+6. "Approve with Kit and biometrics".
 
 FORM: chosen by the user in the shape round (a panel in the Security page; impact before → after), inside the established world, with no roll.
 

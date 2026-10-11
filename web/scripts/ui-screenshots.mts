@@ -104,7 +104,7 @@ async function pay(page: Page, prefix: string, to: string, amount: string, kit: 
   if (await confirm.count()) await confirm.fill(amount)
   if (kit) await page.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
   await shot(page, `${prefix}-review`)
-  await page.getByRole('button', { name: kit ? 'Approve with Kit and Face ID' : 'Approve with Face ID' }).click()
+  await page.getByRole('button', { name: kit ? 'Approve with Kit and biometrics' : 'Approve with biometrics' }).click()
   try {
     await page.getByText('Sent · live onchain').waitFor({ timeout: 120_000 })
   } catch (error) {

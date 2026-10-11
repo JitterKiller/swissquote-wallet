@@ -226,7 +226,7 @@ try {
   await B.getByText('Face ID alone:', { exact: false }).waitFor({ timeout: 60_000 })
   await B.getByRole('button', { name: 'Continue' }).click()
   await B.getByText('Recipient screened', { exact: false }).waitFor({ timeout: 30_000 })
-  await B.getByRole('button', { name: 'Approve with Face ID' }).click()
+  await B.getByRole('button', { name: 'Approve with biometrics' }).click()
   await B.getByText('Sent · live onchain').waitFor({ timeout: 120_000 })
   const tx = await B.getByRole('link', { name: /View on Basescan/ }).getAttribute('href')
   log(`New phone: spent 0.10 USDC with Face ID alone → ${tx} ✓`)

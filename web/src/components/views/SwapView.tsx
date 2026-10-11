@@ -350,7 +350,7 @@ function AssetPicker({ label, value, onChange }: { label: string; value: AssetId
 
 type SwapReceipt = { txHash: string; gave: bigint; got: bigint | null; minOut: bigint }
 
-/** The sealed 2-of-2 review: the exact steps, the checks, the Kit, then Face ID. */
+/** The 2-of-2 review: the exact steps, the checks, the Kit, then biometrics. */
 function SwapReview({
   account,
   tokenIn,
@@ -506,7 +506,7 @@ function SwapReview({
             </>
           ) : (
             <>
-              <KeyRound className="h-5 w-5" /> Approve with Kit and Face ID
+              <KeyRound className="h-5 w-5" /> Approve with Kit and biometrics
             </>
           )}
         </Button>

@@ -113,7 +113,7 @@ async function approve(page: Page, name: string, deposit: boolean) {
   await confirmLarge(page)
   if (deposit) await page.getByLabel(/I understand: this is not a bank deposit/).check()
   await page.locator('#earn-kit-passphrase').fill(PASSPHRASE)
-  await page.getByRole('button', { name: 'Approve with Kit and Face ID' }).click()
+  await page.getByRole('button', { name: 'Approve with Kit and biometrics' }).click()
   await page.getByRole('button', { name: 'Done', exact: true }).waitFor({ timeout: 120_000 })
   const tx = await page.getByRole('link', { name: /View on Basescan/ }).getAttribute('href')
   await both(page, `${name}-done`)
@@ -172,7 +172,7 @@ try {
   await P.getByText('Recipient screened', { exact: false }).waitFor({ timeout: 30_000 })
   await confirmLarge(P)
   if (kit) await P.getByLabel('Kit passphrase', { exact: true }).fill(PASSPHRASE)
-  await P.getByRole('button', { name: kit ? 'Approve with Kit and Face ID' : 'Approve with Face ID' }).click()
+  await P.getByRole('button', { name: kit ? 'Approve with Kit and biometrics' : 'Approve with biometrics' }).click()
   await P.getByText('Sent · live onchain').waitFor({ timeout: 120_000 })
   log('USDC sent back to the treasury ✓')
 } catch (error) {

@@ -218,7 +218,7 @@ export function LimitChange({
             </>
           ) : (
             <>
-              <KeyRound className="h-5 w-5" /> Approve with Kit and Face ID
+              <KeyRound className="h-5 w-5" /> Approve with Kit and biometrics
             </>
           )}
         </Button>

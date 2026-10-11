@@ -122,7 +122,7 @@ try {
   await P.screenshot({ path: `${OUT}/level-03-panel.png` })
   await P.locator('#level-kit-passphrase').fill(PASSPHRASE)
   await both(P, 'level-03-review', true)
-  await P.getByRole('button', { name: 'Approve with Kit and Face ID' }).click()
+  await P.getByRole('button', { name: 'Approve with Kit and biometrics' }).click()
   await P.getByText('Level 1 · onchain').waitFor({ timeout: 120_000 })
   await P.waitForTimeout(900)
   const tx = await P.getByRole('link', { name: /View on Basescan/ }).getAttribute('href')

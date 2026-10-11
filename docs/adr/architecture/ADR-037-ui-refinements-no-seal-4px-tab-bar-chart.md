@@ -17,6 +17,7 @@ A live design session in the browser (impeccable live) and a critique of the onb
 ## Decision
 
 - **No seal.** `Seal` and the `seal` prop are removed from `web/src/components/ui/plate.tsx`, with the `seal-turn` animation in `globals.css` and the 64px plate margin that made room for it. A plate that reviews a payment or a protocol action is now titled with the approval squares (`ApprovalSquares` in `components/ui/factor.tsx`) before its title, so the 2 of 2 is read in the factor code (Send, Earn, the takeover in `/lost`).
+- **Approve labels say "biometrics".** "Approve with biometrics" when the phone alone signs, "Approve with Kit and biometrics" with the Kit (Send, Earn, Swap, the daily limit change, the level 1 upgrade), device-neutral; the e2e scripts click those names.
 - **Buttons at 4px.** A `--radius-control: 4px` token (`rounded-control`) carries every button size in `components/ui/button.tsx`, including the plate action tiles. Inputs stay at 8px.
 - **Phone tab bar.** Four tabs (Overview, Send, Receive, Activity) and More, a menu of the rest of the navigation (Handle, Swissquote, Earn, Security). It grows out of the More tab and shrinks back into it with CSS transitions, so it can be interrupted. It closes on navigation, on Escape and on its scrim (`MobileTabBar` in `components/shell/AppShell.tsx`).
 - **Overview balance chart.** `components/views/BalanceHistoryCard.tsx` sits under the Account plate. It shows the balance over time, rebuilt from the Account's USDC Transfer logs (`lib/balanceHistory.ts`, ADR-015), never from sample data.
