@@ -7,6 +7,7 @@ import { dailyLimitError, LimitPicker, parseDailyLimit, SUGGESTED_LIMIT } from '
 import { LossBound } from '@/components/account/LossBound'
 import { useWallet } from '@/components/providers/WalletProvider'
 import { Button } from '@/components/ui/button'
+import { FactorLabel } from '@/components/ui/factor'
 import { Alert, Spinner } from '@/components/ui/feedback'
 import { Plate, PlateRow } from '@/components/ui/plate'
 import { accountSetupCalls } from '@/lib/account'
@@ -104,19 +105,18 @@ export function AccountSetupStep({
 
       <LossBound limit={valid ? dailyLimit : null} level={level} />
 
-      <Plate title="Face ID will approve" className="!mt-16">
+      <Plate title="Face ID will approve">
         <dl>
-          <PlateRow label="Account owners">
-            This phone + your Kit · <span className="tabular-nums">2 of 2</span>
-          </PlateRow>
-          <PlateRow label="Face ID alone">
+          <PlateRow label={<FactorLabel factors={['phone', 'kit']} tone="hero">Owners</FactorLabel>}>Only you: this phone and your Kit</PlateRow>
+          <PlateRow label={<FactorLabel factors={['phone']} tone="hero">Face ID alone</FactorLabel>}>
             Up to <span className="tabular-nums">{valid ? formatUsdcShort(dailyLimit) : '–'}</span> USDC a day
-            <span className="block text-xs font-normal text-hero-muted">Resets at 00:00 UTC</span>
+            <span className="block text-xs font-normal text-hero-muted">Starts again at midnight UTC</span>
           </PlateRow>
-          <PlateRow label="New phone">
-            {level === 1 ? 'Kit + Swissquote identity check' : 'Kit alone'}, after {days} days
+          <PlateRow label={<FactorLabel factors={['phone', 'kit']} tone="hero">Above your limit</FactorLabel>}>Face ID and your Kit</PlateRow>
+          <PlateRow label={<FactorLabel factors={['kit']} tone="hero">New phone</FactorLabel>}>
+            {level === 1 ? 'Your Kit and a Swissquote identity check' : 'Your Kit alone'}, after {days} days
           </PlateRow>
-          <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
+          <PlateRow label={<FactorLabel tone="hero">Network fee</FactorLabel>}>Covered by Swissquote</PlateRow>
         </dl>
       </Plate>
 

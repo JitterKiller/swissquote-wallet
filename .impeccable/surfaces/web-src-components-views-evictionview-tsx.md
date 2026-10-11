@@ -19,7 +19,7 @@ related_targets: ["web/src/components/shell/SecurityBanners.tsx","web/src/compon
 
 THESIS: Losing a phone is a countdown the owner controls, not a race against the thief. The new phone shows the lock-out as a live timer with its exact terms; the old phone shows who can stop it. It refuses the generic "account recovery" wizard and the alarmist full-screen takeover.
 
-OWN-WORLD: DESIGN.md as built. Ink plates for what is live onchain or signed, with the seal only on the 2-of-2 takeover; mono for the countdown, figures and addresses; factor squares for who can stop it (orange phone + ink Kit); the delay drawn as ten square cells in the allowance cells' grammar; the loss bound on the apricot field; Signal Red only for the alert on the old phone.
+OWN-WORLD: DESIGN.md as built. Ink plates for what is live onchain or signed, the 2-of-2 takeover led by the approval squares; mono for the countdown, figures and addresses; factor squares for who can stop it (orange phone + ink Kit); the delay drawn as ten square cells in the allowance cells' grammar; the loss bound on the apricot field; Signal Red only for the alert on the old phone.
 
 STORY: On the new phone the owner opens the Kit, approves Face ID, erases the old phone, starts the lock-out and watches it count down, knowing the old phone can still spend at most its daily limit and only the old phone plus the Kit can stop it; then takes over with Face ID and the Kit. On the old phone a red banner names the lock-out and its time; "This wasn't me" stops it with the Kit and Face ID; Face ID alone is refused, live.
 

@@ -105,7 +105,7 @@ export function LimitChange({
   if (receipt) {
     return (
       <section ref={panel} tabIndex={-1} className="scroll-mt-20 space-y-4 outline-none" aria-label="Daily limit changed">
-        <Plate title="Limit changed · onchain" seal={false} className="animate-enter">
+        <Plate title="Limit changed · onchain" className="animate-enter">
           <dl>
             <PlateRow label="Daily limit">
               <span className="font-mono">{formatUsdc(receipt.limit)}</span> USDC a day
@@ -149,7 +149,14 @@ export function LimitChange({
       <LimitImpact current={current} next={valid ? next : null} spent={spent} level={level} unchanged={unchanged} invalid={!!fieldError} />
 
       {valid && next !== null && (
-        <Plate title="Face ID and your Kit will approve" className="!mt-16">
+        <Plate
+          title={
+            <span className="inline-flex items-center gap-2">
+              <ApprovalSquares kit tone="hero" />
+              Face ID and your Kit will approve
+            </span>
+          }
+        >
           <dl>
             <PlateRow label="Daily limit">
               <span className="font-mono">{formatUsdc(next)}</span> USDC a day

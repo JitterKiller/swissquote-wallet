@@ -1,6 +1,7 @@
 'use client'
 
-import { AtSign, Check, Copy, Users } from 'lucide-react'
+import { ArrowRight, AtSign, Check, Copy, Users } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { parseUnits } from 'viem'
 import QRCode from 'react-qr-code'
@@ -36,12 +37,13 @@ const VISIBILITY: { value: Visibility; label: string; hint: string }[] = [
   { value: 'nobody', label: 'Nobody', hint: 'Use payment requests instead.' },
 ]
 
-/** `@handle` settings and payment requests (PDR-010, issue #20). */
+/** Pay by `@handle`, your handle's settings and payment requests (PDR-010, issue #20). */
 export function HandleView() {
   const { wallet, chain, transfers } = useLoadedWallet()
   const { copied, copy } = useCopy()
   const link = useSwissquoteLink(wallet)
   const { session, linked } = link
+  const router = useRouter()
   const [mine, setMine] = useState<MyHandle>(null)
   const [handle, setHandle] = useState('')
   const [contact, setContact] = useState('')
@@ -78,121 +80,145 @@ export function HandleView() {
 
   const requestUrl = mine && linked ? paymentRequestUrl(mine.handle, amount || undefined) : ''
 
+  const DESCRIPTION = 'Pay and get paid by @name instead of a 0x address, with the verified name shown before Face ID.'
+  // "Review and pay" hands the recipient and amount to Send, where the review plate and Face ID take over.
+  const payHref = checkRecipient
+    ? `/send?${new URLSearchParams({ to: checkValue.trim(), ...(checkAmount ? { amount: checkAmount } : {}) })}`
+    : null
+
+  const swissquoteCard = <SwissquoteLinkCard link={link} description="Handles are for linked Swissquote clients: your name is verified by your KYC." />
+
+  const payCard = (
+    <Card>
+      <CardHeader
+        icon={<AtSign className="h-[18px] w-[18px]" />}
+        title="Pay by @handle"
+        description="Type a handle: the verified name and every check show here, before Face ID."
+      />
+      <CardBody className="space-y-4">
+        <RecipientField value={checkValue} onChange={setCheckValue} onRecipient={setCheckRecipient} />
+        <Field label="Amount (USDC)" htmlFor="pay-amount">
+          <Input id="pay-amount" inputMode="decimal" placeholder="0.00" value={checkAmount} onChange={(e) => setCheckAmount(cleanAmount(e.target.value, USDC_DECIMALS))} autoComplete="off" />
+        </Field>
+        <ComplianceChecks
+          from={wallet.address}
+          to={checkRecipient?.address ?? null}
+          amount={parseAmount(checkAmount)}
+          balance={chain.balance}
+          knownRecipients={transfers?.map((t) => t.counterparty) ?? []}
+          calls={checkRecipient && parseAmount(checkAmount) ? [usdcTransfer(checkRecipient.address, checkAmount)] : undefined}
+          onChange={() => {}}
+        />
+        <Button size="lg" className="w-full" disabled={!payHref} onClick={() => payHref && router.push(payHref)}>
+          Review and pay <ArrowRight className="h-4 w-4" />
+        </Button>
+      </CardBody>
+    </Card>
+  )
+
+  const handleSettingsBody =
+    linked && session ? (
+      <>
+        <form
+          className="flex gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            act('claim', async () => setMine(await claimHandle(session.clientId, handle, mine?.visibility)))
+          }}
+        >
+          <HandleInput aria-label={mine ? 'New handle' : 'Your handle'} placeholder={mine ? 'Change handle' : 'adam'} value={handle} onChange={setHandle} />
+          <Button type="submit" disabled={busy !== null || handle.trim().length < 3}>
+            {mine ? 'Change' : 'Claim'}
+          </Button>
+        </form>
+
+        {mine && (
+          <fieldset className="space-y-2">
+            <legend className="mb-1 text-sm font-medium">Who can find you by handle</legend>
+            {VISIBILITY.map((option) => (
+              <label key={option.value} className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-3 text-sm has-[:checked]:border-accent">
+                <input
+                  type="radio"
+                  name="visibility"
+                  className="mt-1"
+                  checked={mine.visibility === option.value}
+                  onChange={() => act('visibility', async () => setMine(await setVisibility(session.clientId, option.value)))}
+                />
+                <span>
+                  <span className="font-medium">{option.label}</span>
+                  <span className="block text-xs text-muted">{option.hint}</span>
+                </span>
+              </label>
+            ))}
+            <p className="text-xs text-muted">
+              Exact handle only: nobody can search or list clients. Anyone you pay, or who pays you, learns your address and can read its on-chain history.
+            </p>
+          </fieldset>
+        )}
+
+        {mine?.visibility === 'contacts' && (
+          <form
+            className="space-y-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              act('contact', async () => {
+                setMine(await addContact(session.clientId, contact))
+                setContact('')
+              })
+            }}
+          >
+            <Field label="Add a contact" htmlFor="contact" hint={`${mine.contacts} contact(s) can find you.`}>
+              <div className="flex gap-2">
+                <HandleInput id="contact" placeholder="lea" value={contact} onChange={setContact} />
+                <Button type="submit" variant="secondary" disabled={busy !== null || contact.trim().length < 3}>
+                  <Users className="h-4 w-4" /> Add
+                </Button>
+              </div>
+            </Field>
+          </form>
+        )}
+      </>
+    ) : null
+
+  const handleSettings = handleSettingsBody && (
+    <Card>
+      <CardHeader icon={<AtSign className="h-[18px] w-[18px]" />} title={mine ? `@${mine.handle}` : 'Choose your handle'} />
+      <CardBody className="space-y-5">{handleSettingsBody}</CardBody>
+    </Card>
+  )
+
+  const requestCard = mine && linked && (
+    <Card className="flex flex-col">
+      <CardHeader title="Request a payment" description="Share a link or a QR code: the payer sees your verified name before paying." />
+      <CardBody className="flex flex-1 flex-col items-center space-y-4 text-center">
+        <Field label="Amount (optional)" htmlFor="request-amount">
+          <Input id="request-amount" inputMode="decimal" placeholder="20.00" value={amount} onChange={(e) => setAmount(cleanAmount(e.target.value, 2))} autoComplete="off" />
+        </Field>
+        <div className="rounded-2xl border border-border bg-white p-4">
+          <QRCode value={requestUrl} size={164} fgColor="#121418" bgColor="#ffffff" />
+        </div>
+        <p className="max-w-sm break-all font-mono text-xs text-muted">{requestUrl}</p>
+        <Button className="mt-auto w-full" onClick={() => copy(requestUrl, 'Payment link copied')}>
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} Copy payment link
+        </Button>
+      </CardBody>
+    </Card>
+  )
+
+  // Paying by @handle is the page's main task: it leads, full width; your handle and payment
+  // requests sit under it side by side, and the Swissquote link goes last once it is done.
   return (
     <div className="space-y-6">
-      <PageHeader title="Handle" description="Get paid by @name instead of a 0x address, with your verified name shown to the payer." />
+      <PageHeader title="Handle" description={DESCRIPTION} />
       {error && <Alert tone="danger" title="Something went wrong">{error}</Alert>}
-
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <div className="space-y-6">
-          <SwissquoteLinkCard link={link} description="Handles are for linked Swissquote clients: your name is verified by your KYC." />
-
-          {linked && session && (
-            <Card>
-              <CardHeader icon={<AtSign className="h-[18px] w-[18px]" />} title={mine ? `@${mine.handle}` : 'Choose your handle'} />
-              <CardBody className="space-y-5">
-                <form
-                  className="flex gap-2"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    act('claim', async () => setMine(await claimHandle(session.clientId, handle, mine?.visibility)))
-                  }}
-                >
-                  <HandleInput aria-label={mine ? 'New handle' : 'Your handle'} placeholder={mine ? 'Change handle' : 'adam'} value={handle} onChange={setHandle} />
-                  <Button type="submit" disabled={busy !== null || handle.trim().length < 3}>
-                    {mine ? 'Change' : 'Claim'}
-                  </Button>
-                </form>
-
-                {mine && (
-                  <fieldset className="space-y-2">
-                    <legend className="mb-1 text-sm font-medium">Who can find you by handle</legend>
-                    {VISIBILITY.map((option) => (
-                      <label key={option.value} className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-3 text-sm has-[:checked]:border-accent">
-                        <input
-                          type="radio"
-                          name="visibility"
-                          className="mt-1"
-                          checked={mine.visibility === option.value}
-                          onChange={() => act('visibility', async () => setMine(await setVisibility(session.clientId, option.value)))}
-                        />
-                        <span>
-                          <span className="font-medium">{option.label}</span>
-                          <span className="block text-xs text-muted">{option.hint}</span>
-                        </span>
-                      </label>
-                    ))}
-                    <p className="text-xs text-muted">
-                      Exact handle only: nobody can search or list clients. Anyone you pay, or who pays you, learns your address and can read its on-chain history.
-                    </p>
-                  </fieldset>
-                )}
-
-                {mine?.visibility === 'contacts' && (
-                  <form
-                    className="space-y-2"
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      act('contact', async () => {
-                        setMine(await addContact(session.clientId, contact))
-                        setContact('')
-                      })
-                    }}
-                  >
-                    <Field label="Add a contact" htmlFor="contact" hint={`${mine.contacts} contact(s) can find you.`}>
-                      <div className="flex gap-2">
-                        <HandleInput id="contact" placeholder="lea" value={contact} onChange={setContact} />
-                        <Button type="submit" variant="secondary" disabled={busy !== null || contact.trim().length < 3}>
-                          <Users className="h-4 w-4" /> Add
-                        </Button>
-                      </div>
-                    </Field>
-                  </form>
-                )}
-              </CardBody>
-            </Card>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          {mine && linked && (
-            <Card>
-              <CardHeader title="Request a payment" description="Share a link or a QR code: the payer sees your verified name before paying." />
-              <CardBody className="flex flex-col items-center space-y-4 text-center">
-                <Field label="Amount (optional)" htmlFor="request-amount">
-                  <Input id="request-amount" inputMode="decimal" placeholder="20.00" value={amount} onChange={(e) => setAmount(cleanAmount(e.target.value, 2))} autoComplete="off" />
-                </Field>
-                <div className="rounded-2xl border border-border bg-white p-4">
-                  <QRCode value={requestUrl} size={164} fgColor="#121418" bgColor="#ffffff" />
-                </div>
-                <p className="max-w-sm break-all font-mono text-xs text-muted">{requestUrl}</p>
-                <Button className="w-full" onClick={() => copy(requestUrl, 'Payment link copied')}>
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} Copy payment link
-                </Button>
-              </CardBody>
-            </Card>
-          )}
-
-          <Card>
-            <CardHeader title="Check a payment" description="What a payer sees before Face ID: verified name, sanctions screening, simulation, look-alike and large-payment checks." />
-            <CardBody className="space-y-4">
-              <RecipientField value={checkValue} onChange={setCheckValue} onRecipient={setCheckRecipient} />
-              <Field label="Amount (USDC)" htmlFor="check-amount">
-                <Input id="check-amount" inputMode="decimal" placeholder="0.00" value={checkAmount} onChange={(e) => setCheckAmount(cleanAmount(e.target.value, USDC_DECIMALS))} autoComplete="off" />
-              </Field>
-              <ComplianceChecks
-                from={wallet.address}
-                to={checkRecipient?.address ?? null}
-                amount={parseAmount(checkAmount)}
-                balance={chain.balance}
-                knownRecipients={transfers?.map((t) => t.counterparty) ?? []}
-                calls={checkRecipient && parseAmount(checkAmount) ? [usdcTransfer(checkRecipient.address, checkAmount)] : undefined}
-                onChange={() => {}}
-              />
-            </CardBody>
-          </Card>
-        </div>
+      {!linked && swissquoteCard}
+      {payCard}
+      {/* Same height side by side; the payment link button sits at the bottom of its card. */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {handleSettings}
+        {requestCard}
       </div>
+      {linked && swissquoteCard}
     </div>
   )
 }

@@ -34,7 +34,7 @@ const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
 /**
  * Send (issue #12, surface brief web-src-components-views-overviewview-tsx). From the Account:
  * within today's Face ID budget the phone alone approves (Allowance Module); above it the Recovery
- * Kit co-signs (passphrase, then Face ID) and the seal marks the 2 of 2. Compliance checks run on
+ * Kit co-signs (passphrase, then Face ID) and the plate's factor squares show the 2 of 2. Compliance checks run on
  * the review, before Face ID (PDR-023). Wallets without an Account keep the Key Safe send.
  */
 export function SendView() {
@@ -203,7 +203,14 @@ export function SendView() {
 
           {stage === 'review' && recipient && amountValue !== null && route && (
             <div className="space-y-5">
-              <Plate title={needsKit ? 'Face ID and your Kit will approve' : 'Face ID will approve'} seal={needsKit} className={needsKit ? '!mt-16' : ''}>
+              <Plate
+                title={
+                  <span className="inline-flex items-center gap-2">
+                    <ApprovalSquares kit={needsKit} tone="hero" />
+                    {needsKit ? 'Face ID and your Kit will approve' : 'Face ID will approve'}
+                  </span>
+                }
+              >
                 <p className="font-mono text-4xl font-semibold tabular-nums tracking-[-0.04em] sm:text-5xl">
                   {formatUsdcExact(amountValue)} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">USDC</span>
                 </p>
@@ -326,7 +333,7 @@ export function SendView() {
                   ) : (
                     <>
                       {needsKit ? <KeyRound className="h-5 w-5" /> : <FingerprintPattern className="h-5 w-5" />}
-                      {needsKit ? 'Approve with Kit and Face ID' : 'Approve with Face ID'}
+                      {needsKit ? 'Approve with Kit and biometrics' : 'Approve with biometrics'}
                     </>
                   )}
                 </Button>
@@ -348,7 +355,7 @@ export function SendView() {
 
           {stage === 'done' && sent && (
             <div className="space-y-5">
-              <Plate title="Sent · live onchain" seal={false} className="animate-enter">
+              <Plate title="Sent · live onchain" className="animate-enter">
                 <p className="font-mono text-4xl font-semibold tabular-nums tracking-[-0.04em] sm:text-5xl">
                   {formatUsdcExact(sent.amount)} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">USDC</span>
                 </p>

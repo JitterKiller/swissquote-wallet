@@ -111,7 +111,7 @@ export function LevelUpgrade({
   if (receipt) {
     return (
       <section ref={panel} tabIndex={-1} className="scroll-mt-20 space-y-4 outline-none" aria-label="Account at level 1">
-        <Plate title="Level 1 · onchain" seal={false} className="animate-enter">
+        <Plate title="Level 1 · onchain" className="animate-enter">
           <dl>
             <PlateRow label="Lock-out">
               {EVICTION_DAYS[1]} days{DEMO}
@@ -233,7 +233,14 @@ export function LevelUpgrade({
             </p>
           </section>
 
-          <Plate title="Face ID and your Kit will approve" className="!mt-16">
+          <Plate
+            title={
+              <span className="inline-flex items-center gap-2">
+                <ApprovalSquares kit tone="hero" />
+                Face ID and your Kit will approve
+              </span>
+            }
+          >
             <dl>
               <PlateRow label="Lock-out">
                 {EVICTION_DAYS[1]} days{DEMO}

@@ -195,7 +195,7 @@ function parseAmount(value: string): bigint | null {
   }
 }
 
-/** Deposit or withdraw: amount, then a sealed 2-of-2 review with the steps, checks, risks and the Kit. */
+/** Deposit or withdraw: amount, then a 2-of-2 review with the steps, checks, risks and the Kit. */
 function ActionPanel({
   dapp,
   kind,
@@ -286,7 +286,7 @@ function ActionPanel({
     const amountSent = formatUsdc(signed ?? 0n)
     return (
       <div className="space-y-4">
-        <Plate title={deposit ? 'Deposit confirmed · onchain' : 'Withdrawal confirmed · onchain'} seal={false} className="animate-enter">
+        <Plate title={deposit ? 'Deposit confirmed · onchain' : 'Withdrawal confirmed · onchain'} className="animate-enter">
           <p className="font-mono text-4xl font-semibold tabular-nums tracking-[-0.04em]">
             {amountSent} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">USDC</span>
           </p>
@@ -380,7 +380,14 @@ function ActionPanel({
 
       {(stage === 'review' || stage === 'sending') && value !== null && (
         <div className="space-y-5">
-          <Plate title="Face ID and your Kit will approve" className="!mt-16">
+          <Plate
+            title={
+              <span className="inline-flex items-center gap-2">
+                <ApprovalSquares kit tone="hero" />
+                Face ID and your Kit will approve
+              </span>
+            }
+          >
             <p className="font-mono text-4xl font-semibold tabular-nums tracking-[-0.04em] sm:text-5xl">
               {shown} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">USDC</span>
             </p>

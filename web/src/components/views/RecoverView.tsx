@@ -107,6 +107,16 @@ export function RecoverView() {
           Lost your device? Your Recovery Kit and a Swissquote identity check move your wallet to this device. Same
           address, same funds.
         </p>
+        <p className="mt-3 flex items-start gap-2 text-xs text-muted">
+          <Badge tone="warning">Prototype</Badge>
+          <span>
+            This page still runs the earlier recovery, which your old device can cancel. For a lost or stolen phone, use{' '}
+            <Link href="/lost" className="font-medium text-accent-ink underline underline-offset-4">
+              Phone lost or stolen
+            </Link>
+            : your Kit locks it out, and a thief can&apos;t cancel it.
+          </span>
+        </p>
       </div>
 
       {step === 'kit' && (

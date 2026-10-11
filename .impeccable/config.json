@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "mono",
+        "createdAt": "2026-10-11T02:14:52.499Z",
+        "reason": "Claude: DESIGN.md declares JetBrains Mono (figure, figure-xl, token) for figures, addresses and status tokens"
+      }
+    ]
+  }
+}

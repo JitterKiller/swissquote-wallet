@@ -8,6 +8,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
 import { Button, ButtonLink } from '@/components/ui/button'
+import { FactorLabel, FactorSquare, type Factor } from '@/components/ui/factor'
 import { Alert, Spinner } from '@/components/ui/feedback'
 import { Field, Input } from '@/components/ui/field'
 import { Plate, PlateRow } from '@/components/ui/plate'
@@ -249,11 +250,11 @@ function PassphraseStep({
   )
 }
 
-// Factor codes, the same on every screen: phone = orange fill, Kit = ink fill, cloud = outline.
-const LOCKS = [
-  { code: 'bg-accent', title: 'Face ID', text: 'Everyday payments, up to your daily limit' },
-  { code: 'border border-foreground', title: 'Your iCloud or Google account', text: 'Keeps your encrypted Kit file' },
-  { code: 'bg-foreground', title: 'Your Kit passphrase', text: 'Opens the Kit: large payments, a new phone' },
+// The same three locks, with the same codes and words, on every screen (components/ui/factor).
+const LOCKS: { factor: Factor; title: string; text: string }[] = [
+  { factor: 'phone', title: 'Face ID on this phone', text: 'Pays on its own, up to your daily limit' },
+  { factor: 'cloud', title: 'Your iCloud or Google account', text: 'Keeps your encrypted Kit file' },
+  { factor: 'kit', title: 'Your Kit passphrase', text: 'Opens the Kit: above your limit, or a new phone' },
 ]
 
 function ThreeLocks() {
@@ -261,18 +262,21 @@ function ThreeLocks() {
     <section>
       <h2 className="text-sm font-semibold">Three locks, all held by you</h2>
       <ul className="mt-2 border-t border-border">
-        {LOCKS.map(({ code, title, text }) => (
+        {LOCKS.map(({ factor, title, text }) => (
           <li
             key={title}
             className="grid grid-cols-[10px_1fr] items-baseline gap-x-3 border-b border-border py-2.5 text-sm sm:grid-cols-[10px_13rem_1fr]"
           >
-            <span className={`h-2.5 w-2.5 ${code}`} aria-hidden />
+            <FactorSquare factor={factor} />
             <span className="font-medium">{title}</span>
             <span className="col-start-2 text-muted sm:col-start-auto">{text}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-2 text-xs text-muted">Swissquote never sees your Kit or your passphrase.</p>
+      <p className="mt-2 text-xs text-muted">
+        Your Recovery Kit is the file and its passphrase together. Swissquote never sees either, and holds none of
+        these locks.
+      </p>
     </section>
   )
 }
@@ -460,19 +464,21 @@ function Protected({ account, dailyLimit, level }: { account: `0x${string}`; dai
         </p>
       </div>
 
-      <Plate title="Account · live onchain" className="animate-enter !mt-16">
+      <Plate title="Account · live onchain" className="animate-enter">
         <dl>
-          <PlateRow label="Account">
+          <PlateRow label={<FactorLabel tone="hero">Account</FactorLabel>}>
             <AddressPill address={account} tone="hero" />
           </PlateRow>
+          <PlateRow label={<FactorLabel factors={['phone', 'kit']} tone="hero">Owners</FactorLabel>}>Only you: this phone and your Kit</PlateRow>
           {dailyLimit !== null && (
-            <PlateRow label="Daily limit">
-              <span className="tabular-nums">{formatUsdcShort(dailyLimit)} USDC</span> with Face ID
+            <PlateRow label={<FactorLabel factors={['phone']} tone="hero">Face ID alone</FactorLabel>}>
+              Up to <span className="tabular-nums">{formatUsdcShort(dailyLimit)}</span> USDC a day
             </PlateRow>
           )}
-          <PlateRow label="Recovery Kit">Saved and tested</PlateRow>
-          <PlateRow label="Stolen phone locked out">
-            After {EVICTION_DAYS[level]} days
+          <PlateRow label={<FactorLabel factors={['kit']} tone="hero">Recovery Kit</FactorLabel>}>Downloaded and tested</PlateRow>
+          <PlateRow label={<FactorLabel factors={['kit']} tone="hero">Lost or stolen phone</FactorLabel>}>
+            Your Kit locks it out, {EVICTION_DAYS[level]} days after you start
+            <span className="block text-xs font-normal text-hero-muted">A thief can&apos;t cancel it</span>
             {EVICTION_DELAY_IS_DEMO && (
               <span className="block text-xs font-normal text-hero-muted">
                 {Math.round(EVICTION_DELAY_SECONDS[level] / 60)} minutes in this demo

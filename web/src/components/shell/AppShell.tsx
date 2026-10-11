@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   AtSign,
   Clock,
+  Ellipsis,
   House,
   Landmark,
   Repeat,
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { useWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
@@ -29,7 +30,8 @@ import { EvictionAlert, RecoveryAlert, RevokedScreen } from './SecurityBanners'
 type NavItem = { href: string; label: string; icon: LucideIcon; soon?: boolean }
 
 // The phone's tab bar keeps the five daily jobs; the rest stays one tap away on the Overview.
-const MOBILE_TABS = ['/', '/send', '/receive', '/activity', '/security']
+/** A phone tab bar holds five: four destinations, then More for the rest of NAV. */
+const MOBILE_TABS = ['/', '/send', '/receive', '/activity']
 
 const NAV: NavItem[] = [
   { href: '/', label: 'Overview', icon: House },
@@ -50,7 +52,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (ready && !wallet) router.replace(loadLocalEviction() ? '/lost' : loadLocalRecovery() ? '/recover' : '/welcome')
+    if (ready && !wallet) router.replace(loadLocalEviction() ? '/lost' : loadLocalRecovery() ? '/recover' : '/start')
   }, [ready, wallet, router])
 
   if (!ready || !wallet) return <ShellSkeleton />
@@ -117,28 +119,105 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      {/* Mobile tab bar */}
+      <MobileTabBar pathname={pathname} />
+    </div>
+  )
+}
+
+const TABS = NAV.filter((item) => MOBILE_TABS.includes(item.href))
+const MORE = NAV.filter((item) => !item.soon && !MOBILE_TABS.includes(item.href))
+
+function MobileTabBar({ pathname }: { pathname: string }) {
+  // Open on the page it was opened from: navigating anywhere closes it without an effect.
+  const [openOn, setOpenOn] = useState<string | null>(null)
+  const open = openOn === pathname
+  const first = useRef<HTMLAnchorElement>(null)
+  const moreActive = MORE.some((item) => isActive(pathname, item.href))
+
+  useEffect(() => {
+    if (!open) return
+    first.current?.focus()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenOn(null)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
+  // Pressed state on touch-down, at once (PressFeedback makes :active work on iOS).
+  const tab = (active: boolean) =>
+    `flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-[11px] transition-transform duration-100 ease-out active:scale-[0.94] ${
+      active ? 'font-semibold text-foreground' : 'text-muted'
+    }`
+
+  return (
+    <>
+      {/* Always mounted: open and close are CSS transitions, so a tap mid-way reverses from
+          where the menu is, and it leaves along the path it came in. */}
+      <button
+        type="button"
+        aria-label="Close menu"
+        tabIndex={-1}
+        className={`fixed inset-0 z-20 bg-black/25 transition-opacity duration-200 ease-[var(--ease-out)] lg:hidden ${
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        onClick={() => setOpenOn(null)}
+      />
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+        data-tab-bar
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
         aria-label="Main"
       >
-        {NAV.filter((item) => MOBILE_TABS.includes(item.href)).map((item) => {
-          const active = isActive(pathname, item.href)
-          const Icon = item.icon
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? 'font-semibold text-foreground' : 'text-muted'}`}
-              aria-current={active ? 'page' : undefined}
-            >
-              <Icon className={`h-5 w-5 ${active ? 'text-accent-ink' : ''}`} />
-              {item.label}
-            </Link>
-          )
-        })}
+        {/* Grows out of the More tab (bottom right) and shrinks back into it. */}
+        <ul
+          id="more-menu"
+          inert={!open}
+          className={`absolute bottom-full right-3 mb-2 w-56 origin-bottom-right overflow-hidden rounded-2xl border border-border bg-surface py-1 transition-[opacity,transform,visibility] duration-200 ease-[var(--ease-out)] ${
+            open ? 'visible translate-y-0 scale-100 opacity-100' : 'invisible translate-y-1 scale-95 opacity-0'
+          }`}
+        >
+          {MORE.map((item, i) => {
+            const active = isActive(pathname, item.href)
+            const Icon = item.icon
+            return (
+              <li key={item.href}>
+                <Link
+                  ref={i === 0 ? first : undefined}
+                  href={item.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex h-12 items-center gap-3 px-4 text-sm transition-colors duration-100 hover:bg-surface-2 active:bg-surface-2 ${
+                    active ? 'font-semibold text-foreground' : 'text-foreground'
+                  }`}
+                >
+                  <Icon className={`h-[18px] w-[18px] ${active ? 'text-accent-ink' : ''}`} />
+                  {item.label}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+        <div className="grid grid-cols-5">
+          {TABS.map((item) => {
+            const active = isActive(pathname, item.href)
+            const Icon = item.icon
+            return (
+              <Link key={item.href} href={item.href} className={tab(active)} aria-current={active ? 'page' : undefined}>
+                <Icon className={`h-5 w-5 ${active ? 'text-accent-ink' : ''}`} />
+                {item.label}
+              </Link>
+            )
+          })}
+          <button
+            type="button"
+            className={tab(open || moreActive)}
+            aria-expanded={open}
+            aria-controls="more-menu"
+            onClick={() => setOpenOn(open ? null : pathname)}
+          >
+            <Ellipsis className={`h-5 w-5 ${open || moreActive ? 'text-accent-ink' : ''}`} />
+            More
+          </button>
+        </div>
       </nav>
-    </div>
+    </>
   )
 }
 
@@ -161,7 +240,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
     <Link
       href={item.href}
       aria-current={active ? 'page' : undefined}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-[color,background-color,transform] duration-100 active:scale-[0.98] ${
         active ? 'bg-surface-2 font-medium text-foreground' : 'text-muted hover:bg-surface-2 hover:text-foreground'
       }`}
     >

@@ -31,7 +31,7 @@ related_targets: ["web/src/components/account/EarnCard.tsx","web/src/components/
 THESIS: Earning without giving anything away: the Account lends directly to a short list Swissquote vetted, every move is signed by the user's two factors, and the money can only come back to the Account. It refuses the yield-farm dashboard (APY bait, leaderboards) and the bank savings product it is not.
 
 OWN-WORLD:
-- DESIGN.md as built: an ink plate for what is live onchain (the positions) and a sealed 2-of-2 plate for what the Kit and Face ID sign.
+- DESIGN.md as built: an ink plate for what is live onchain (the positions) and a 2-of-2 plate, led by the approval squares, for what the Kit and Face ID sign.
 - Rates and amounts in mono, two decimals for USDC, percentages with two decimals and "variable".
 - The approved list as hairline-ruled cards in white, with no logos.
 - Factor squares on the approval; the apricot field is not used (no loss bound here).
@@ -42,7 +42,7 @@ STORY: The owner sees what is lent and where, at what variable rate, picks a pro
 FIRST VIEWPORT:
 - An ink plate "Lent · live onchain" with the total in the balance figure and one row per protocol (amount, APY).
 - Under it, the two protocol cards side by side on desktop, stacked on phones. Each card has the name, the APY in mono with "variable", one line of what it is, its risks, the position, and Deposit / Withdraw.
-- The action opens under the cards: amount, then the sealed review plate, then the checks, the risk checkbox, the Kit, and "Approve with Kit and Face ID".
+- The action opens under the cards: amount, then the review plate, then the checks, the risk checkbox, the Kit, and "Approve with Kit and Face ID".
 
 FORM: user-picked in the shape round (positions first, risk checkbox at review, "Demo: try an unlisted dApp" proof); no roll, inside the established world.
 

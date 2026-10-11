@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 export type Factor = 'phone' | 'cloud' | 'kit'
 
 /** The Factor Code Rule (DESIGN.md): phone = orange fill, cloud account = ink outline, Kit = ink fill. On an ink plate, ink turns to the plate's foreground. */
@@ -37,6 +39,23 @@ export function ApprovalSquares({
     <span className={`inline-flex shrink-0 gap-1 ${className}`}>
       <FactorSquare factor="phone" tone={tone} size={size} />
       {kit && <FactorSquare factor="kit" tone={tone} size={size} />}
+    </span>
+  )
+}
+
+/**
+ * A plate or list label led by its factor squares. The squares sit in a fixed slot as wide as the
+ * phone and the Kit together, so labels line up; pass no factors for a row that involves none.
+ */
+export function FactorLabel({ factors = [], tone = 'light', children }: { factors?: Factor[]; tone?: 'light' | 'hero'; children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span aria-hidden className="inline-flex w-6 shrink-0 gap-1">
+        {factors.map((factor) => (
+          <FactorSquare key={factor} factor={factor} tone={tone} />
+        ))}
+      </span>
+      {children}
     </span>
   )
 }

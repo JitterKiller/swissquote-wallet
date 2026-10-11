@@ -253,7 +253,7 @@ export function SwapView() {
 
           {stage === 'done' && receipt && (
             <div className="space-y-4">
-              <Plate title="Swap confirmed · onchain" seal={false} className="animate-enter">
+              <Plate title="Swap confirmed · onchain" className="animate-enter">
                 <dl>
                   <PlateRow label="You gave">
                     <span className="font-mono">{formatAssetExact(receipt.gave, ASSETS[receipt.from])}</span> {ASSETS[receipt.from].symbol}
@@ -414,7 +414,14 @@ function SwapReview({
 
   return (
     <section ref={panel} className="scroll-mt-20 space-y-5" aria-label="Review swap">
-      <Plate title="Face ID and your Kit will approve" className="!mt-16">
+      <Plate
+        title={
+          <span className="inline-flex items-center gap-2">
+            <ApprovalSquares kit tone="hero" />
+            Face ID and your Kit will approve
+          </span>
+        }
+      >
         <p className="font-mono text-4xl font-semibold tabular-nums tracking-[-0.04em] sm:text-5xl">
           {gives} <span className="font-sans text-lg font-normal tracking-normal text-hero-muted">{tokenIn.symbol}</span>
         </p>

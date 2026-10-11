@@ -81,8 +81,8 @@ export function CreateWalletView() {
       <div className="flex gap-3 rounded-xl bg-surface-2 p-4 text-sm text-muted">
         <Lock className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          Your private key is created inside your device’s secure chip and never leaves it. Your biometric data stays on
-          your device. Swissquote only receives your public key.
+          Your key is created inside this device’s secure chip and never leaves it, and neither does your face or
+          fingerprint. Swissquote only receives the public half of the key, which cannot move your funds.
         </p>
       </div>
 

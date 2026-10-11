@@ -527,7 +527,7 @@ function StartStep({
         </p>
       </section>
 
-      <Plate title="Your Kit will start the lock-out" seal={false}>
+      <Plate title="Your Kit will start the lock-out">
         <dl>
           <PlateRow label="Old phone">
             <span className="font-mono">{shortAddress(eviction.oldKeySafe)}</span>
@@ -636,7 +636,6 @@ function PendingStep({ eviction, onReady, onStartOver }: { eviction: LocalEvicti
   return (
     <div className="space-y-5">
       <Plate
-        seal={false}
         title={
           <span className="flex items-center gap-2">
             <span className={`h-1.5 w-1.5 ${live ? 'bg-success' : 'bg-hero-muted'}`} aria-hidden />
@@ -708,7 +707,7 @@ function TakeoverStep({
   const limit = BigInt(eviction.dailyLimit ?? '0')
   return (
     <div className="space-y-5">
-      <Plate title="Face ID and your Kit will approve" className="!mt-16">
+      <Plate title="Face ID and your Kit will approve">
         <dl>
           <PlateRow label="This device">
             Face ID, up to <span className="font-mono">{formatUsdc(limit)}</span> USDC a day
@@ -752,7 +751,7 @@ function DoneStep({ done }: { done: Done }) {
   ].filter((l): l is { label: string; tx: string } => !!l.tx)
   return (
     <div className="space-y-5">
-      <Plate title="Moved · live onchain" seal={false} className="animate-enter">
+      <Plate title="Moved · live onchain" className="animate-enter">
         <dl>
           <PlateRow label="Old phone">
             Locked out <span className="font-mono text-hero-muted">{shortAddress(done.oldKeySafe)}</span>

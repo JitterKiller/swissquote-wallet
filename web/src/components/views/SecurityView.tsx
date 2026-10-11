@@ -138,7 +138,7 @@ function OwnersPlate({
 
   return (
     <Plate
-      seal={false}
+     
       title={
         <span className="flex items-center gap-2">
           <span className={`h-1.5 w-1.5 ${live ? 'bg-success' : 'bg-hero-muted'}`} aria-hidden />

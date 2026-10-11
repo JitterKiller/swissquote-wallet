@@ -260,7 +260,7 @@ function StopLockOut({
           autoComplete="off"
         />
       </Field>
-      <Plate title="Face ID and your Kit will stop it" seal={false}>
+      <Plate title="Face ID and your Kit will stop it">
         <dl>
           <PlateRow label="Stops">The lock-out started at {formatTime(startedAt)}</PlateRow>
           <PlateRow label="Approval">

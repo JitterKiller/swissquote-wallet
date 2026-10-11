@@ -71,6 +71,29 @@ export function CandleField({ className = '' }: { className?: string }) {
 
     const history: Candle[] = []
     for (let i = 0; i < 64; i++) history.push(formCandle(history.at(-1)?.close ?? price))
+    // A page-wide canvas (the landing) needs more than the panel's 64 candles to start full. Older
+    // ones come from a second seeded walk, levelled to join the first, so the panel's own window
+    // (the newest candles) is unchanged.
+    const backfill = Math.min(HISTORY, Math.ceil(window.innerWidth / STEP) + 4) - history.length
+    if (backfill > 0) {
+      const r = seeded(SEED + 1)
+      let p = 100
+      let a = 100
+      const older: Candle[] = []
+      for (let i = 0; i < backfill; i++) {
+        const c = { open: p, high: p, low: p, close: p }
+        for (let t = 0; t < PERIOD / TICK; t++) {
+          a += (r() - 0.5) * 0.4 + (100 - a) * 0.004
+          p += (r() - 0.5) * 1.2 + (a - p) * 0.08
+          c.high = Math.max(c.high, p)
+          c.low = Math.min(c.low, p)
+          c.close = p
+        }
+        older.push(c)
+      }
+      const shift = history[0].open - older[older.length - 1].close
+      history.unshift(...older.map((c) => ({ open: c.open + shift, high: c.high + shift, low: c.low + shift, close: c.close + shift })))
+    }
     // The newest candle starts half formed, so a still frame shows a real candle, not a dash.
     let live = formCandle(history.at(-1)!.close, Math.floor(PERIOD / TICK / 2))
     let target = live.close // where the live close is heading

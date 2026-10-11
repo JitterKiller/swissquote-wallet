@@ -17,6 +17,7 @@ import { useBlockNumber } from '@/components/ui/live'
 import { PageHeader } from '@/components/ui/page'
 import { formatUsdc, greeting } from '@/lib/format'
 
+import { BalanceHistoryCard } from './BalanceHistoryCard'
 import { ApprovalLegend, TransferRow, TransferRowsSkeleton } from './TransferRow'
 
 /**
@@ -36,6 +37,9 @@ export function OverviewView() {
           </div>
           <div className="order-2 empty:hidden">
             <SweepNotice />
+          </div>
+          <div className="order-2">
+            <BalanceHistoryCard />
           </div>
           <div className="order-4">
             <ActivitySection />
