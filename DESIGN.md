@@ -283,11 +283,11 @@ Dark mode (OS setting) swaps the ground to near-black (#0c0c0c, surfaces #151515
 
 ## Layout
 
-Onboarding is a two-column split from 1024px: an ink panel on the left (0.9fr) holding the logo, the candle field (200 to 340px tall), the tagline, and the live strip; content on the right (1.1fr) in a single column, top-anchored, max 560px wide (35rem). Below 1024px the panel disappears: a logo row with the mono token bar sits on top and the column narrows to 448px (28rem).
+Onboarding is a two-column split from 1024px: an ink panel on the left (0.9fr) holding the logo, the candle field (200 to 340px tall), the tagline, and the live strip; content on the right (1.1fr) in a single column, centred vertically (a step taller than the screen starts at the top, never clipped), max 560px wide (35rem). Below 1024px the panel disappears: the logo and the mono token bar sit centred on top, and the column narrows to 448px (28rem), still centred vertically in the space below.
 
 The quiet variant of the same shell serves the lost-phone flow (`/lost`): the panel steps back to the logo and the live strip, with no candle chart and no tagline, and narrows to 0.7fr against 1.3fr for the content, so the lock-out leads.
 
-Inside a step, vertical rhythm is 24px between blocks (title, form, action), 16 to 20px inside forms, 6px between a label and its field. Plates take extra top margin (64px) so the seal's overhang has room. Panel padding is 40px (48px from 1280px). Lists use hairline top and bottom rules rather than boxes. Primary actions run full width at the bottom of the column. Breakpoints are Tailwind's 640, 1024 and 1280px.
+Inside a step, vertical rhythm is 24px between blocks (title, form, action), 16 to 20px inside forms, 6px between a label and its field. Plates take extra top margin (64px) so the seal's overhang has room. Panel padding is 40px (48px from 1280px). Lists use hairline top and bottom rules rather than boxes. Primary actions run full width at the bottom of the column. Breakpoints are Tailwind's 640, 1024 and 1280px. Page gutters are 20px on phones (app header, content, onboarding), 24px from 640px, 40px on desktop content.
 
 ## Elevation & Depth
 

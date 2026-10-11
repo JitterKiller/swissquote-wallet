@@ -320,7 +320,7 @@ function StopLockOut({
 export function RevokedScreen({ onForget, account }: { onForget: () => void; account?: Address | null }) {
   const evicted = !!account
   return (
-    <div className="grid min-h-dvh place-items-center px-4">
+    <div className="grid min-h-dvh place-items-center px-5">
       <div className="w-full max-w-md text-center">
         <div className="mb-8 flex justify-center">
           <Logo />

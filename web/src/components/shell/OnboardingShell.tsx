@@ -37,12 +37,12 @@ export function OnboardingShell({ children, quiet = false }: { children: ReactNo
         <p className="mt-6 text-xs text-hero-muted">Prototype · Base Sepolia testnet · not financial advice</p>
       </aside>
 
-      <main className="flex flex-col px-4 py-5 sm:px-8 lg:px-12 lg:py-0">
-        <div className="flex flex-wrap items-center justify-between gap-3 lg:hidden">
+      <main className="flex flex-col px-5 py-6 sm:px-8 lg:px-12 lg:py-0">
+        <div className="flex flex-col items-center gap-2 lg:hidden">
           <Logo />
-          <TokenBar tokens={[]} />
+          <TokenBar tokens={[]} className="justify-center" />
         </div>
-        <div className="mx-auto w-full max-w-md py-10 lg:max-w-[35rem] lg:pb-12 lg:pt-10">{children}</div>
+        <div className="mx-auto my-auto w-full max-w-md py-10 lg:max-w-[35rem] lg:py-12">{children}</div>
       </main>
     </div>
   )

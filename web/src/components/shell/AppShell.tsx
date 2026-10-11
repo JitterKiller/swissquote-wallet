@@ -96,12 +96,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface px-5 py-3 lg:hidden">
         <Logo />
         <AddressPill address={wallet.account ?? wallet.address} />
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
+      <main className="mx-auto w-full max-w-6xl px-5 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
         {lockOut && (
           <div className="mb-6">
             <EvictionAlert pending={lockOut} />
@@ -177,7 +177,7 @@ function ShellSkeleton() {
           <Logo />
         </div>
       </aside>
-      <main className="mx-auto w-full max-w-6xl space-y-6 px-4 pt-6 sm:px-6 lg:px-10 lg:pt-10">
+      <main className="mx-auto w-full max-w-6xl space-y-6 px-5 pt-6 sm:px-6 lg:px-10 lg:pt-10">
         <Skeleton className="h-8 w-56" />
         <Skeleton className="h-52 w-full rounded-2xl" />
         <Skeleton className="h-40 w-full rounded-2xl" />
