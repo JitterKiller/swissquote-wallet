@@ -96,8 +96,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface px-5 py-3 lg:hidden">
-        <Logo />
+      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-surface px-5 py-3 lg:hidden">
+        <Logo compact />
         <AddressPill address={wallet.account ?? wallet.address} />
       </header>
 

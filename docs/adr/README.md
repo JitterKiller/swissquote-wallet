@@ -48,7 +48,8 @@ A product decision usually has one or more architecture decisions implementing i
 | [PDR-023](product/PDR-023-compliance-as-friction.md) | Compliance as friction: sanctions screening, readable preview with simulation, high-value and look-alike checks | Accepted |
 | [PDR-024](product/PDR-024-swissquote-account-transfers.md) | Transfers between the Swissquote account and the wallet: one tap each way, deposits auto-credited from the linked wallet, travel rule filled in | Accepted |
 | [PDR-025](product/PDR-025-approved-dapps.md) | Compliant dApp interaction: a short list of approved dApps (Aave v3, Compound III) built natively, 2 factors, preview and screening, sponsored only when approved | Accepted |
-| [PDR-026](product/PDR-026-product-name-squre.md) | Product name: SQure (by Swissquote), "Your keys. Swiss security." | Accepted |
+| [PDR-026](product/PDR-026-product-name-squre.md) | Product name: SQure (by Swissquote), "Your keys. Swiss security." | Accepted, amended by PDR-027 |
+| [PDR-027](product/PDR-027-logo-two-square-mark.md) | Logo: the two-square mark (orange square = phone, ink square = Kit), "SQure" in one piece, the mark as app icon | Accepted |
 
 ## Architecture decisions
 

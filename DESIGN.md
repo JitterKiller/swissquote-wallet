@@ -198,9 +198,9 @@ components:
     size: "8px"
   logo-mark:
     backgroundColor: "{colors.accent}"
-    textColor: "{colors.accent-fg}"
+    textColor: "{colors.hero}"
     rounded: "{rounded.lg}"
-    size: "32px"
+    size: "28px"
 ---
 
 # Design System: SQure
@@ -229,7 +229,7 @@ The system refuses both the purple-gradient crypto wallet and the beige private-
 A neutral white-and-ink ground with a single saturated orange, apricot tints for bounds, and status colours held to signals.
 
 ### Primary
-- **Swissquote Orange** (accent; `color(display-p3 1 0.38 0.06)` on P3 screens, hex fallback in the frontmatter): fills for the primary button, the selected preset, the active stepper step, the SQ logo mark, the seal disc, rising candles in the candle field, lit allowance and delay cells, the "now" day square, and text selection. A fill, never a text colour on white.
+- **Swissquote Orange** (accent; `color(display-p3 1 0.38 0.06)` on P3 screens, hex fallback in the frontmatter): fills for the primary button, the selected preset, the active stepper step, the logo mark, the seal disc, rising candles in the candle field, lit allowance and delay cells, the "now" day square, and text selection. A fill, never a text colour on white.
 - **Pressed Orange** (accent-hover; P3 `color(display-p3 0.95 0.33 0.02)`): hover state of orange fills.
 - **Ember Ink** (accent-ink): the orange that is legible as text on light grounds (AA): focus rings, caret, link-like accents, the accent badge text, the focused input border. In dark mode it lightens to #ff8a4c.
 - **Apricot Field** (accent-soft): the ground for loss bounds and the accent badge, and the soft focus ring around inputs. In dark mode it becomes orange at 14% alpha.
@@ -356,6 +356,9 @@ The single implementation of the Factor Code Rule: a square of 10px (8px in dens
 
 ### Custody Strip
 A white card that says who can move the money: "Wallet protected" as the title with a mono "2 of 2 · yours" token at the right, then factor rows under a hairline (factor square, name in 500, one muted line of what it can do): This phone, Recovery Kit, and, for linked clients only, Swissquote as guardian with an empty square column. It closes with an Ember Ink link to Security and a muted outbound link to Basescan.
+
+### Logo (PDR-027)
+The mark is an orange square (6px corners at 28px) holding a smaller ink square in its lower-right corner, inset 4/32. These are the two factors that hold the Account, the phone and the Kit, in the Factor Code. The ink square never inverts, on white or on the ink panel. The wordmark "SQure" is set in one piece (Hanken Grotesk 700, 22px, −0.035em), with "by Swissquote" in 12px muted on its baseline. In the phone's top bar the endorsement drops below 380px. The mark alone is the app icon (`app/icon.svg`, `app/apple-icon`).
 
 ### Seal (signature)
 120px orange disc; the ring text "SPONSORED BY SWISSQUOTE · 2 OF 2 · USER MAJORITY" in 9-unit mono semibold ink, fitted exactly to the ring, turning once every 28s (still under reduced motion); "SQ" centred in 700 grotesk. Appears only on plates.

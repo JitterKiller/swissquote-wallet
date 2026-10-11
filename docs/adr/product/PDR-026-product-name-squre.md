@@ -1,6 +1,6 @@
 # PDR-026: Product name — SQure, "Your keys. Swiss security."
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [PDR-027](PDR-027-logo-two-square-mark.md) (logo)
 - **Date:** 2026-10-11
 - **Related:** [PDR-008](PDR-008-english-ui-copy.md), [PDR-013](PDR-013-key-management-user-majority.md), [ADR-027](../architecture/ADR-027-visual-world-swiss-onchain-fintech.md)
 
