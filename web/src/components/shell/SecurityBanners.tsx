@@ -334,7 +334,7 @@ export function RevokedScreen({ onForget, account }: { onForget: () => void; acc
           </h1>
           <p className="mt-2 text-sm text-muted">
             {evicted
-              ? 'Your Recovery Kit moved your Account to a new phone. This phone is no longer one of its owners: it cannot spend or sign anything, even in a thief’s hands.'
+              ? 'Your Account was moved to a new phone. This phone is no longer one of its owners: it cannot spend or sign anything, even in a thief’s hands.'
               : 'The wallet was recovered to a new device. This passkey was removed from the wallet and can no longer sign anything, even if this device was stolen.'}
           </p>
           {evicted && (

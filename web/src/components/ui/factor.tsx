@@ -1,12 +1,17 @@
 import type { ReactNode } from 'react'
 
-export type Factor = 'phone' | 'cloud' | 'kit'
+export type Factor = 'phone' | 'cloud' | 'kit' | 'key'
 
-/** The Factor Code Rule (DESIGN.md): phone = orange fill, cloud account = ink outline, Kit = ink fill. On an ink plate, ink turns to the plate's foreground. */
+/**
+ * The Factor Code Rule (DESIGN.md): phone = orange fill, cloud account = ink outline, Kit = ink fill,
+ * security key = orange outline (a second device, kept at home, #17). On an ink plate, ink turns to
+ * the plate's foreground.
+ */
 const CODES: Record<Factor, Record<'light' | 'hero', string>> = {
   phone: { light: 'bg-accent', hero: 'bg-accent' },
   cloud: { light: 'ring-1 ring-inset ring-foreground', hero: 'ring-1 ring-inset ring-hero-fg' },
   kit: { light: 'bg-foreground', hero: 'bg-hero-fg' },
+  key: { light: 'ring-[1.5px] ring-inset ring-accent', hero: 'ring-[1.5px] ring-inset ring-accent' },
 }
 
 export function FactorSquare({

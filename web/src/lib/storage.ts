@@ -57,6 +57,17 @@ export type LocalEviction = {
   /** Old phone's daily limit (USDC base units) to hand over to the new phone. */
   dailyLimit?: string
   finalizeTx?: string
+  /** The Account's security key (verifier proxy), when it has one: Kit + key lock the old phone out at once (#17). */
+  keyProxy?: `0x${string}`
+}
+
+/** This device's record of the Account's security key: public data only (credential id, public key, proxy). */
+export type SecurityKeyRecord = {
+  account: `0x${string}`
+  credentialId: string
+  publicKey: { x: string; y: string }
+  proxy: `0x${string}`
+  addedAt: number
 }
 
 const WALLET_KEY = 'sq-wallet:v1'
@@ -64,6 +75,9 @@ const RECOVERY_KEY = 'sq-recovery:v1'
 // The only secret stored client-side, and always encrypted (ADR-018).
 const KIT_KEY = 'sq-kit:v3'
 const EVICTION_KEY = 'sq-eviction:v1'
+const SECURITY_KEY_KEY = 'sq-security-key:v1'
+// The Account whose first Kit payment already showed the Offers line on this device (#22): a convenience, public.
+const OFFERS_HINT_KEY = 'sq-offers-hint:v1'
 const KIT_TESTED_KEY = 'sq-kit-tested:v1'
 
 export function toPublicKey(stored: { publicKey: { x: string; y: string } }): WebauthnPublicKey {
@@ -112,6 +126,23 @@ export function clearLocalEviction() {
 
 /** Encrypted Kit copy, so a large payment only asks for the passphrase (PDR-016). */
 export const loadLocalKit = () => read<RecoveryKitV3>(KIT_KEY)
+
+export const loadSecurityKey = () => read<SecurityKeyRecord>(SECURITY_KEY_KEY)
+export const saveSecurityKey = (key: SecurityKeyRecord) => write(SECURITY_KEY_KEY, key)
+
+export function offersHintSeen(account: string) {
+  try {
+    return window.localStorage.getItem(OFFERS_HINT_KEY) === account.toLowerCase()
+  } catch {
+    return false
+  }
+}
+
+export function markOffersHintSeen(account: string) {
+  try {
+    window.localStorage.setItem(OFFERS_HINT_KEY, account.toLowerCase())
+  } catch {}
+}
 export const saveLocalKit = (kit: RecoveryKitV3) => write(KIT_KEY, kit)
 
 /** Last successful "test your Kit" (ms), for the periodic reminder. */
@@ -125,5 +156,7 @@ export function clearAll() {
     window.localStorage.removeItem(KIT_KEY)
     window.localStorage.removeItem(KIT_TESTED_KEY)
     window.localStorage.removeItem(EVICTION_KEY)
+    window.localStorage.removeItem(SECURITY_KEY_KEY)
+    window.localStorage.removeItem(OFFERS_HINT_KEY)
   } catch {}
 }

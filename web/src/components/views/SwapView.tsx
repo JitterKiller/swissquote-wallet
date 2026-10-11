@@ -14,6 +14,7 @@ import { Alert, EmptyState, Spinner } from '@/components/ui/feedback'
 import { amountFit, Field, Input } from '@/components/ui/field'
 import { PageHeader } from '@/components/ui/page'
 import { Plate, PlateRow } from '@/components/ui/plate'
+import { QuotaHint } from '@/components/swissquote/QuotaHint'
 import { ASSETS, ASSET_IDS, formatAsset, formatAssetExact, toInput, type Asset, type AssetId } from '@/lib/assets'
 import { HIGH_VALUE_USDC } from '@/lib/compliance'
 import { EXPLORER_URL } from '@/lib/config'
@@ -493,6 +494,7 @@ function SwapReview({
       {error && (
         <Alert tone="danger" title="Not swapped">
           {error}
+          <QuotaHint error={error} />
         </Alert>
       )}
       <div className="grid gap-3 sm:grid-cols-[auto_1fr]">

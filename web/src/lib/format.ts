@@ -100,6 +100,10 @@ export function errorMessage(error: unknown) {
     const text = `${error.name} ${error.message} ${String(error.cause ?? '')}`
     if (/NotAllowedError|not allowed|AbortError/i.test(text)) return 'Passkey prompt was cancelled.'
     const chain = errorChain(error)
+    // The paymaster's own refusal (ADR-023) is a sentence the owner can act on: show it, not the RPC wrapper.
+    // Only the dApp refusal's first sentence: the app has no "pay the fee yourself" path (PDR-003).
+    const refusal = /(Monthly sponsored quota reached[^·]*|Swissquote only sponsors approved dApps[^.]*\.)/.exec(chain)?.[0]?.trim()
+    if (refusal) return refusal
     // The bundler simulates every operation first: an onchain revert surfaces as EXECUTION_REVERTED (-32521).
     if (/EXECUTION_REVERTED|-32521/.test(chain)) return 'The network refused this transaction: it would fail onchain.'
     if (/rpc call failed/i.test(error.message) && error.cause instanceof Error && error.cause.message) return error.cause.message

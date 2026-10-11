@@ -21,7 +21,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Old device revoked after recovery | ✅ |
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity with the factors that approved each payment (ADR-029), light/dark | ✅ |
-| Security page for the two-Safe Account: owners read live onchain, "Swissquote · not an owner" checkable on Basescan, worst case as an amount, who can do what (ADR-034, #26) | ✅ (security key #17 shown as "Soon") |
+| Security page for the two-Safe Account: owners read live onchain, "Swissquote · not an owner" checkable on Basescan, worst case as an amount, who can do what (ADR-034, #26) | ✅ |
 | Daily limit change, up or down, with Face ID + the Kit: worst case before → after, sealed review, one sponsored transaction (PDR-020, ADR-035, #13, `npm run e2e:limit`) | ✅ |
 | Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022), on the Send review (#12) | ✅ |
 | Approved dApps, built natively: Aave v3 and Compound III with USDC, 2 factors, sponsored only when approved (PDR-025, ADR-028); Earn screen with positions, risk acknowledgement and the unlisted-dApp demo (ADR-031, `npm run e2e:earn`) | ✅ |
@@ -33,7 +33,8 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | One flow for a lost or stolen phone: time-locked eviction the thief cannot cancel (PDR-018, PDR-021, ADR-019, ADR-030) | ✅ ("Phone lost or stolen?" on the new phone #15, alert and 2-factor stop on the old phone #16, `npm run e2e:eviction`; legacy `/recover` until #33) |
 | Recovery Kit as a passphrase-encrypted cloud backup (PDR-016, ADR-018): passphrase, download, test step | ✅ ("test your Kit" reminder ⏳) |
 | Open wallet for everyone + Swissquote link as the upgrade (PDR-015): level 0 for everyone, level 1 for linked clients (3-day lock-out with a Swissquote identity check), from the Security page or right after linking (ADR-036, #21, `npm run e2e:level`) | ✅ (KYC and the Swissquote sign-in are MOCK; no way back to level 0 yet) |
-| Theft protection: hardware key, guided "phone stolen" flow (PDR-017) | ⏳ |
+| Offers page: Free, Client and Premium "Theft protection" compared for your own Account (worst case from your daily limit, what your own key does in every offer), your offer and its one next step; one line on Send's receipt after the first payment that needed the Kit (PDR-019, ADR-039, #22) | ✅ (Premium subscription and key order are MOCK; key tap for large payments and Kit replacement "Soon") |
+| Security key as a third owner, at every level: added from the Security page with Face ID + the Kit (the phone itself is refused); with the Kit, it locks a lost phone out at once in "Phone lost or stolen?", even while a lock-out runs (PDR-017, PDR-019, ADR-038, #17, `npm run e2e:key`) | ✅ (any authenticator in the demo; a key tap for large payments ⏳) |
 
 ## Architecture
 
@@ -123,6 +124,12 @@ npm run check:sponsorship # sponsorship policy: quota, security ops, mixed batch
 npm run check:handles  # @handles: uniqueness, reserved names, verified name, hidden = missing, contacts, rate limit (needs npm run dev)
 npm run check:swissquote # Swissquote transfers: balance, unlinked refused, overdraft, treasury, deposit verification (needs npm run dev)
 npm run e2e:link       # real Chrome + virtual passkey: protect, sign in (MOCK), "Link with Face ID", claim @handle, /swissquote (~2 min)
+npm run e2e:eviction   # "Phone lost or stolen?" on two phones: lock-out, thief refused, 2-factor stop, takeover after the delay (~6 min)
+npm run e2e:earn       # Earn: Aave deposit with Kit + Face ID, withdraw, unlisted-dApp demo (~2 min, funded treasury)
+npm run e2e:swap       # Swap: USDC ↔ EURC, USDC ↔ ETH, Activity (~2 min, funded treasury)
+npm run e2e:limit      # daily limit raised and lowered with Kit + Face ID (~1.5 min, 0.10 USDC from the treasury)
+npm run e2e:level      # level 1 upgrade: link with Face ID, upgrade with Kit + Face ID (~30 s)
+npm run e2e:key        # security key: the phone refused as its own key, a USB key added, lost phone locked out at once with Kit + key (~1 min)
 ```
 
 The e2e scripts need Google Chrome and `npm run dev` running.
@@ -150,12 +157,15 @@ The e2e scripts need Google Chrome and `npm run dev` running.
 | `POST /api/swissquote/withdraw` | Swissquote account → wallet: on-chain USDC from the treasury to the linked Account |
 | `POST /api/swissquote/deposit` | Wallet → Swissquote account: credits a verified on-chain transfer from the linked wallet (once per tx) |
 | `POST /api/report-stolen` | Report a stolen phone: its Key Safe loses sponsorship (identity session or Recovery Kit signature) |
+| `GET` / `POST /api/security-keys` | Security key directory (public data): lists a key only when its proxy matches its public key and is an owner on-chain; the first key listed stays while it is an owner (ADR-038) |
+| `GET` / `POST /api/offers` | MOCK Premium "Theft protection": the client's subscription and key order (`subscribe`, `order-key`, `end`), keyed by Swissquote client id; subscribing needs a linked wallet (ADR-039) |
+| `POST /api/evict-now` | Immediate lock-out with the Kit and the security key: rebuilds the swap of the Key Safe from the chain (and cancels a running lock-out), dry-runs it, relays it (ADR-038) |
 
 ## Real vs mocked
 
 | Real (on-chain / standard) | Mocked (documented) |
 |---|---|
-| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Account Safe (Allowance Module, eviction module), approved dApps (Aave v3, Compound III on Base Sepolia), Recovery Kit encryption (keystore V3), Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks) | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC) |
+| Passkeys (WebAuthn), Safe smart account, ERC-4337 bundler + paymaster, USDC transfers, Account Safe (Allowance Module, eviction module), approved dApps (Aave v3, Compound III on Base Sepolia), Recovery Kit encryption (keystore V3), Social Recovery Module (guardians, delay, cancel, finalize), EIP-712 guardian signatures, registry ownership proof (WebAuthn + on-chain owner checks), security key (a WebAuthn credential as the Account's third owner through Safe's WebAuthn verifier) and the immediate lock-out with Kit + key | Swissquote banking account, KYC / video identification, guardian HSM, notifications (push / email / SMS / e-banking), postal mail, client authentication of the registry endpoints (client id passed by the caller), sanctions list (test addresses `0x…bad1`, `0x…bad2`, see ADR-022), Swissquote sign-in (`lib/session.ts`), Swissquote account balances and the demo treasury (relayer Safe, funded once with test USDC), Premium "Theft protection" subscription and security key order (`/api/offers`, `server/offers.ts`: no payment, nothing ships) |
 
 ## Repo layout
 

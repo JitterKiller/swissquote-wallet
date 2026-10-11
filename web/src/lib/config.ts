@@ -80,3 +80,10 @@ export const EVICTION_DELAY_SECONDS: Record<Level, number> = EVICTION_DELAYS.sec
 /** Product delays (PDR-018), used for the loss bound shown to the user (PDR-020). */
 export const EVICTION_DAYS: Record<Level, number> = { 0: 7, 1: 3 }
 export const EVICTION_DELAY_IS_DEMO = process.env.NEXT_PUBLIC_EVICTION_DELAYS !== 'production'
+
+/**
+ * Demo (PDR-017): any authenticator may play the security key, such as this computer's Touch ID or a
+ * teammate's phone via QR. Production asks for a roaming FIDO2 key (cross-platform). Never the
+ * user's own phone: the point is a factor independent from it.
+ */
+export const DEMO_ANY_AUTHENTICATOR = process.env.NEXT_PUBLIC_DEMO_ANY_AUTHENTICATOR !== 'false'

@@ -501,6 +501,22 @@ function Protected({ account, dailyLimit, level }: { account: `0x${string}`; dai
           View your Account on Basescan <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </div>
+
+      {level === 0 && (
+        <section aria-labelledby="client-title" className="rounded-2xl border border-border p-5">
+          <h2 id="client-title" className="font-semibold">
+            Swissquote client?
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Link your account with one Face ID for an @handle, one-tap transfers and all network fees covered. Then, with your Kit, add Swissquote’s
+            identity check: a stolen phone is locked out after {EVICTION_DAYS[1]} days instead of {EVICTION_DAYS[0]}. Swissquote never becomes an
+            owner.
+          </p>
+          <ButtonLink href="/swissquote" variant="secondary" className="mt-4">
+            Link my Swissquote account
+          </ButtonLink>
+        </section>
+      )}
     </div>
   )
 }

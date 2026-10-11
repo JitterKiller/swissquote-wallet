@@ -8,6 +8,7 @@ import {
   Ellipsis,
   House,
   Landmark,
+  Layers,
   Repeat,
   ShieldCheck,
   type LucideIcon,
@@ -18,11 +19,12 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { useWallet } from '@/components/providers/WalletProvider'
+import { useSwissquoteLink } from '@/components/swissquote/useSwissquoteLink'
 import { AddressPill } from '@/components/ui/address'
 import { Badge, Skeleton } from '@/components/ui/feedback'
 import { TokenBar } from '@/components/ui/live'
 import { getPendingEviction, isEvicted } from '@/lib/eviction'
-import { loadLocalEviction, loadLocalRecovery } from '@/lib/storage'
+import { loadLocalEviction, loadLocalRecovery, type StoredWallet } from '@/lib/storage'
 
 import { Logo } from './Logo'
 import { EvictionAlert, RecoveryAlert, RevokedScreen } from './SecurityBanners'
@@ -43,6 +45,7 @@ const NAV: NavItem[] = [
   { href: '/swissquote', label: 'Swissquote', icon: Landmark },
   { href: '/activity', label: 'Activity', icon: Clock },
   { href: '/security', label: 'Security', icon: ShieldCheck },
+  { href: '/offers', label: 'Offers', icon: Layers },
 ]
 
 /** Authenticated layout: sidebar on desktop, top bar + tab bar on mobile. */
@@ -71,7 +74,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const lockOut = wallet.account ? getPendingEviction(chain.account, wallet.address) : null
   const initials = wallet.name.trim().slice(0, 2).toUpperCase() || 'SQ'
-  const levelLabel = !wallet.account ? 'Not protected yet' : wallet.level === 1 ? 'Swissquote client · level 1' : 'Free · level 0'
 
   return (
     <div className="min-h-dvh lg:pl-64">
@@ -93,7 +95,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{wallet.name}</p>
-              <p className="truncate text-xs text-muted">{levelLabel}</p>
+              <p className="truncate text-xs text-muted"><LevelLabel key={pathname} wallet={wallet} /></p>
             </div>
           </div>
         </div>
@@ -265,4 +267,23 @@ function ShellSkeleton() {
       </main>
     </div>
   )
+}
+
+// The last link state read, so the label doesn't flicker while it is read again after a navigation.
+let lastLinked = false
+
+/**
+ * The sidebar's offer and level (#22): "Free" means unlinked, as on the Offers page; a linked client at
+ * level 0 reads "Swissquote client · level 0". Re-read on every navigation (keyed by the path), so
+ * linking on /swissquote shows on the next page.
+ */
+function LevelLabel({ wallet }: { wallet: StoredWallet }) {
+  const link = useSwissquoteLink(wallet)
+  useEffect(() => {
+    if (link.checked) lastLinked = !!link.linked
+  }, [link.checked, link.linked])
+  const linked = link.checked ? !!link.linked : lastLinked
+  if (!wallet.account) return <>Not protected yet</>
+  if (wallet.level === 1) return <>Swissquote client · level 1</>
+  return <>{linked ? 'Swissquote client · level 0' : 'Free · level 0'}</>
 }

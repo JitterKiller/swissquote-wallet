@@ -16,6 +16,8 @@ import { amountFit, Field, Input } from '@/components/ui/field'
 import { PageHeader } from '@/components/ui/page'
 import { Plate, PlateRow } from '@/components/ui/plate'
 import { ProgressList, Stepper } from '@/components/ui/stepper'
+import { QuotaHint } from '@/components/swissquote/QuotaHint'
+import { OffersHint } from '@/components/views/OffersView'
 import type { KitSigner } from '@/lib/account'
 import { EXPLORER_URL, USDC_ADDRESS, USDC_DECIMALS } from '@/lib/config'
 import { errorMessage, formatDecimal, formatUsdc, formatUsdcExact, shortAddress } from '@/lib/format'
@@ -319,6 +321,7 @@ export function SendView() {
               {error && (
                 <Alert tone="danger" title="Not sent">
                   {error}
+                  <QuotaHint error={error} />
                 </Alert>
               )}
               <div className="grid gap-3 sm:grid-cols-[auto_1fr]">
@@ -380,6 +383,8 @@ export function SendView() {
                   View on Basescan <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               </Plate>
+              {/* Under the plate, never on it (the Ink Plate Rule): the one Client → Premium trigger (PDR-019, #22). */}
+              {sent.route === 'kit' && <OffersHint />}
               <div className="grid gap-3 sm:grid-cols-2">
                 <Button variant="secondary" size="lg" onClick={reset}>
                   Send another

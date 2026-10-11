@@ -11,10 +11,26 @@ export const lossBound = (limit: bigint, level: Level) => limit * BigInt(EVICTIO
  * DaySquares. Shared by the protect flow (compact: figure and squares on one row) and the Security
  * page (#26, `roomy`: as tall as the owners plate beside it, the squares in the middle).
  */
-export function LossBound({ limit, level, roomy = false }: { limit: bigint | null; level: Level; roomy?: boolean }) {
-  const days = EVICTION_DAYS[level]
-  const figure = limit !== null ? formatUsdc(lossBound(limit, level)) : '–'
-  const explanation = (
+export function LossBound({
+  limit,
+  level,
+  roomy = false,
+  withKey = false,
+}: {
+  limit: bigint | null
+  level: Level
+  roomy?: boolean
+  /** With a security key (#17), the Kit and the key lock a stolen phone out at once: about one day of the limit. */
+  withKey?: boolean
+}) {
+  const days = withKey ? 0 : EVICTION_DAYS[level]
+  const figure = limit !== null ? formatUsdc(withKey ? limit : lossBound(limit, level)) : '–'
+  const explanation = withKey ? (
+    <p className={`text-sm text-foreground/75 ${roomy ? '' : 'mt-2'}`}>
+      If you act before the next daily reset: from a new device, your Kit and your security key lock the phone out at once. Each reset adds{' '}
+      <span className="font-mono tabular-nums">{limit !== null ? formatUsdc(limit) : '–'}</span> more.
+    </p>
+  ) : (
     <p className={`text-sm text-foreground/75 ${roomy ? '' : 'mt-2'}`}>
       <span className="font-mono tabular-nums">{limit !== null ? formatUsdc(limit) : '–'}</span> today, then again after each of the{' '}
       {days} daily resets until your Kit locks them out{level === 1 ? ' with a Swissquote identity check.' : '.'}

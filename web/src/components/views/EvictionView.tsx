@@ -9,13 +9,13 @@ import type { Address } from 'viem'
 import { DaySquares } from '@/components/account/DaySquares'
 import { useWallet } from '@/components/providers/WalletProvider'
 import { Button, ButtonLink } from '@/components/ui/button'
-import { ApprovalSquares } from '@/components/ui/factor'
+import { ApprovalSquares, FactorSquare } from '@/components/ui/factor'
 import { Alert, Badge, Spinner } from '@/components/ui/feedback'
 import { Field, Input, Textarea } from '@/components/ui/field'
 import { useBlockNumber } from '@/components/ui/live'
 import { Plate, PlateRow } from '@/components/ui/plate'
 import { Stepper } from '@/components/ui/stepper'
-import { readAccount } from '@/lib/account'
+import { accountTxDigest, kitSignature, readAccount, replaceKeySafeCall } from '@/lib/account'
 import { api } from '@/lib/api'
 import { EVICTION_DAYS, EVICTION_DELAY_IS_DEMO, EVICTION_DELAY_SECONDS, EXPLORER_URL, type Level } from '@/lib/config'
 import { evictionLevel, finalizeEviction, handoverCalls, startEviction } from '@/lib/eviction'
@@ -24,6 +24,7 @@ import { useNow } from '@/lib/hooks'
 import { cleanName } from '@/lib/inputs'
 import { createPasskey } from '@/lib/passkey'
 import { KitPassphraseError, decryptKit, parseKitFile, unlockKit, type KitAccounts } from '@/lib/recoveryKit'
+import { findSecurityKey, signWithSecurityKey } from '@/lib/securityKey'
 import {
   clearLocalEviction,
   loadLocalEviction,
@@ -33,16 +34,16 @@ import {
   toPublicKey,
   type LocalEviction,
 } from '@/lib/storage'
-import { SEND_STEP_LABEL, predictAddress, sendCalls } from '@/lib/wallet'
+import { SEND_STEP_LABEL, predictAddress, publicClient, sendCalls } from '@/lib/wallet'
 
 type Step = 'kit' | 'passkey' | 'start' | 'pending' | 'takeover' | 'done'
 const STEPS: Step[] = ['kit', 'passkey', 'start', 'pending', 'takeover']
 const STEP_LABELS = ['Kit', 'Face ID', 'Lock out', 'Delay', 'Take over']
 
 /** What the Kit step reads on-chain before a passkey exists (memory only). */
-type Target = { account: Address; oldKeySafe: Address; level: Level; dailyLimit: bigint }
+type Target = { account: Address; oldKeySafe: Address; level: Level; dailyLimit: bigint; keyProxy?: Address }
 type Failure = { title: string; message: string; legacy?: boolean }
-type Done = { oldKeySafe: Address; dailyLimit: bigint; startTx?: string; finalizeTx?: string; handoverTx: string }
+type Done = { oldKeySafe: Address; dailyLimit: bigint; startTx?: string; finalizeTx?: string; handoverTx?: string; lockOutNowTx?: string }
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -116,6 +117,65 @@ export function EvictionView() {
     setLocal(next)
   }
 
+  /**
+   * Kit + security key (#17, spike C4b, ADR-038): two of the Account's owners replace the old phone at once,
+   * from the start step or while the time-locked lock-out runs (the same transaction cancels it).
+   */
+  function lockOutNow(eviction: LocalEviction, passphrase: string) {
+    const keyProxy = eviction.keyProxy
+    if (!keyProxy) return
+    return run(
+      kit ? 'Your Kit is signing…' : 'Opening your Kit…',
+      async () => {
+        const owner = kit?.owner ?? (await unlockKit(passphrase)).owner
+        setBusy('Your Kit is signing…')
+        const state = await readAccount(eviction.account, { keySafe: eviction.oldKeySafe })
+        const dailyLimit = state.allowance?.amount ?? BigInt(eviction.dailyLimit ?? '0')
+        const replace = replaceKeySafeCall({
+          account: eviction.account,
+          owners: state.owners,
+          oldKeySafe: eviction.oldKeySafe,
+          newKeySafe: eviction.newKeySafe,
+          dailyLimit,
+          cancelEviction: state.pendingEviction ? (state.evictionModule ?? undefined) : undefined,
+        })
+        const kitSig = await kitSignature(owner, eviction.account, replace, state.nonce)
+        if (kitSig.kind !== 'ecdsa') throw new Error('The Kit did not sign')
+        setBusy('Use your security key…')
+        // The directory names the key's credential: trust it only for the key that is an owner now,
+        // otherwise the authenticator offers its keys.
+        const record = await findSecurityKey(eviction.account)
+        const credentialId = record && same(record.proxy, keyProxy) ? record.credentialId : undefined
+        const keySignature = await signWithSecurityKey(accountTxDigest(eviction.account, replace, state.nonce), credentialId)
+        setBusy('Locking the old phone out…')
+        const { txHash } = await api<{ txHash: string }>('/api/evict-now', {
+          account: eviction.account,
+          oldKeySafe: eviction.oldKeySafe,
+          newKeySafe: eviction.newKeySafe,
+          kitOwner: owner.address,
+          kitSignature: kitSig.data,
+          keyProxy,
+          keySignature,
+        })
+        setDone({ oldKeySafe: eviction.oldKeySafe, dailyLimit, lockOutNowTx: txHash })
+        setWallet({
+          name: eviction.name,
+          credentialId: eviction.credentialId,
+          publicKey: eviction.publicKey,
+          address: eviction.newKeySafe,
+          createdAt: Date.now(),
+          account: eviction.account,
+          level: eviction.level,
+          dailyLimit: dailyLimit.toString(),
+        })
+        updateLocal(null)
+        setKit(null)
+        setStep('done')
+      },
+      'Not locked out',
+    )
+  }
+
   async function openKit(text: string, passphrase: string) {
     const parsed = parseKitFile(text)
     if (parsed.version === 1) {
@@ -147,7 +207,10 @@ export function EvictionView() {
       throw new Error(`A lock-out started from another device is already running for this Account. It takes effect in ${formatDelay(left)}.`)
     }
     if (ours && same(ours.oldKeySafe, oldKeySafe)) return setStep('start')
-    setTarget({ account, oldKeySafe, level: evictionLevel(state, swissquote), dailyLimit: state.allowance?.amount ?? 0n })
+    // A security key (#17) is the owner that is neither the old phone nor the Kit, and a contract (its WebAuthn verifier).
+    const candidate = state.owners.find((o) => !same(o, oldKeySafe) && !same(o, opened.owner.address))
+    const keyProxy = candidate && ((await publicClient.getCode({ address: candidate }))?.length ?? 0) > 2 ? candidate : undefined
+    setTarget({ account, oldKeySafe, level: evictionLevel(state, swissquote), dailyLimit: state.allowance?.amount ?? 0n, keyProxy })
     setStep('passkey')
   }
 
@@ -184,6 +247,7 @@ export function EvictionView() {
                 publicKey: serializePublicKey(passkey.publicKey),
                 level: target.level,
                 dailyLimit: target.dailyLimit.toString(),
+                keyProxy: target.keyProxy,
               })
               setStep('start')
             })
@@ -214,6 +278,7 @@ export function EvictionView() {
               'Identity check failed',
             )
           }
+          onLockOutNow={(passphrase) => lockOutNow(local, passphrase)}
           onStart={() =>
             run('Your Kit is signing…', async () => {
               const started = await startEviction({
@@ -238,6 +303,17 @@ export function EvictionView() {
       {step === 'pending' && local && (
         <PendingStep
           eviction={local}
+          lockOutNow={
+            local.keyProxy ? (
+              <LockOutNow
+                eviction={local}
+                context="pending"
+                kitOpen={!!kit}
+                busy={busy}
+                onLockOut={(passphrase) => lockOutNow(local, passphrase)}
+              />
+            ) : null
+          }
           onReady={() => setStep('takeover')}
           onStartOver={() => {
             // Keep this device's new key; only the stopped lock-out is forgotten.
@@ -446,6 +522,7 @@ function StartStep({
   onVerify,
   onSimulateAttacker,
   onStart,
+  onLockOutNow,
 }: {
   eviction: LocalEviction
   verified: boolean
@@ -453,6 +530,7 @@ function StartStep({
   onVerify: () => void
   onSimulateAttacker: () => void
   onStart: () => void
+  onLockOutNow: (passphrase: string) => void
 }) {
   const level = eviction.level ?? 0
   const days = EVICTION_DAYS[level]
@@ -471,8 +549,12 @@ function StartStep({
   const today = todayLeft ?? limit
   const worst = today + limit * BigInt(days)
 
+  const lockOutNow = eviction.keyProxy ? <LockOutNow eviction={eviction} context="start" kitOpen busy={busy} onLockOut={onLockOutNow} /> : null
+
   if (!verified) {
     return (
+      <div className="space-y-5">
+        {lockOutNow}
       <StepCard
         icon={<ScanFace className="h-5 w-5" />}
         title="Verify your identity with Swissquote"
@@ -485,18 +567,21 @@ function StartStep({
           </div>
           <p className="mt-1 text-muted">Liveness check against your KYC record (FINMA Circular 2016/7). Simulated in this prototype.</p>
         </div>
-        <Button size="lg" className="w-full" disabled={!!busy} onClick={onVerify}>
+        {/* With a key, "Lock out now" above is the one orange action. */}
+        <Button size="lg" variant={eviction.keyProxy ? 'secondary' : 'primary'} className="w-full" disabled={!!busy} onClick={onVerify}>
           <BusyLabel busy={busy}>Start video identification</BusyLabel>
         </Button>
         <Button variant="secondary" className="w-full" disabled={!!busy} onClick={onSimulateAttacker}>
           <ShieldX className="h-4 w-4" /> Demo: simulate an attacker
         </Button>
       </StepCard>
+      </div>
     )
   }
 
   return (
     <div className="space-y-5">
+      {lockOutNow}
       <StepCard
         icon={<Smartphone className="h-5 w-5" />}
         title="First, erase the old phone"
@@ -545,21 +630,125 @@ function StartStep({
             )}
           </PlateRow>
           <PlateRow label="Can stop it">
-            <span className="inline-flex items-center gap-2">
-              <ApprovalSquares kit tone="hero" /> The old phone + your Kit
-            </span>
+            <CanStopIt withKey={!!eviction.keyProxy} />
           </PlateRow>
           {level === 1 && <PlateRow label="Swissquote">Co-signs after your identity check</PlateRow>}
           <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
         </dl>
       </Plate>
 
-      <Button size="lg" className="w-full" disabled={!!busy} onClick={onStart}>
+      {/* With a key, "Lock out now" above is the one orange action; the time-locked lock-out is the fallback. */}
+      <Button size="lg" variant={eviction.keyProxy ? 'secondary' : 'primary'} className="w-full" disabled={!!busy} onClick={onStart}>
         <BusyLabel busy={busy}>
           <KeyRound className="h-5 w-5" /> Start the lock-out
         </BusyLabel>
       </Button>
     </div>
+  )
+}
+
+/**
+ * With a security key (#17, PDR-017, ADR-038): the Kit and the key are two of the Account's owners, so
+ * together they replace the old phone at once. No delay, no identity check, and the thief can't stop it.
+ */
+function LockOutNow({
+  eviction,
+  context,
+  kitOpen,
+  busy,
+  onLockOut,
+}: {
+  eviction: LocalEviction
+  /** `start` leads the start step; `pending` ends the running time-locked lock-out instead of waiting. */
+  context: 'start' | 'pending'
+  kitOpen: boolean
+  busy: string | null
+  onLockOut: (passphrase: string) => void
+}) {
+  const [passphrase, setPassphrase] = useState('')
+  const pending = context === 'pending'
+  return (
+    <section aria-labelledby={pending ? 'lock-out-now-heading' : 'lock-out-now'} className="space-y-4">
+      {pending && (
+        <div>
+          <h2 id="lock-out-now-heading" className="text-lg font-semibold tracking-tight">
+            Have your security key?
+          </h2>
+          <p className="mt-1 text-sm text-muted">With your Kit, it locks the old phone out now and ends this wait.</p>
+        </div>
+      )}
+      <Plate
+        title={
+          <span className="inline-flex items-center gap-2">
+            <span className="inline-flex gap-1">
+              <FactorSquare factor="kit" tone="hero" />
+              <FactorSquare factor="key" tone="hero" />
+            </span>
+            <span id="lock-out-now">Your Kit and your security key will approve</span>
+          </span>
+        }
+      >
+        <dl>
+          <PlateRow label="Old phone">
+            <span className="font-mono">{shortAddress(eviction.oldKeySafe)}</span>
+            <span className="block text-xs font-normal text-hero-muted">Locked out at once</span>
+          </PlateRow>
+          <PlateRow label="New device">
+            This device <span className="font-mono text-hero-muted">{shortAddress(eviction.newKeySafe)}</span>
+            <span className="block text-xs font-normal text-hero-muted">Takes the phone’s daily limit</span>
+          </PlateRow>
+          {pending && <PlateRow label="This lock-out">Cancelled, no longer needed</PlateRow>}
+          <PlateRow label="Delay">None</PlateRow>
+          <PlateRow label="Network fee">Covered by Swissquote</PlateRow>
+        </dl>
+      </Plate>
+      {!kitOpen && (
+        <Field label="Kit passphrase" htmlFor="lock-out-now-kit-passphrase" hint="Your Kit is stored encrypted on this device.">
+          <Input
+            id="lock-out-now-kit-passphrase"
+            type="password"
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.target.value)}
+            autoComplete="off"
+          />
+        </Field>
+      )}
+      <Button
+        size="lg"
+        variant={pending ? 'secondary' : 'primary'}
+        className="w-full"
+        disabled={!!busy || (!kitOpen && !passphrase)}
+        onClick={() => onLockOut(passphrase)}
+      >
+        <BusyLabel busy={busy}>
+          <KeyRound className="h-5 w-5" /> Lock out now with Kit and key
+        </BusyLabel>
+      </Button>
+      {!pending && (
+        <p className="text-center text-sm text-muted">Without your key, start the {EVICTION_DAYS[eviction.level ?? 0]}-day lock-out below.</p>
+      )}
+    </section>
+  )
+}
+
+/** Who can stop a running lock-out: two owners together. With a security key, any two of the three (ADR-038). */
+function CanStopIt({ withKey }: { withKey: boolean }) {
+  if (!withKey) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <ApprovalSquares kit tone="hero" /> The old phone + your Kit
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className="inline-flex shrink-0 gap-1">
+        <FactorSquare factor="phone" tone="hero" />
+        <FactorSquare factor="kit" tone="hero" />
+        <FactorSquare factor="key" tone="hero" />
+      </span>
+      Any two of the old phone, your Kit, your key
+    </span>
   )
 }
 
@@ -570,7 +759,18 @@ function moment(ms: number, withDay: boolean) {
 
 type Watch = { kind: 'loading' } | { kind: 'pending'; executeAfter: number } | { kind: 'moved' } | { kind: 'stopped' }
 
-function PendingStep({ eviction, onReady, onStartOver }: { eviction: LocalEviction; onReady: () => void; onStartOver: () => void }) {
+function PendingStep({
+  eviction,
+  lockOutNow,
+  onReady,
+  onStartOver,
+}: {
+  eviction: LocalEviction
+  /** With a security key: end the wait with the Kit and the key (#17). */
+  lockOutNow: ReactNode
+  onReady: () => void
+  onStartOver: () => void
+}) {
   const now = useNow()
   const { live } = useBlockNumber()
   const [watch, setWatch] = useState<Watch>({ kind: 'loading' })
@@ -667,10 +867,10 @@ function PendingStep({ eviction, onReady, onStartOver }: { eviction: LocalEvicti
             This device <span className="font-mono text-hero-muted">{shortAddress(eviction.newKeySafe)}</span>
           </PlateRow>
           <PlateRow label="Can stop it">
-            <span className="inline-flex items-center gap-2">
-              <ApprovalSquares kit tone="hero" /> The old phone + your Kit
+            <CanStopIt withKey={!!eviction.keyProxy} />
+            <span className="block text-xs font-normal text-hero-muted">
+              {eviction.keyProxy ? 'Not a thief holding only the phone' : 'Not a thief: they hold only the phone'}
             </span>
-            <span className="block text-xs font-normal text-hero-muted">Not a thief: they hold only the phone</span>
           </PlateRow>
         </dl>
         {eviction.startTx && (
@@ -688,6 +888,7 @@ function PendingStep({ eviction, onReady, onStartOver }: { eviction: LocalEvicti
       <Button size="lg" className="w-full" disabled={!ready} onClick={onReady}>
         {ready ? 'Take over' : remaining > 0 ? 'Waiting for the delay…' : 'Waiting for the network…'}
       </Button>
+      {lockOutNow && <div className="border-t border-border pt-6">{lockOutNow}</div>}
     </div>
   )
 }
@@ -745,6 +946,7 @@ function TakeoverStep({
 
 function DoneStep({ done }: { done: Done }) {
   const links = [
+    { label: 'Locked out at once', tx: done.lockOutNowTx },
     { label: 'Lock-out', tx: done.startTx },
     { label: 'Old phone removed', tx: done.finalizeTx },
     { label: 'Limit moved', tx: done.handoverTx },
@@ -754,7 +956,8 @@ function DoneStep({ done }: { done: Done }) {
       <Plate title="Moved · live onchain" className="animate-enter">
         <dl>
           <PlateRow label="Old phone">
-            Locked out <span className="font-mono text-hero-muted">{shortAddress(done.oldKeySafe)}</span>
+            Locked out{done.lockOutNowTx ? ' at once' : ''} <span className="font-mono text-hero-muted">{shortAddress(done.oldKeySafe)}</span>
+            {done.lockOutNowTx && <span className="block text-xs font-normal text-hero-muted">With your Kit and your security key</span>}
           </PlateRow>
           <PlateRow label="This device">
             <span className="inline-flex items-center gap-2">

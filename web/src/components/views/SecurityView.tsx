@@ -8,6 +8,8 @@ import type { Address } from 'viem'
 import { formatDuration, nextReset } from '@/components/account/AllowanceMeter'
 import { LevelUpgrade } from '@/components/account/LevelUpgrade'
 import { LimitChange } from '@/components/account/LimitChange'
+import { SecurityKeyAdd } from '@/components/account/SecurityKeyAdd'
+import { useOwnerKinds } from '@/components/account/useOwnerKinds'
 import { LossBound, lossBound } from '@/components/account/LossBound'
 import { chainLevel, useSwissquoteKeys, type SwissquoteKeys } from '@/components/account/useSwissquoteKeys'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
@@ -23,8 +25,6 @@ import { EVICTION_DAYS, EVICTION_DELAY_IS_DEMO, EVICTION_DELAY_SECONDS, EXPLORER
 import { getPendingEviction } from '@/lib/eviction'
 import { formatDelay, formatUsdc, shortAddress } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
-import { kitAddresses } from '@/lib/recoveryKit'
-import { loadLocalKit } from '@/lib/storage'
 
 const same = (a?: string | null, b?: string | null) => !!a && !!b && a.toLowerCase() === b.toLowerCase()
 
@@ -43,8 +43,8 @@ const Loading = () => (
  * Security (#26, ADR-034, surface brief web-src-components-views-securityview-tsx): a proof, not a
  * settings list. The Account's owners as the chain reports them, "Swissquote · not an owner", the
  * worst case as an amount, then who can do what (PDR-013, PDR-014, PDR-018). Two rules change here,
- * each in a panel under its row: the daily limit (#13, ADR-035) and the level (#21, ADR-036). The
- * security key (#17) is "Soon".
+ * each in a panel under its row: the daily limit (#13, ADR-035), the level (#21, ADR-036) and the
+ * security key (#17, ADR-038).
  */
 export function SecurityView() {
   const { wallet, chain } = useLoadedWallet()
@@ -53,6 +53,9 @@ export function SecurityView() {
   // The level the chain enforces: level 1 when Swissquote's guardian guards the lock-out (as the eviction API reads it).
   const level: Level = state ? chainLevel(state, keys) : 0
   const limit = state?.allowance?.amount ?? null
+  // Who is who among the owners (#17): the security key changes the worst case and the lock-out.
+  const kinds = useOwnerKinds(state ?? { owners: [] }, wallet.address)
+  const hasKey = !!kinds.keyOwner
 
   return (
     <div className="space-y-12">
@@ -67,16 +70,16 @@ export function SecurityView() {
           </div>
         ) : (
           <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-            <OwnersPlate account={wallet.account} state={state} level={level} keys={keys} onRetry={retry} />
-            <LossBound limit={limit} level={level} roomy />
+            <OwnersPlate account={wallet.account} state={state} level={level} keys={keys} kinds={kinds} onRetry={retry} />
+            <LossBound limit={limit} level={level} withKey={hasKey} roomy />
           </div>
         )}
       </div>
 
       {state && (
         <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
-          <PowersMatrix limit={limit} level={level} />
-          <Scenarios limit={limit} level={level} />
+          <PowersMatrix limit={limit} level={level} hasKey={hasKey} />
+          <Scenarios limit={limit} level={level} hasKey={hasKey} />
         </div>
       )}
 
@@ -84,7 +87,7 @@ export function SecurityView() {
         <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
           {/* useSearchParams: kept inside a Suspense boundary for prerendering (Next docs). */}
           <Suspense fallback={null}>
-            <AccountRules state={state} level={level} keys={keys} onRetryKeys={retry} />
+            <AccountRules state={state} level={level} keys={keys} keyOwner={kinds.keyOwner} onRetryKeys={retry} />
           </Suspense>
           <div className="space-y-8">
             <ThisPhone />
@@ -108,25 +111,22 @@ function OwnersPlate({
   state,
   level,
   keys,
+  kinds,
   onRetry,
 }: {
   account: Address
   state: AccountState
   level: Level
   keys: SwissquoteKeys
+  kinds: ReturnType<typeof useOwnerKinds>
   onRetry: () => void
 }) {
   const { wallet } = useLoadedWallet()
   const { live } = useBlockNumber()
   const now = useNow()
-  const [localKit] = useState(() => loadLocalKit())
 
   const keySafe = wallet.address
-  const others = state.owners.filter((o) => !same(o, keySafe))
-  const fromKit = localKit ? kitAddresses(localKit).owner : null
-  // The protect flow creates the Account with [Key Safe, Kit owner]: without a local Kit copy, the other owner is the Kit.
-  const kitOwner = others.find((o) => same(o, fromKit)) ?? (others.length === 1 ? others[0] : null)
-  const unknown = others.filter((o) => !same(o, kitOwner))
+  const { kitOwner, keyOwner, unknown } = kinds
   const pending = getPendingEviction(state, keySafe)
   const lockOutIn = pending ? Math.max(0, pending.executeAfter - Math.floor(now / 1000)) : null
   const verdict =
@@ -158,14 +158,18 @@ function OwnersPlate({
         {unknown.map((owner) => (
           <OwnerRow key={owner} factor={null} name="Another owner" role="Not added by this app" address={owner} />
         ))}
-        <li className="flex items-center gap-3 border-t border-hero-2 py-3">
-          <span aria-hidden className="h-2.5 w-2.5 shrink-0 ring-1 ring-inset ring-hero-muted" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium text-hero-muted">Security key</span>
-            <span className="block text-xs text-hero-muted">A third owner you keep at home</span>
-          </span>
-          <Badge tone="hero">Soon</Badge>
-        </li>
+        {keyOwner ? (
+          <OwnerRow factor="key" name="Security key" role="Kept at home · with your Kit, locks a lost phone out as soon as you act" address={keyOwner} />
+        ) : (
+          <li className="flex items-center gap-3 border-t border-hero-2 py-3">
+            <span aria-hidden className="h-2.5 w-2.5 shrink-0 ring-[1.5px] ring-inset ring-accent/40" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium text-hero-muted">Security key</span>
+              <span className="block text-xs text-hero-muted">A third owner you keep at home</span>
+            </span>
+            <span className="token text-hero-muted">Not added</span>
+          </li>
+        )}
       </ul>
 
       <div className="flex flex-col gap-0.5 border-t border-hero-2 py-3 text-sm sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
@@ -254,39 +258,53 @@ function OwnerRow({
 
 // ── Who can do what ──────────────────────────────────────────────────────────
 
-const PARTIES = ['Phone', 'Kit', 'Swissquote'] as const
-
-/** One answer in the matrix: who acts (factor squares), in a few words; `span: 2` when the phone and the Kit act together. */
-type Cell = { factors: Factor[]; text: string; spoken: string; span?: 2 }
+/**
+ * One answer in the matrix: who acts (factor squares), in a few words. `span` covers the factors that act
+ * together, and `party` names them in the phone list ("Phone + Kit", "Any two").
+ */
+type Cell = { factors: Factor[]; text: string; spoken: string; span?: 2 | 3; party?: string }
 
 const NEVER: Cell = { factors: [], text: 'never', spoken: 'never' }
 const NOT_NEEDED: Cell = { factors: [], text: '—', spoken: 'not needed' }
-const TOGETHER: Cell = { factors: ['phone', 'kit'], text: 'together', spoken: 'yes, the phone and the Kit together', span: 2 }
+const TOGETHER: Cell = { factors: ['phone', 'kit'], text: 'together', spoken: 'yes, the phone and the Kit together', span: 2, party: 'Phone + Kit' }
+// With a security key the Account has three owners and still needs two: any two of them act together.
+const ANY_TWO: Cell = {
+  factors: ['phone', 'kit', 'key'],
+  text: 'any two',
+  spoken: 'yes, any two of the phone, the Kit and the key',
+  span: 3,
+  party: 'Phone, Kit, key:',
+}
 
 /** Powers × parties (PDR-014): what each one can do, enforced by the Account's contracts. A table from 640px, a list on phones. */
-function PowersMatrix({ limit, level }: { limit: bigint | null; level: Level }) {
+function PowersMatrix({ limit, level, hasKey }: { limit: bigint | null; level: Level; hasKey: boolean }) {
   const days = EVICTION_DAYS[level]
+  const parties = hasKey ? ['Phone', 'Kit', 'Key', 'Swissquote'] : ['Phone', 'Kit', 'Swissquote']
+  const kitLockOut: Cell =
+    level === 1 ? { factors: ['kit'], text: 'starts it', spoken: 'starts it' } : { factors: ['kit'], text: 'alone', spoken: 'yes, alone' }
+  const swissquoteLockOut: Cell = level === 1 ? { factors: [], text: 'checks ID', spoken: 'checks your identity first' } : NOT_NEEDED
   const rows: { power: string; detail?: string; cells: Cell[] }[] = [
     {
       power: `Spend up to ${limit !== null ? formatUsdc(limit) : '…'} USDC a day`,
-      cells: [{ factors: ['phone'], text: 'alone', spoken: 'yes, Face ID alone' }, NOT_NEEDED, NEVER],
+      cells: [{ factors: ['phone'], text: 'alone', spoken: 'yes, Face ID alone' }, NOT_NEEDED, ...(hasKey ? [NOT_NEEDED] : []), NEVER],
     },
-    { power: 'Pay more, swap, lend, change a rule', cells: [TOGETHER, NEVER] },
+    { power: 'Pay more, swap, lend, change a rule', cells: [hasKey ? ANY_TWO : TOGETHER, NEVER] },
     {
       power: 'Lock out a lost or stolen phone',
-      detail: `After ${days} days${demoDelay(level)}`,
-      cells:
-        level === 1
-          ? [NOT_NEEDED, { factors: ['kit'], text: 'starts it', spoken: 'starts it' }, { factors: [], text: 'checks ID', spoken: 'checks your identity first' }]
-          : [NOT_NEEDED, { factors: ['kit'], text: 'alone', spoken: 'yes, alone' }, NOT_NEEDED],
+      detail: hasKey
+        ? `After ${days} days${demoDelay(level)} with the Kit, or as soon as you act with the Kit and the key`
+        : `After ${days} days${demoDelay(level)}`,
+      cells: hasKey
+        ? [NOT_NEEDED, kitLockOut, { factors: ['key'], text: '+ Kit, at once', spoken: 'with the Kit, at once' }, swissquoteLockOut]
+        : [NOT_NEEDED, kitLockOut, swissquoteLockOut],
     },
-    { power: 'Stop a lock-out', cells: [TOGETHER, NEVER] },
+    { power: 'Stop a lock-out', cells: [hasKey ? ANY_TWO : TOGETHER, NEVER] },
   ]
-  // Each cell's party, for the phone list: a cell spanning two columns is "Phone + Kit".
+  // Each cell's party, for the phone list: a cell spanning columns names the factors acting together.
   const withParties = (cells: Cell[]) => {
     let column = 0
     return cells.map((cell) => {
-      const party = cell.span === 2 ? 'Phone + Kit' : PARTIES[column]
+      const party = cell.party ?? parties[column]
       column += cell.span ?? 1
       return { cell, party }
     })
@@ -308,6 +326,7 @@ function PowersMatrix({ limit, level }: { limit: bigint | null; level: Level }) 
             </th>
             <PartyHeader factor="phone">Phone</PartyHeader>
             <PartyHeader factor="kit">Kit</PartyHeader>
+            {hasKey && <PartyHeader factor="key">Key</PartyHeader>}
             <PartyHeader factor={null}>Swissquote</PartyHeader>
           </tr>
         </thead>
@@ -350,7 +369,9 @@ function PowersMatrix({ limit, level }: { limit: bigint | null; level: Level }) 
       </ul>
 
       <p className="mt-3 text-sm text-muted">
-        Swissquote holds no owner key, so it cannot move or take your money, and nobody can raise your limit without your Kit.
+        {hasKey
+          ? 'Swissquote holds no owner key, so it cannot move or take your money. Any two of your three factors act together: keep them in three places, the phone in your pocket, the key at home, the passphrase in your head.'
+          : 'Swissquote holds no owner key, so it cannot move or take your money, and nobody can raise your limit without your Kit.'}
       </p>
     </section>
   )
@@ -386,19 +407,33 @@ function CellText({ cell }: { cell: Cell }) {
 }
 
 /** The threat model in four lines, with the worst case as an amount. */
-function Scenarios({ limit, level }: { limit: bigint | null; level: Level }) {
+function Scenarios({ limit, level, hasKey }: { limit: bigint | null; level: Level; hasKey: boolean }) {
   const days = EVICTION_DAYS[level]
-  const bound = limit !== null ? formatUsdc(lossBound(limit, level)) : '…'
+  const bound = limit !== null ? formatUsdc(hasKey ? limit : lossBound(limit, level)) : '…'
   const items: { title: string; body: ReactNode }[] = [
     {
       title: 'Your phone is stolen, unlocked',
-      body: (
+      body: hasKey ? (
+        <>
+          From a new device, your Kit and your security key lock the phone out as soon as you act: the thief takes at most{' '}
+          <span className="font-mono tabular-nums text-foreground">{bound}</span> USDC if you act before the next daily reset, and each reset
+          adds one more day of your limit. They cannot stop it.
+        </>
+      ) : (
         <>
           The thief can take at most <span className="font-mono tabular-nums text-foreground">{bound}</span> USDC, then your Kit locks the phone
           out. They cannot stop it.
         </>
       ),
     },
+    ...(hasKey
+      ? [
+          {
+            title: 'Someone takes your phone and your key',
+            body: 'Together they are two of your three factors: they could move everything. Keep the key at home, apart from the phone, and the passphrase in your head.',
+          },
+        ]
+      : []),
     {
       title: 'You lose your phone',
       body: `On a new phone, “Phone lost or stolen?” with your Kit. Same Account, same money, after ${days} days${demoDelay(level)}.`,
@@ -437,9 +472,21 @@ function Scenarios({ limit, level }: { limit: bigint | null; level: Level }) {
 
 // ── Rules (limit, lock-out delay, security key) ──────────────────────────────
 
-type RulePanel = 'limit' | 'level'
+type RulePanel = 'limit' | 'level' | 'key'
 
-function AccountRules({ state, level, keys, onRetryKeys }: { state: AccountState; level: Level; keys: SwissquoteKeys; onRetryKeys: () => void }) {
+function AccountRules({
+  state,
+  level,
+  keys,
+  keyOwner,
+  onRetryKeys,
+}: {
+  state: AccountState
+  level: Level
+  keys: SwissquoteKeys
+  keyOwner: Address | null
+  onRetryKeys: () => void
+}) {
   const now = useNow(30_000)
   const allowance = state.allowance
   const days = EVICTION_DAYS[level]
@@ -450,7 +497,8 @@ function AccountRules({ state, level, keys, onRetryKeys }: { state: AccountState
   const router = useRouter()
   const asked = searchParams.get('change')
   // ?change=level only means something at level 0 (a reload or a back after the upgrade must not reopen it).
-  const wanted: RulePanel | null = asked === 'limit' || (asked === 'level' && level === 0) ? asked : null
+  const wanted: RulePanel | null =
+    asked === 'limit' || (asked === 'level' && level === 0) || (asked === 'key' && !keyOwner) ? (asked as RulePanel) : null
   const [open, setOpen] = useState<RulePanel | null>(wanted)
   const [done, setDone] = useState(false)
   // Next keeps this page alive while hidden (Activity): follow the link's ?change= on each visit.
@@ -465,9 +513,10 @@ function AccountRules({ state, level, keys, onRetryKeys }: { state: AccountState
   // Closing a panel (Cancel, Done) gives focus back to the control that opened it.
   const limitOpener = useRef<HTMLButtonElement>(null)
   const levelOpener = useRef<HTMLButtonElement>(null)
+  const keyOpener = useRef<HTMLButtonElement>(null)
   const last = useRef<RulePanel | null>(null)
   useEffect(() => {
-    if (open === null && last.current) (last.current === 'limit' ? limitOpener : levelOpener).current?.focus()
+    if (open === null && last.current) ({ limit: limitOpener, level: levelOpener, key: keyOpener })[last.current].current?.focus()
     last.current = open
   }, [open])
   // A panel is a transient task: close it when the page is hidden, so coming back never shows a stale
@@ -551,9 +600,25 @@ function AccountRules({ state, level, keys, onRetryKeys }: { state: AccountState
         />
         <RuleRow
           name="Security key"
-          value="None"
-          detail="A third owner you keep at home. With your Kit, it locks a stolen phone out at once."
-          action="Add a key"
+          value={keyOwner ? 'Added' : 'None'}
+          detail={
+            keyOwner ? (
+              <>
+                A third owner, kept at home. With your Kit, it locks a stolen phone out at once.
+                <span className="mt-1.5 flex">
+                  <AddressPill address={keyOwner} />
+                </span>
+              </>
+            ) : (
+              'A third owner you keep at home. With your Kit, it locks a stolen phone out at once.'
+            )
+          }
+          control={
+            !keyOwner || open === 'key' ? (
+              <RuleControl ref={keyOpener} label="Add a key" open={open === 'key'} done={done} onOpen={() => openPanel('key')} onCancel={close} />
+            ) : null
+          }
+          panel={open === 'key' && <SecurityKeyAdd state={state} level={level} onClose={close} onChanged={() => setDone(true)} />}
         />
       </ul>
     </section>

@@ -17,6 +17,7 @@ import { useBlockNumber } from '@/components/ui/live'
 import { PageHeader } from '@/components/ui/page'
 import { Plate, PlateRow } from '@/components/ui/plate'
 import { Stepper } from '@/components/ui/stepper'
+import { QuotaHint } from '@/components/swissquote/QuotaHint'
 import { EXPLORER_URL, USDC_DECIMALS } from '@/lib/config'
 import { APPROVED_DAPPS, UNLISTED_DEMO, dappActionCalls, dappActionSteps, unlistedDemoCalls, type Dapp, type DappAction } from '@/lib/dapps'
 import { errorChain, errorMessage, formatUsdc, shortAddress } from '@/lib/format'
@@ -467,6 +468,7 @@ function ActionPanel({
           {error && (
             <Alert tone="danger" title="Not sent">
               {error}
+              <QuotaHint error={error} />
             </Alert>
           )}
           <div className="grid gap-3 sm:grid-cols-[auto_1fr]">
@@ -553,6 +555,7 @@ function UnlistedDemo() {
           ) : (
             <Alert tone="danger" title="Not sent">
               {outcome.message}
+              <QuotaHint error={outcome.message} />
             </Alert>
           )}
         </div>

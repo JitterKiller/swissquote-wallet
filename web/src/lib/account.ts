@@ -504,7 +504,11 @@ export function handoverCall({
   return batchCalls(allowanceMoveCalls(oldKeySafe, newKeySafe, dailyLimit, token))
 }
 
-/** Immediate eviction (Kit + security key, PDR-017): swap the Key Safe and move the allowance, atomically. */
+/**
+ * Immediate eviction (Kit + security key, PDR-017): swap the Key Safe and move the allowance, atomically.
+ * With `cancelEviction` (the eviction module), a time-locked lock-out still running is cancelled in the same
+ * transaction: it is no longer needed.
+ */
 export function replaceKeySafeCall(params: {
   account: Address
   owners: Address[]
@@ -512,9 +516,14 @@ export function replaceKeySafeCall(params: {
   newKeySafe: Address
   dailyLimit: bigint
   token?: Address
+  cancelEviction?: Address
 }): AccountCall {
-  const { account, owners, oldKeySafe, newKeySafe, dailyLimit, token = USDC_ADDRESS } = params
-  return batchCalls([swapOwnerCall(account, owners, oldKeySafe, newKeySafe), ...allowanceMoveCalls(oldKeySafe, newKeySafe, dailyLimit, token)])
+  const { account, owners, oldKeySafe, newKeySafe, dailyLimit, token = USDC_ADDRESS, cancelEviction } = params
+  return batchCalls([
+    ...(cancelEviction ? [cancelEvictionCall(cancelEviction)] : []),
+    swapOwnerCall(account, owners, oldKeySafe, newKeySafe),
+    ...allowanceMoveCalls(oldKeySafe, newKeySafe, dailyLimit, token),
+  ])
 }
 
 function allowanceMoveCalls(oldKeySafe: Address, newKeySafe: Address, dailyLimit: bigint, token: Address): AccountCall[] {

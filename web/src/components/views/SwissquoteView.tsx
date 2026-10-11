@@ -136,7 +136,7 @@ export function SwissquoteView() {
               </Card>
 
               <Card>
-                <CardHeader icon={<ArrowUpRight className="h-[18px] w-[18px]" />} title="Move to Swissquote" description="Face ID sends USDC to Swissquote; your account is credited as soon as the transfer is on-chain." />
+                <CardHeader icon={<ArrowUpRight className="h-[18px] w-[18px]" />} title="Move to Swissquote" description="Face ID sends USDC to Swissquote; your account is credited as soon as the transfer is on-chain, ready to sell for CHF." />
                 <CardBody className="space-y-3">
                   <Field label="Amount (USDC)" htmlFor="to-swissquote">
                     <Input id="to-swissquote" inputMode="decimal" placeholder="20.00" value={toSwissquote} onChange={(e) => setToSwissquote(cleanAmount(e.target.value, 2))} />
