@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-11T20:00:00+00:00",
+  "generatedAt": "2026-10-11T22:00:00+00:00",
   "title": "Design System: SQure",
   "extensions": {
     "colorMeta": {
@@ -370,6 +370,10 @@
       "token": {
         "displayName": "Token",
         "purpose": "Uppercase mono labels for data and short verifiable status: stepper, token bar, plate titles, units, \"2 of 2 · yours\"."
+      },
+      "rate": {
+        "displayName": "Rate",
+        "purpose": "A protocol's variable rate on its Earn card, followed by \"a year, variable\"."
       }
     },
     "shadows": [
@@ -553,6 +557,22 @@
       "description": "A pending lock-out as a live onchain object: mono countdown, ten delay cells lit as time elapses, start and effect times, rows, Basescan link. No seal.",
       "html": "<section class=\"ds-lock\"><p class=\"ds-lock-tok\"><i></i>Lock-out · live onchain</p><p class=\"ds-lock-fig\">2 d 14 h</p><p class=\"ds-lock-sub\">until the old phone is locked out</p><div class=\"ds-lock-cells\"><span class=\"ds-on\"></span><span class=\"ds-on\"></span><span class=\"ds-on\"></span><span class=\"ds-on\"></span><span></span><span></span><span></span><span></span><span></span><span></span></div><p class=\"ds-lock-times\"><span>Started Sat 10:42</span><span>Takes effect Sat 10:42</span></p><dl><div><dt>Old phone</dt><dd>0x3f2a…91c4</dd></div><div><dt>New device</dt><dd>This device</dd></div><div><dt>Can stop it</dt><dd>The old phone + your Kit</dd></div></dl><a href=\"#\">Lock-out on Basescan</a></section>",
       "css": ".ds-lock{position:relative;background:var(--hero, #171717);color:var(--hero-fg, #fafafa);border:1px solid var(--hero-2, #232323);border-radius:10px;padding:24px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-lock-tok{display:flex;align-items:center;gap:8px;margin:0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--hero-muted, #a3a3a3);} .ds-lock-tok i{width:6px;height:6px;background:var(--success, #0f7a55);} .ds-lock-fig{margin:16px 0 0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:60px;font-weight:600;line-height:1;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;} .ds-lock-sub{margin:4px 0 0;font-size:14px;color:var(--hero-muted, #a3a3a3);} .ds-lock-cells{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:20px;} .ds-lock-cells span{height:24px;border-radius:3px;background:var(--hero-2, #232323);transition:background-color 300ms;} .ds-lock-cells span.ds-on{background:var(--accent, #ff5f0f);} .ds-lock-times{display:flex;justify-content:space-between;gap:12px;margin:8px 0 0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:12px;font-variant-numeric:tabular-nums;color:var(--hero-muted, #a3a3a3);} .ds-lock dl{margin:20px 0 0;} .ds-lock dl div{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-top:1px solid var(--hero-2, #232323);font-size:14px;} .ds-lock dl div:first-child{border-top:0;padding-top:0;} .ds-lock dt{color:var(--hero-muted, #a3a3a3);} .ds-lock dd{margin:0;font-weight:500;text-align:right;} .ds-lock a{display:inline-block;margin-top:16px;font-size:14px;color:var(--hero-muted, #a3a3a3);text-decoration:none;transition:color 150ms;} .ds-lock a:hover{color:var(--hero-fg, #fafafa);} .ds-lock a:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;}"
+    },
+    {
+      "name": "Positions Plate",
+      "kind": "custom",
+      "refersTo": "plate",
+      "description": "What the Account has lent, live onchain: live-square token, total in the Balance figure, one row per protocol (amount, then rate in Plate Grey), testnet footnote. No seal.",
+      "html": "<section class=\"ds-pos\"><p class=\"ds-pos-tok\"><i></i>Lent · live onchain</p><p class=\"ds-pos-fig\">0.50 <span>USDC</span></p><dl><div><dt>Aave v3</dt><dd><b>0.50</b> USDC <em>1.25%</em></dd></div><div><dt>Compound III</dt><dd><b>0.00</b> USDC <em>0.03%</em></dd></div></dl><p class=\"ds-pos-note\">Testnet rates, variable. Swissquote neither holds the positions nor promises a return.</p></section>",
+      "css": ".ds-pos{background:var(--hero, #171717);color:var(--hero-fg, #fafafa);border:1px solid var(--hero-2, #232323);border-radius:10px;padding:24px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;} .ds-pos-tok{display:flex;align-items:center;gap:8px;margin:0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--hero-muted, #a3a3a3);} .ds-pos-tok i{width:6px;height:6px;background:var(--success, #0f7a55);} .ds-pos-fig{margin:16px 0 0;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:60px;font-weight:600;line-height:1;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;} .ds-pos-fig span{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:20px;font-weight:400;letter-spacing:normal;color:var(--hero-muted, #a3a3a3);} .ds-pos dl{margin:20px 0 0;} .ds-pos dl div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-top:1px solid var(--hero-2, #232323);font-size:14px;} .ds-pos dt{color:var(--hero-muted, #a3a3a3);} .ds-pos dd{margin:0;} .ds-pos dd b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-pos dd em{font-style:normal;margin-left:12px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;color:var(--hero-muted, #a3a3a3);font-variant-numeric:tabular-nums;} .ds-pos-note{margin:16px 0 0;font-size:12px;color:var(--hero-muted, #a3a3a3);}"
+    },
+    {
+      "name": "Protocol Card",
+      "kind": "card",
+      "refersTo": "protocol-card",
+      "description": "One approved protocol: name with the neutral Approved badge, rate in mono with \"a year, variable\", what it is and its risks, hairline rows, secondary Deposit / Withdraw. In action it takes an ink border.",
+      "html": "<section class=\"ds-proto\"><div class=\"ds-proto-head\"><h2>Aave v3</h2><span class=\"ds-proto-badge\">Approved</span></div><p class=\"ds-proto-rate\"><b>1.25%</b> a year, variable</p><p class=\"ds-proto-what\">Lend USDC to the Aave market and earn a variable rate.</p><p class=\"ds-proto-risk\">Smart-contract and liquidity risk. The rate changes with demand. Not a deposit, not guaranteed.</p><ul><li><span>You lend</span><span><b>0.50</b> USDC</span></li><li><span>Contract</span><a href=\"#\">0x07eA…814b</a></li></ul><div class=\"ds-proto-acts\"><button>Deposit</button><button>Withdraw</button></div></section>",
+      "css": ".ds-proto{background:var(--surface, #fff);color:var(--foreground, #171717);border:1px solid var(--border, #e7e5e4);border-radius:10px;padding:24px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;transition:border-color 150ms;} .ds-proto:focus-within{border-color:var(--foreground, #171717);} .ds-proto-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;} .ds-proto h2{margin:0;font-size:18px;font-weight:600;letter-spacing:-0.01em;} .ds-proto-badge{border:1px solid var(--border, #e7e5e4);background:var(--surface-2, #f5f5f4);border-radius:6px;padding:2px 6px;font-size:12px;font-weight:500;color:var(--muted, #6b6b6b);} .ds-proto-rate{margin:12px 0 0;font-size:14px;color:var(--muted, #6b6b6b);} .ds-proto-rate b{margin-right:8px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:30px;font-weight:600;letter-spacing:-0.025em;color:var(--foreground, #171717);font-variant-numeric:tabular-nums;} .ds-proto-what{margin:12px 0 0;font-size:14px;} .ds-proto-risk{margin:8px 0 0;font-size:14px;color:var(--muted, #6b6b6b);} .ds-proto ul{list-style:none;margin:16px 0 0;padding:0;border-top:1px solid var(--border, #e7e5e4);font-size:14px;} .ds-proto li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border, #e7e5e4);} .ds-proto li span:first-child{color:var(--muted, #6b6b6b);} .ds-proto li b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:500;} .ds-proto li a{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:12px;color:var(--muted, #6b6b6b);text-decoration:none;} .ds-proto li a:hover{color:var(--foreground, #171717);} .ds-proto-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:20px;} .ds-proto-acts button{height:48px;border:1px solid var(--border, #e7e5e4);border-radius:8px;background:var(--surface, #fff);font:inherit;font-size:16px;font-weight:500;color:var(--foreground, #171717);cursor:pointer;transition:background-color 150ms, transform 150ms;} .ds-proto-acts button:hover{background:var(--surface-2, #f5f5f4);} .ds-proto-acts button:active{transform:scale(0.97);} .ds-proto-acts button:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;}"
     }
   ],
   "narrative": {
@@ -590,7 +610,7 @@
       },
       {
         "name": "The Two Decimals Rule",
-        "body": "Every displayed USDC amount shows exactly two decimals (formatUsdc): balances, limits, rows, review plates, notes. Rounded short forms are for input defaults, not for display.",
+        "body": "Every displayed USDC amount shows exactly two decimals (formatUsdc): balances, limits, rows, review plates, notes. Rounded short forms are for input defaults, not for display. Rates follow the same discipline: a percentage with two decimals (\"1.25%\"), always with \"variable\" beside it, never a promised return.",
         "section": "typography"
       },
       {
@@ -631,6 +651,9 @@
       "**Do** call the device in hand \"this device\" in the lost-phone flow (it may be a laptop) and the other one \"the old phone\".",
       "**Do** show every displayed USDC amount with two decimals.",
       "**Do** say which factors a payment needs in a sentence with approval squares, mono only for the figures.",
+      "**Do** show a rate as a percentage with two decimals and \"variable\", next to a footnote that it is a testnet rate and not promised.",
+      "**Do** mark the card or row in action with an ink border, and keep the screen's one orange fill for its primary action.",
+      "**Do** name an approved dApp with its short address in readable steps, and keep a transfer's recipient as the full address.",
       "**Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours."
     ],
     "donts": [
@@ -641,7 +664,8 @@
       "**Don't** round rectangles beyond 12px or turn markers into pills; the seal is the only circle.",
       "**Don't** place the seal anywhere but on a commit plate, and never more than one per screen.",
       "**Don't** give the Swissquote guardian a factor square; it is never an owner.",
-      "**Don't** set \"Soon\" or other non-data labels as mono tokens; use the kit's neutral badge."
+      "**Don't** set \"Soon\" or other non-data labels as mono tokens; use the kit's neutral badge.",
+      "**Don't** wrap a bordered panel's sections in cards of their own; separate them with hairline rules (plates, alerts and the Kit drop zone stay elements inside a section)."
     ]
   }
 }

@@ -10,6 +10,7 @@ import {
   Repeat,
   ShieldCheck,
   type LucideIcon,
+  Sprout,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -34,6 +35,7 @@ const NAV: NavItem[] = [
   { href: '/', label: 'Overview', icon: House },
   { href: '/send', label: 'Send', icon: ArrowUpRight },
   { href: '/receive', label: 'Receive', icon: ArrowDownLeft },
+  { href: '/earn', label: 'Earn', icon: Sprout },
   { href: '/handle', label: 'Handle', icon: AtSign },
   { href: '/swissquote', label: 'Swissquote', icon: Landmark },
   { href: '/swap', label: 'Swap', icon: Repeat, soon: true },

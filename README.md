@@ -22,7 +22,7 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity with the factors that approved each payment (ADR-029), security page, light/dark | ✅ |
 | Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022), on the Send review (#12) | ✅ |
-| Approved dApps, built natively: Aave v3 and Compound III with USDC, 2 factors, sponsored only when approved (PDR-025, ADR-028); UI pending | ✅ (logic) |
+| Approved dApps, built natively: Aave v3 and Compound III with USDC, 2 factors, sponsored only when approved (PDR-025, ADR-028); Earn screen with positions, risk acknowledgement and the unlisted-dApp demo (ADR-031, `npm run e2e:earn`) | ✅ |
 | `@handle` directory: verified payee before Face ID, visibility, contacts, payment request link + QR (PDR-010, ADR-024), in the Send recipient field (#12) | ✅ |
 | Transfers between the Swissquote account and the wallet, both directions, travel rule filled in (PDR-024, ADR-025); demo treasury to fund once | ✅ |
 | Third guardian (trusted contact) | ⏳ |

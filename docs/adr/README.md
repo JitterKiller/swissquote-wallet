@@ -76,7 +76,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-019](architecture/ADR-019-account-eviction-module.md) | Account eviction: Candide recovery module on the Account, guardian = the Kit's second key | Accepted (spike C5 passed; amends ADR-017, ADR-018) |
 | [ADR-020](architecture/ADR-020-deployment-vercel-upstash.md) | Deployment: Vercel + Upstash Redis behind an async `store()`, one fixed demo domain (passkey rpId) | Accepted |
 | [ADR-021](architecture/ADR-021-wallet-registry.md) | Wallet registry: passkey-signed EIP-712 statement, verified with ox + on-chain owner checks | Accepted |
-| [ADR-022](architecture/ADR-022-compliance-checks.md) | Compliance checks: server screening (mock list + optional Chainalysis), client preview, look-alike and high-value warnings | Accepted |
+| [ADR-022](architecture/ADR-022-compliance-checks.md) | Compliance checks: server screening (mock list + optional Chainalysis), client preview, look-alike and high-value warnings | Accepted, amended by ADR-031 |
 | [ADR-023](architecture/ADR-023-sponsorship-policy-proxy.md) | Sponsorship policy: ERC-7677 paymaster proxy (quota, security operations, sanctions, stolen-device reports) | Accepted, amended by ADR-028 |
 | [ADR-024](architecture/ADR-024-handle-directory.md) | `@handle` directory: exact-match resolution for linked clients, visibility and contacts, `RecipientField`, MOCK session | Accepted |
 | [ADR-025](architecture/ADR-025-swissquote-transfers.md) | Swissquote account transfers: treasury = relayer Safe, deposits verified from on-chain logs, MOCK balances | Accepted |
@@ -85,6 +85,7 @@ A product decision usually has one or more architecture decisions implementing i
 | [ADR-028](architecture/ADR-028-approved-dapps-native-integration.md) | Approved dApps: native call builders (`lib/dapps.ts`), 2-factor Account transactions, paymaster allowlist | Accepted |
 | [ADR-029](architecture/ADR-029-approval-route-from-chain-events.md) | Activity shows which factors approved each payment (Face ID alone vs Face ID + Kit), read from the Allowance Module's `ExecuteAllowanceTransfer` events | Accepted |
 | [ADR-030](architecture/ADR-030-lost-phone-flow-ui.md) | "Phone lost or stolen?" in the app: `/lost` on the new phone (Kit, Face ID, lock-out, live countdown, takeover in one action), red alert and 2-factor stop on the old phone, "Demo: try with Face ID only" refused (GS020), `npm run e2e:eviction` | Accepted |
+| [ADR-031](architecture/ADR-031-earn-screen.md) | Earn screen: positions plate, approved-protocol cards, 2-factor review with risk acknowledgement, "Demo: try an unlisted dApp" (paymaster refusal), chained simulation (eth_simulateV1), `npm run e2e:earn` | Accepted |
 
 ## Open questions (future records)
 

@@ -1,16 +1,18 @@
 'use client'
 
+import { ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import type { Address } from 'viem'
 
-import { Badge, Skeleton } from '@/components/ui/feedback'
+import { Skeleton } from '@/components/ui/feedback'
 import { APPROVED_DAPPS, readDappPosition, type Dapp } from '@/lib/dapps'
 import { formatUsdc } from '@/lib/format'
 
 type Position = { dapp: Dapp; supplied: bigint; apy: number }
 
-/** Positions in the approved dApps (PDR-025), refreshed every 30 s. */
-export function useEarnPositions(account: Address | null) {
+/** Positions in the approved dApps (PDR-025), refreshed every 30 s and whenever `refreshKey` changes. */
+export function useEarnPositions(account: Address | null, refreshKey = 0) {
   const [state, setState] = useState<{ account: Address; positions: Position[] } | null>(null)
   useEffect(() => {
     if (!account) return
@@ -27,11 +29,11 @@ export function useEarnPositions(account: Address | null) {
       cancelled = true
       clearInterval(id)
     }
-  }, [account])
+  }, [account, refreshKey])
   return state && state.account === account ? state.positions : null
 }
 
-const percent = (apy: number) => `${(apy * 100).toFixed(2)}%`
+export const percent = (apy: number) => `${(apy * 100).toFixed(2)}%`
 
 /** Earn summary on the Overview: what is lent to approved dApps, at what variable rate. */
 export function EarnCard({ account }: { account: Address }) {
@@ -43,7 +45,9 @@ export function EarnCard({ account }: { account: Address }) {
     <section className="rounded-2xl border border-border p-5">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="font-semibold">Earn</h2>
-        <Badge>Soon</Badge>
+        <Link href="/earn" className="inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline">
+          Open Earn <ChevronRight className="h-4 w-4" />
+        </Link>
       </div>
       {positions === null ? (
         <div className="mt-3 space-y-2">

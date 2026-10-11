@@ -66,6 +66,13 @@ typography:
     fontWeight: 400
     lineHeight: 1.4
     fontFeature: "\"tnum\""
+  rate:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "1.875rem"
+    fontWeight: 600
+    lineHeight: 1.2
+    letterSpacing: "-0.025em"
+    fontFeature: "\"tnum\""
   token:
     fontFamily: "JetBrains Mono, ui-monospace, monospace"
     fontSize: "11px"
@@ -164,6 +171,16 @@ components:
     padding: "2px 6px"
   card:
     backgroundColor: "{colors.surface}"
+    rounded: "{rounded.2xl}"
+    padding: "20px 24px"
+  protocol-card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.2xl}"
+    padding: "20px 24px"
+  action-panel:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
     rounded: "{rounded.2xl}"
     padding: "20px 24px"
   loss-bound-field:
@@ -270,14 +287,15 @@ Dark mode (OS setting) swaps the ground to near-black (#0c0c0c, surfaces #151515
 - **Body small** (400 or 500, 0.875rem): field labels (500), list rows, plate rows, alerts. Hints and errors drop to 0.75rem.
 - **Figure XL** (JetBrains Mono 600, 3rem, tabular): the amount being chosen, inside the amount field. The loss bound sits one step down at 2.25rem with its unit in the grotesk.
 - **Figure** (JetBrains Mono 400, 1.25rem, tabular): the live strip's facts (fee, block, status).
-- **Token** (JetBrains Mono 500, 11px, 0.12em, uppercase): stepper labels, the token bar, a plate's title, units inside fields ("USDC / DAY"), file metadata, and short verifiable status ("2 of 2 · yours", "Account · live onchain").
+- **Rate** (JetBrains Mono 600, 1.875rem, tabular, tight): a protocol's variable rate on its card, followed by "a year, variable" in 14px Graphite grotesk.
+- **Token** (JetBrains Mono 500, 11px, 0.12em, uppercase): stepper labels, the token bar, a plate's title, units inside fields ("USDC / DAY"), file metadata, and short verifiable status ("2 of 2 · yours", "Account · live onchain", "Lent · live onchain").
 - **Balance** (JetBrains Mono 600, 3rem on phones and 3.75rem from 640px, tabular, -0.04em): the Account balance on its plate, and the amount on a review plate (2.25 to 3rem), with "USDC" in the grotesk beside it.
 - **Route note** (Hanken Grotesk 500, 0.875rem, with a 600 lead such as "Needs your Kit:" or "Face ID alone:"): a sentence that says which factors a payment needs, preceded by its approval squares. Only the figures inside it are mono. It replaced an uppercase mono token that was illegible on a projector: guidance a user must read is a sentence, never a token.
 
 ### Named Rules
 **The Mono-Is-Data Rule.** JetBrains Mono is reserved for figures, addresses, units and verifiable status. If the text is not a number, an address, a unit or a chain fact, it is set in Hanken Grotesk.
 
-**The Two Decimals Rule.** Every displayed USDC amount shows exactly two decimals (formatUsdc): balances, limits, rows, review plates, notes. Rounded short forms are for input defaults, not for display.
+**The Two Decimals Rule.** Every displayed USDC amount shows exactly two decimals (formatUsdc): balances, limits, rows, review plates, notes. Rounded short forms are for input defaults, not for display. Rates follow the same discipline: a percentage with two decimals ("1.25%"), always with "variable" beside it, never a promised return.
 
 **The Tight Display Rule.** Titles are semibold at 1.05 line-height with negative tracking (-0.03 to -0.035em). Display size is for the one title per screen.
 
@@ -346,7 +364,19 @@ A row of 24px squares (6px corners) joined by hairlines: done is ink with a chec
 The commit surface. Plate Ink ground, Plate Rule border, 10px corners, 20 to 24px padding, crosshairs at two corners, a 120px seal overhanging the top edge by 56px at the right. Its title is a token in Plate Grey, and it reserves room for the seal on the right only when the plate carries one; its content is a definition list of rows (label in Plate Grey left, fact in Plate White right, hairline rules between). Addresses inside it use the hero-toned address chip. The plate's title names who approves ("Face ID and your Kit will approve"), and the seal goes only on the commit that needs both factors and is the step's own action: a plate signed by the Kit alone ("Your Kit will start the lock-out") or one set inside an alert ("Face ID and your Kit will stop it") carries none.
 
 ### Account Plate (signature)
-The Account as a live object, under the Ink Plate Rule. Header: a token in Plate Grey ("Account · live onchain") led by a 6px live square (Ledger Green when the chain answers, Plate Grey otherwise), and the hero-toned address pill at the right from 640px (on phones the top bar carries the address). Then the balance in the Balance figure, the allowance cells at the large size, and the action row: Send (primary), Receive (hero), Earn. Padding 20px, 24px from 640px. No seal: the seal stays on commit plates.
+The Account as a live object, under the Ink Plate Rule. Header: a token in Plate Grey ("Account · live onchain") led by a 6px live square (Ledger Green when the chain answers, Plate Grey otherwise), and the hero-toned address pill at the right from 640px (on phones the top bar carries the address). Then the balance in the Balance figure, the allowance cells at the large size, and the action row: Send (primary), Receive (hero), Earn (hero). Padding 20px, 24px from 640px. No seal: the seal stays on commit plates.
+
+### Positions Plate
+What the Account has lent, under the Ink Plate Rule because it is live onchain; no seal. Title: the token "Lent · live onchain" led by the 6px live square. Then the total in the Balance figure with "USDC" in the grotesk, and one plate row per approved protocol: the amount in mono with "USDC", then the rate in mono Plate Grey. It closes with a 12px Plate Grey footnote: "Testnet rates, variable. Swissquote neither holds the positions nor promises a return."
+
+### Protocol Card
+One per approved protocol, side by side from 1024px, stacked on phones. White, 10px corners, hairline border, 20px padding (24px from 640px), no logos. The name in 18px semibold with the neutral "Approved" badge at the right: every listed card is approved, so it never takes the accent badge. The rate in the Rate figure with "a year, variable"; one 14px line of what the protocol is, then its risks in Graphite. Hairline-ruled rows: "You lend" (mono amount, "USDC") and "Contract" (the short address in 12px mono Graphite, linked to Basescan with an outbound icon). Deposit is a large secondary button, joined by Withdraw (secondary) once there is a position; a single action spans the card. The card in action takes an ink border instead of a hairline; it never gets an orange button, so the screen keeps one orange action.
+
+### Action Panel
+A protocol action opens under the cards as one bordered panel (1px ink border, 10px corners, 20 to 24px padding): the heading "Deposit to Aave v3" / "Withdraw from …" in 18px semibold with a muted Cancel at the right, then the world's stepper (Amount → Review → Done). The amount step is the Send amount field (1.5px ink border, mono figure, Max in Ember Ink, the unit as a token) and the full-width primary Continue. The review is a sealed plate, "Face ID and your Kit will approve", with the amount in the Balance figure and rows Allow (the exact amount, plus the hero address chip) and Supply, or Withdraw ("back to your Account"), then Approval (approval squares) and Network fee. Under it, hairline-ruled sections with no inner boxes: the checks, the risk checkbox (ink accent colour), and the Kit; then Back (secondary) beside "Approve with Kit and Face ID" (primary). On phones the panel scrolls into view when it opens, with the amount field focused (instant under reduced motion). The receipt is a plate without a seal, titled by the event ("Deposit confirmed · onchain" / "Withdrawal confirmed · onchain"), showing the amount that was signed, rows Lent to / Back from, Approved by, Network fee, and a Basescan link.
+
+### Compliance Checks
+A list of checks before Face ID, each a status icon, a 14px title and mono detail lines that wrap anywhere (never cut). On a dApp action the subject is the contract, not a recipient: "Protocol contract screened: not on sanctions lists", "Simulation: these steps would succeed" with one mono line per step, and "Large amount: type the amount to confirm" (on a payment, "Large payment"). The typed confirmation compares amounts, so "0.5" matches "0.50". Simulation lines name an approved dApp with its short address ("Allow Aave v3 (0x07eA…814b) to spend 0.50 USDC"); a transfer's recipient stays the full address, because it is what the user verifies.
 
 ### Allowance Cells (signature)
 Today's Face ID budget as ten square cells (3px corners), lit orange from the left for what Face ID can still spend; the rest are empty (Plate Rule on a plate; Stone Wash with a hairline inset ring on white). Two tones (hero on an ink plate, light on white cards) and two sizes (24px tall with 6px gaps on the Account plate; 12px with 4px gaps in the Send rail). Above the row a 14px label ("Face ID can still spend today") and "Resets in" with a mono duration; below it the remaining and the limit as mono figures with "USDC left". In Send the cells preview the amount being typed: cells a Face ID payment will use turn outlined (Apricot fill, or Plate Rule on a plate, with a 1px inset orange ring) and the line reads "left after this payment"; a payment that needs the Kit leaves the cells untouched and adds a sentence led by an ink factor square. When a payment lands, cells drain from the right with a 30ms stagger over 300ms.
@@ -386,6 +416,8 @@ A Signal Red banner on danger-soft (danger at 30% for the border, 10px corners) 
 ### Refusal as evidence
 When the Account refuses a single-factor attempt, the proof is shown, not paraphrased: an orange factor square beside an outlined empty square (1 of 2), "Refused by your Account" in Signal Red semibold, the Safe's code as mono data ("GS020 · 1 of 2 factors"), then one muted sentence of why. It scrolls into view when it lands.
 
+The same grammar answers an unlisted dApp. Inside a white card "Only approved dApps are sponsored" (a muted paragraph, then a secondary button "Demo: try Uniswap v3 (not listed)"), the answer lands under a hairline: a ShieldX icon in ink, "Not sponsored by Swissquote" in semibold, the reason as a 12px mono line ("unapproved-dapp · Uniswap v3 router 0x94cC…2bc4"), then the paymaster's own message in muted 14px, wrapping anywhere. It scrolls into view when it lands.
+
 ### Locked-out screen
 A centred white card on the page ground: a Signal Red icon on danger-soft, "This phone was locked out", one muted paragraph, a muted Basescan link to the Account's owners, and a secondary button to remove the wallet from the phone.
 
@@ -406,6 +438,9 @@ Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale fro
 - **Do** call the device in hand "this device" in the lost-phone flow (it may be a laptop) and the other one "the old phone".
 - **Do** show every displayed USDC amount with two decimals.
 - **Do** say which factors a payment needs in a sentence with approval squares, mono only for the figures.
+- **Do** show a rate as a percentage with two decimals and "variable", next to a footnote that it is a testnet rate and not promised.
+- **Do** mark the card or row in action with an ink border, and keep the screen's one orange fill for its primary action.
+- **Do** name an approved dApp with its short address in readable steps, and keep a transfer's recipient as the full address.
 - **Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours.
 
 ### Don't:
@@ -417,3 +452,4 @@ Entrances are for rare, first-time screens: fade up 8px over 280ms, or scale fro
 - **Don't** place the seal anywhere but on a commit plate, and never more than one per screen.
 - **Don't** give the Swissquote guardian a factor square; it is never an owner.
 - **Don't** set "Soon" or other non-data labels as mono tokens; use the kit's neutral badge.
+- **Don't** wrap a bordered panel's sections in cards of their own; separate them with hairline rules (plates, alerts and the Kit drop zone stay elements inside a section).

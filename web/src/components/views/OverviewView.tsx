@@ -10,8 +10,8 @@ import { SwissquoteCard } from '@/components/account/SwissquoteCard'
 import { SweepNotice } from '@/components/account/SweepNotice'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
-import { ButtonLink, buttonSizeClasses } from '@/components/ui/button'
-import { Badge, Skeleton } from '@/components/ui/feedback'
+import { ButtonLink } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/feedback'
 import { useBlockNumber } from '@/components/ui/live'
 import { PageHeader } from '@/components/ui/page'
 import { formatUsdc, greeting } from '@/lib/format'
@@ -115,16 +115,9 @@ function AccountPlate() {
         <ButtonLink href="/receive" size="action" variant="hero">
           <ArrowDownLeft className="h-5 w-5" /> Receive
         </ButtonLink>
-        {/* Earn opens with the approved dApps screen (#25); until then it says so at every width. */}
-        <span
-          aria-disabled="true"
-          className={`inline-flex cursor-not-allowed items-center justify-center font-medium text-hero-muted ring-1 ring-inset ring-hero-2 [&_svg]:shrink-0 ${buttonSizeClasses('action')}`}
-        >
-          <Sprout className="h-5 w-5" />
-          <span className="inline-flex items-center gap-1.5">
-            Earn <Badge tone="hero">Soon</Badge>
-          </span>
-        </span>
+        <ButtonLink href="/earn" size="action" variant="hero">
+          <Sprout className="h-5 w-5" /> Earn
+        </ButtonLink>
       </div>
     </section>
   )

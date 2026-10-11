@@ -3,7 +3,7 @@
 import type { MetaTransaction } from 'abstractionkit'
 import { CircleCheck, ShieldAlert, TriangleAlert } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
-import { formatUnits, type Address } from 'viem'
+import { parseUnits, type Address } from 'viem'
 
 import { Input } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/feedback'
@@ -16,6 +16,7 @@ import {
   type Simulation,
 } from '@/lib/compliance'
 import { USDC_DECIMALS } from '@/lib/config'
+import { formatUsdc } from '@/lib/format'
 
 export type ComplianceState = { blocked: boolean; needsConfirmation: boolean; reasons: string[] }
 
@@ -32,6 +33,7 @@ export function ComplianceChecks({
   balance,
   knownRecipients,
   calls,
+  subject = 'payment',
   onChange,
 }: {
   from: Address
@@ -40,8 +42,12 @@ export function ComplianceChecks({
   balance: bigint | null
   knownRecipients: string[]
   calls?: MetaTransaction[]
+  /** A payment to a recipient, or an action on an approved dApp's contract (#25). */
+  subject?: 'payment' | 'dapp'
   onChange: (state: ComplianceState) => void
 }) {
+  const dapp = subject === 'dapp'
+  const party = dapp ? 'Protocol contract' : 'Recipient'
   const key = to && amount ? `${to}:${amount}` : ''
   const [screening, setScreening] = useState<{ key: string; result: Screening | { error: string } } | null>(null)
   const [simulation, setSimulation] = useState<{ key: string; result: Simulation } | null>(null)
@@ -68,16 +74,16 @@ export function ComplianceChecks({
   const simulated = simulation?.key === key ? simulation.result : null
   const lookAlike = to ? isLookAlike(to, knownRecipients) : null
   const highValue = amount !== null && needsHighValueConfirmation(amount, balance)
-  const amountText = amount !== null ? formatUnits(amount, USDC_DECIMALS) : ''
-  const typedOk = typed.key === key && typed.value.trim() === amountText
+  const amountText = amount !== null ? formatUsdc(amount).replace(/,/g, '') : ''
+  const typedOk = typed.key === key && sameAmount(typed.value, amount)
   const ackOk = acknowledged.key === key && acknowledged.value
 
   const sanctioned = !!screen && 'status' in screen && screen.status === 'sanctioned'
   const reasons = [
-    sanctioned && 'Recipient on a sanctions list',
+    sanctioned && `${party} on a sanctions list`,
     simulated && !simulated.ok && `Simulation failed: ${simulated.reason}`,
     lookAlike && 'Recipient looks like a previous counterparty',
-    highValue && 'Large payment',
+    highValue && (dapp ? 'Large amount' : 'Large payment'),
   ].filter(Boolean) as string[]
   const state: ComplianceState = {
     blocked: sanctioned,
@@ -99,24 +105,31 @@ export function ComplianceChecks({
         tone={!screen ? 'pending' : 'error' in screen ? 'warning' : sanctioned ? 'danger' : 'ok'}
         title={
           !screen
-            ? 'Screening the recipient…'
+            ? `Screening the ${party.toLowerCase()}…`
             : 'error' in screen
               ? `Screening unavailable: ${screen.error}`
               : sanctioned
-                ? 'Recipient is on a sanctions list'
-                : 'Recipient screened: not on sanctions lists'
+                ? `${party} is on a sanctions list`
+                : `${party} screened: not on sanctions lists`
         }
       >
-        {sanctioned && 'Swissquote will not prepare or sponsor this transfer. Contact support if you think this is a mistake.'}
+        {sanctioned &&
+          `Swissquote will not prepare or sponsor this ${dapp ? 'action' : 'transfer'}. Contact support if you think this is a mistake.`}
       </Check>
 
       {calls?.length ? (
         <Check
           tone={!simulated ? 'pending' : simulated.ok ? 'ok' : 'warning'}
-          title={!simulated ? 'Simulating…' : simulated.ok ? 'Simulation: this transfer would succeed' : `Simulation failed: ${simulated.reason}`}
+          title={
+            !simulated
+              ? 'Simulating…'
+              : simulated.ok
+                ? `Simulation: ${dapp ? 'these steps' : 'this transfer'} would succeed`
+                : `Simulation failed: ${simulated.reason}`
+          }
         >
           {simulated?.summary.map((line) => (
-            <span key={line} className="block break-all font-mono text-xs">
+            <span key={line} className="block [overflow-wrap:anywhere] font-mono text-xs">
               {line}
             </span>
           ))}
@@ -125,8 +138,8 @@ export function ComplianceChecks({
 
       {lookAlike && (
         <Check tone="danger" title="This address looks like one you used before, but it is different">
-          <span className="block break-all font-mono text-xs">Previous: {lookAlike}</span>
-          <span className="block break-all font-mono text-xs">This one: {to}</span>
+          <span className="block [overflow-wrap:anywhere] font-mono text-xs">Previous: {lookAlike}</span>
+          <span className="block [overflow-wrap:anywhere] font-mono text-xs">This one: {to}</span>
           <label className="mt-2 flex items-center gap-2">
             <input type="checkbox" checked={ackOk} onChange={(e) => setAcknowledged({ key, value: e.target.checked })} />
             I checked every character of this address
@@ -135,10 +148,11 @@ export function ComplianceChecks({
       )}
 
       {highValue && (
-        <Check tone={typedOk ? 'ok' : 'warning'} title="Large payment: type the amount to confirm">
+        <Check tone={typedOk ? 'ok' : 'warning'} title={`Large ${dapp ? 'amount' : 'payment'}: type the amount to confirm`}>
           <Input
             className="mt-2"
             inputMode="decimal"
+            aria-label="Type the amount to confirm"
             placeholder={amountText}
             value={typed.key === key ? typed.value : ''}
             onChange={(e) => setTyped({ key, value: e.target.value.replace(',', '.') })}
@@ -166,4 +180,14 @@ function Check({ tone, title, children }: { tone: 'ok' | 'warning' | 'danger' | 
       </span>
     </li>
   )
+}
+
+/** The typed confirmation matches the amount, however it is written ("0.5", "0.50"). */
+function sameAmount(text: string, amount: bigint | null) {
+  if (amount === null || !/^\d*\.?\d+$/.test(text.trim())) return false
+  try {
+    return parseUnits(text.trim(), USDC_DECIMALS) === amount
+  } catch {
+    return false
+  }
 }

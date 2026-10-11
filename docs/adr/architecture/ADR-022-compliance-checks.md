@@ -1,6 +1,6 @@
 # ADR-022: Compliance checks — server screening with a mock list (+ optional Chainalysis), client preview and warnings
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR-031](ADR-031-earn-screen.md) (chained simulation)
 - **Date:** 2026-10-10
 - **Related:** [PDR-023](../product/PDR-023-compliance-as-friction.md), [ADR-011](ADR-011-no-custom-cryptography.md), [ADR-020](ADR-020-deployment-vercel-upstash.md), [ADR-021](ADR-021-wallet-registry.md)
 

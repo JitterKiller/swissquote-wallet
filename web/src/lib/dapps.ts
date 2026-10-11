@@ -1,8 +1,9 @@
 import type { MetaTransaction } from 'abstractionkit'
-import { encodeFunctionData, erc20Abi, formatUnits, getAddress, maxUint256, parseAbi, type Address } from 'viem'
+import { encodeFunctionData, erc20Abi, getAddress, maxUint256, parseAbi, parseUnits, type Address } from 'viem'
 
 import { batchCalls, twoFactorCall, type AccountCall, type KitSigner } from './account'
 import { USDC_ADDRESS, USDC_DECIMALS } from './config'
+import { formatUsdc } from './format'
 import { publicClient } from './wallet'
 
 /**
@@ -73,9 +74,10 @@ const cometAbi = parseAbi([
 
 export type DappAction = 'deposit' | 'withdraw'
 
-/** One Account call per action: deposit = exact approval + supply (batched); withdraw = back to the Account. */
-export function dappActionCall(params: { dapp: Dapp; action: DappAction; account: Address; amount: bigint | 'max' }): AccountCall {
-  const { dapp, action, account, amount } = params
+type ActionParams = { dapp: Dapp; action: DappAction; account: Address; amount: bigint | 'max' }
+
+/** The Account's calls for an action, step by step: deposit = exact approval then supply; withdraw = back to the Account. */
+export function dappActionSteps({ dapp, action, account, amount }: ActionParams): AccountCall[] {
   if (action === 'deposit') {
     if (amount === 'max' || amount <= 0n) throw new Error('Deposit an exact amount')
     const spender = dapp.contracts[0]
@@ -87,13 +89,21 @@ export function dappActionCall(params: { dapp: Dapp; action: DappAction; account
       dapp.id === 'aave-v3'
         ? { to: AAVE_POOL, data: encodeFunctionData({ abi: aaveAbi, functionName: 'supply', args: [USDC_ADDRESS, amount, account, 0] }) }
         : { to: COMPOUND_COMET, data: encodeFunctionData({ abi: cometAbi, functionName: 'supply', args: [USDC_ADDRESS, amount] }) }
-    return batchCalls([approve, supply])
+    return [approve, supply]
   }
   // Withdraw: `max` (uint256 max) takes the whole position, so no dust is left behind.
   const value = amount === 'max' ? maxUint256 : amount
-  return dapp.id === 'aave-v3'
-    ? { to: AAVE_POOL, data: encodeFunctionData({ abi: aaveAbi, functionName: 'withdraw', args: [USDC_ADDRESS, value, account] }) }
-    : { to: COMPOUND_COMET, data: encodeFunctionData({ abi: cometAbi, functionName: 'withdraw', args: [USDC_ADDRESS, value] }) }
+  return [
+    dapp.id === 'aave-v3'
+      ? { to: AAVE_POOL, data: encodeFunctionData({ abi: aaveAbi, functionName: 'withdraw', args: [USDC_ADDRESS, value, account] }) }
+      : { to: COMPOUND_COMET, data: encodeFunctionData({ abi: cometAbi, functionName: 'withdraw', args: [USDC_ADDRESS, value] }) },
+  ]
+}
+
+/** One Account call per action (a deposit's two steps are batched through MultiSend). */
+export function dappActionCall(params: ActionParams): AccountCall {
+  const steps = dappActionSteps(params)
+  return steps.length === 1 ? steps[0] : batchCalls(steps)
 }
 
 /** The 2-factor Key Safe UserOp calls for a dApp action (Kit owner key + Key Safe as msg.sender). */
@@ -111,12 +121,27 @@ export async function dappActionCalls(params: {
 
 /** Readable preview lines, shown before Face ID with the simulation and screening (PDR-023). */
 export function describeDappAction(dapp: Dapp, action: DappAction, amount: bigint | 'max'): string[] {
-  const usdc = (v: bigint) => `${formatUnits(v, USDC_DECIMALS)} USDC`
+  const usdc = (v: bigint) => `${formatUsdc(v)} USDC`
   if (action === 'deposit' && amount !== 'max') {
     return [`Allow ${dapp.name} to take exactly ${usdc(amount)}, no more`, `Supply ${usdc(amount)} to ${dapp.name} from your Account`]
   }
   return [`Withdraw ${amount === 'max' ? 'your whole position' : usdc(amount as bigint)} from ${dapp.name} back to your Account`]
 }
+
+/**
+ * Demo (issue #25): a real dApp that is not on the list, the Uniswap v3 router on Base Sepolia. The
+ * Key Safe asks to approve it; the paymaster refuses to sponsor it (`unapproved-dapp`) before any
+ * Face ID prompt. Friction, not a veto: the client could still pay the network fee.
+ */
+export const UNLISTED_DEMO = { name: 'Uniswap v3', contract: '0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4' as Address }
+
+export const unlistedDemoCalls = (): MetaTransaction[] => [
+  {
+    to: USDC_ADDRESS,
+    value: 0n,
+    data: encodeFunctionData({ abi: erc20Abi, functionName: 'approve', args: [UNLISTED_DEMO.contract, parseUnits('1', USDC_DECIMALS)] }),
+  },
+]
 
 const SECONDS_PER_YEAR = 31_536_000
 
