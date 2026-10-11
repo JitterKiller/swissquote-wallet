@@ -101,7 +101,8 @@ export function HandleView() {
           <Input id="pay-amount" inputMode="decimal" placeholder="0.00" value={checkAmount} onChange={(e) => setCheckAmount(cleanAmount(e.target.value, USDC_DECIMALS))} autoComplete="off" />
         </Field>
         <ComplianceChecks
-          from={wallet.address}
+          // The funds address: the Account once protected (ADR-017), not the phone's Key Safe.
+          from={wallet.account ?? wallet.address}
           to={checkRecipient?.address ?? null}
           amount={parseAmount(checkAmount)}
           balance={chain.balance}

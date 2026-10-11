@@ -74,6 +74,15 @@ export function describeCall(call: MetaTransaction): string {
 
 export type Simulation = { ok: boolean; reason?: string; summary: string[] }
 
+/** A revert in the owner's words: viem's "The contract function … reverted with the following reason" wrapper goes. */
+function readableRevert(error: unknown) {
+  const message = error instanceof BaseError ? error.shortMessage : error instanceof Error ? error.message : ''
+  const reason = message.replace(/^The contract function "[^"]*" reverted with the following reason:\s*/, '').trim()
+  if (/transfer amount exceeds balance|insufficient balance/i.test(reason)) return 'Not enough funds for this amount.'
+  if (/transfer amount exceeds allowance|insufficient allowance/i.test(reason)) return 'The approval is too small for this amount.'
+  return reason || 'The transaction would fail'
+}
+
 /**
  * Runs each call with `eth_call` from the sender. Checks the effect (balance, allowance), not
  * the signature or the 4337 validation.
@@ -88,8 +97,7 @@ export async function simulateCalls(from: Address, calls: MetaTransaction[]): Pr
     })
     const failed = results.find((result) => result.status !== 'success')
     if (!failed) return { ok: true, summary }
-    const reason = failed.error instanceof BaseError ? failed.error.shortMessage : (failed.error?.message ?? 'The transaction would fail')
-    return { ok: false, reason, summary }
+    return { ok: false, reason: readableRevert(failed.error), summary }
   } catch {
     // A node without eth_simulateV1: one eth_call per step.
   }
@@ -97,8 +105,7 @@ export async function simulateCalls(from: Address, calls: MetaTransaction[]): Pr
     try {
       await publicClient.call({ account: from, to: call.to as Address, data: call.data as `0x${string}`, value: call.value })
     } catch (error) {
-      const reason = error instanceof BaseError ? error.shortMessage : 'The transaction would fail'
-      return { ok: false, reason, summary }
+      return { ok: false, reason: readableRevert(error), summary }
     }
   }
   return { ok: true, summary }
