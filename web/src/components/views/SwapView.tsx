@@ -472,7 +472,7 @@ function SwapReview({
           </div>
         </div>
         {(!hasLocalKit || kitFile) && (
-          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-surface-2 px-4 py-3 text-sm transition-colors hover:border-accent-ink">
+          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-surface-2 px-4 py-3 text-sm transition-colors hover:border-accent-ink focus-within:border-accent-ink focus-within:ring-4 focus-within:ring-accent-soft">
             <Upload className="h-4 w-4 shrink-0 text-muted" />
             <span className="min-w-0 truncate">{kitFile ? kitFile.name : 'Choose your Kit file'}</span>
             <input type="file" accept="application/json,.json" aria-label="Recovery Kit file" className="sr-only" onChange={(e) => pickFile(e.target.files?.[0])} />

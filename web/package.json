@@ -14,6 +14,7 @@
     "e2e:eviction": "node scripts/e2e-eviction.mts",
     "e2e:earn": "node scripts/e2e-earn.mts",
     "e2e:swap": "node scripts/e2e-swap.mts",
+    "e2e:limit": "node scripts/e2e-limit.mts",
     "screenshots": "node scripts/ui-screenshots.mts",
     "spike:two-safe": "node scripts/spike-two-safe.mts",
     "check:account": "tsx scripts/check-account-lib.mts",

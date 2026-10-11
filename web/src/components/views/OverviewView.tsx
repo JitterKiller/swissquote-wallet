@@ -110,7 +110,17 @@ function AccountPlate() {
 
       {allowance ? (
         <div className="mt-6">
-          <AllowanceMeter allowance={allowance} />
+          <AllowanceMeter
+            allowance={allowance}
+            action={
+              <Link
+                href="/security?change=limit"
+                className="-my-3 inline-flex min-h-11 items-center px-1 font-medium text-hero-fg underline-offset-4 hover:underline"
+              >
+                Change
+              </Link>
+            }
+          />
         </div>
       ) : wallet.account ? (
         <Skeleton className="mt-6 h-16 w-full bg-hero-2" />

@@ -1,5 +1,7 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 import { FactorSquare } from '@/components/ui/factor'
 import type { AccountState } from '@/lib/account'
 import { formatUsdc } from '@/lib/format'
@@ -32,11 +34,14 @@ export function AllowanceMeter({
   tone = 'hero',
   size = 'lg',
   spend = null,
+  action = null,
 }: {
   allowance: NonNullable<AccountState['allowance']>
   tone?: 'hero' | 'light'
   size?: 'lg' | 'sm'
   spend?: { amount: bigint; route: 'limit' | 'kit' } | null
+  /** A link beside the reset time ("Change" on the Overview, #13). */
+  action?: ReactNode
 }) {
   const now = useNow(60_000)
   const { amount, remaining } = allowance
@@ -57,6 +62,7 @@ export function AllowanceMeter({
         <p className={`text-sm ${muted}`}>{size === 'lg' ? 'Face ID can still spend today' : 'Face ID today'}</p>
         <p className={`whitespace-nowrap text-xs ${muted}`}>
           Resets in <span className="font-mono tabular-nums">{resetIn}</span>
+          {action && <> · {action}</>}
         </p>
       </div>
       <div className={`mt-2 grid grid-cols-10 ${size === 'lg' ? 'gap-1.5' : 'gap-1'}`} aria-hidden>

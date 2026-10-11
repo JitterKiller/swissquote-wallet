@@ -21,7 +21,8 @@ For the jury: **[threat model](docs/threat-model.md)** · **[business case](docs
 | Old device revoked after recovery | ✅ |
 | Mock Swissquote backend: guardian (HSM), KYC, relayer, notifications | ✅ (mock) |
 | Web UI: banking-style app shell, review-before-sign transfers, QR receive, on-chain activity with the factors that approved each payment (ADR-029), light/dark | ✅ |
-| Security page for the two-Safe Account: owners read live onchain, "Swissquote · not an owner" checkable on Basescan, worst case as an amount, who can do what (ADR-034, #26) | ✅ (limit change #13, security key #17 and level upgrade #21 shown as "Soon") |
+| Security page for the two-Safe Account: owners read live onchain, "Swissquote · not an owner" checkable on Basescan, worst case as an amount, who can do what (ADR-034, #26) | ✅ (security key #17 and level upgrade #21 shown as "Soon") |
+| Daily limit change, up or down, with Face ID + the Kit: worst case before → after, sealed review, one sponsored transaction (PDR-020, ADR-035, #13, `npm run e2e:limit`) | ✅ |
 | Compliance before Face ID: sanctions screening, simulation with a readable summary, look-alike and large-payment checks (PDR-023, ADR-022), on the Send review (#12) | ✅ |
 | Approved dApps, built natively: Aave v3 and Compound III with USDC, 2 factors, sponsored only when approved (PDR-025, ADR-028); Earn screen with positions, risk acknowledgement and the unlisted-dApp demo (ADR-031, `npm run e2e:earn`) | ✅ |
 | Swaps USDC ↔ EURC and USDC ↔ ETH (WETH) at Uniswap v3 on Base Sepolia, from the Account with Face ID + Kit: best fee tier, exact approval, 0.5% minimum, readable preview; EURC and ETH balances on the Overview, swaps in Activity (PDR-028, ADR-032, `npm run e2e:swap`) | ✅ (real testnet pools: prices far from real markets, labelled) |

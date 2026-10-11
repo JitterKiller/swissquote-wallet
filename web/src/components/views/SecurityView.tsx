@@ -1,11 +1,12 @@
 'use client'
 
 import { ArrowUpRight, TriangleAlert } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Address } from 'viem'
 
 import { formatDuration, nextReset } from '@/components/account/AllowanceMeter'
+import { LimitChange } from '@/components/account/LimitChange'
 import { LossBound, lossBound } from '@/components/account/LossBound'
 import { useLoadedWallet } from '@/components/providers/WalletProvider'
 import { AddressPill } from '@/components/ui/address'
@@ -62,8 +63,8 @@ function useSwissquoteKeys() {
 /**
  * Security (#26, ADR-034, surface brief web-src-components-views-securityview-tsx): a proof, not a
  * settings list. The Account's owners as the chain reports them, "Swissquote · not an owner", the
- * worst case as an amount, then who can do what (PDR-013, PDR-014, PDR-018). Nothing here is signed:
- * the limit change (#13), the security key (#17) and the level upgrade (#21) are marked "Soon".
+ * worst case as an amount, then who can do what (PDR-013, PDR-014, PDR-018). The one thing signed
+ * here is a new daily limit (#13, ADR-035); the security key (#17) and the level upgrade (#21) are "Soon".
  */
 export function SecurityView() {
   const { wallet, chain } = useLoadedWallet()
@@ -107,7 +108,10 @@ export function SecurityView() {
 
       {state ? (
         <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
-          <AccountRules state={state} level={level} />
+          {/* useSearchParams: kept inside a Suspense boundary for prerendering (Next docs). */}
+          <Suspense fallback={null}>
+            <AccountRules state={state} level={level} />
+          </Suspense>
           <div className="space-y-8">
             <ThisPhone />
             <ForgetWallet />
@@ -463,6 +467,18 @@ function AccountRules({ state, level }: { state: AccountState; level: Level }) {
   const now = useNow(30_000)
   const allowance = state.allowance
   const days = EVICTION_DAYS[level]
+  // "Change" beside the Overview's Face ID meter lands here with the panel open (/security?change=limit).
+  // The router's search params, not window.location: on a client navigation the URL updates after this renders.
+  const searchParams = useSearchParams()
+  const [changing, setChanging] = useState(() => searchParams.get('change') === 'limit')
+  const [changed, setChanged] = useState(false)
+  // Closing the panel (Cancel, Done) gives focus back to "Change".
+  const changeButton = useRef<HTMLButtonElement>(null)
+  const closed = useRef(false)
+  useEffect(() => {
+    if (!changing && closed.current) changeButton.current?.focus()
+    closed.current = changing
+  }, [changing])
   return (
     <section aria-labelledby="rules-title">
       <h2 id="rules-title" className="text-lg font-semibold tracking-tight">
@@ -485,7 +501,31 @@ function AccountRules({ state, level }: { state: AccountState; level: Level }) {
               </>
             )
           }
-          action="Change"
+          control={
+            changing ? (
+              // Once the receipt shows, the change is done: its own "Done" closes it.
+              !changed && (
+                <Button variant="secondary" size="sm" className="max-sm:h-11" onClick={() => setChanging(false)}>
+                  Cancel
+                </Button>
+              )
+            ) : (
+              <Button
+                ref={changeButton}
+                variant="secondary"
+                size="sm"
+                className="max-sm:h-11"
+                disabled={!allowance}
+                onClick={() => {
+                  setChanged(false)
+                  setChanging(true)
+                }}
+              >
+                Change
+              </Button>
+            )
+          }
+          panel={changing && <LimitChange state={state} level={level} onClose={() => setChanging(false)} onChanged={() => setChanged(true)} />}
         />
         <RuleRow
           name="Lock-out delay"
@@ -508,22 +548,44 @@ function AccountRules({ state, level }: { state: AccountState; level: Level }) {
   )
 }
 
-function RuleRow({ name, value, detail, action }: { name: string; value: ReactNode; detail?: ReactNode; action: string | null }) {
+/** A rule: its value, then either a working control (and the panel it opens) or a "Soon" slot. */
+function RuleRow({
+  name,
+  value,
+  detail,
+  action,
+  control,
+  panel,
+}: {
+  name: string
+  value: ReactNode
+  detail?: ReactNode
+  action?: string | null
+  control?: ReactNode
+  panel?: ReactNode
+}) {
   return (
-    <li className="flex flex-col gap-3 border-b border-border py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-      <div className="min-w-0">
-        <p className="text-sm text-muted">{name}</p>
-        <p className="mt-0.5 font-medium">{value}</p>
-        {detail && <p className="mt-0.5 text-sm text-muted">{detail}</p>}
+    <li className="scroll-mt-20 border-b border-border py-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <div className="min-w-0">
+          <p className="text-sm text-muted">{name}</p>
+          <p className="mt-0.5 font-medium">{value}</p>
+          {detail && <p className="mt-0.5 text-sm text-muted">{detail}</p>}
+        </div>
+        {control ? (
+          <span className="shrink-0">{control}</span>
+        ) : (
+          action && (
+            <span className="flex shrink-0 items-center gap-2">
+              <Badge>Soon</Badge>
+              <Button variant="secondary" size="sm" disabled>
+                {action}
+              </Button>
+            </span>
+          )
+        )}
       </div>
-      {action && (
-        <span className="flex shrink-0 items-center gap-2">
-          <Badge>Soon</Badge>
-          <Button variant="secondary" size="sm" disabled>
-            {action}
-          </Button>
-        </span>
-      )}
+      {panel && <div className="mt-4">{panel}</div>}
     </li>
   )
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-11T23:59:00+00:00",
+  "generatedAt": "2026-10-12T00:30:00+00:00",
   "title": "Design System: SQure",
   "extensions": {
     "colorMeta": {
@@ -478,7 +478,7 @@
       "name": "Amount Field with presets",
       "kind": "input",
       "refersTo": "input-amount",
-      "description": "The chosen amount in 48px mono inside a 1.5px ink frame, with mono preset chips; the selected chip is orange with ink text.",
+      "description": "The chosen amount in 48px mono inside a 1.5px ink frame, with mono preset chips; the selected chip is orange with ink text. Shared as LimitPicker by the protect flow and Change the daily limit; on phones the 48px figure steps down past 6 characters (amountFit), chips are 44px.",
       "html": "<div class=\"ds-amount\"><div class=\"ds-amount-box\"><input class=\"ds-amount-input\" value=\"500\" inputmode=\"decimal\" aria-label=\"Daily limit\"/><span class=\"ds-token ds-amount-unit\">USDC / day</span></div><div class=\"ds-presets\"><button class=\"ds-chip\">100</button><button class=\"ds-chip\">250</button><button class=\"ds-chip\" aria-pressed=\"true\">500 <small>suggested</small></button><button class=\"ds-chip\">1,000</button></div></div>",
       "css": ".ds-amount{display:flex;flex-direction:column;gap:20px;} .ds-amount-box{position:relative;} .ds-amount-input{height:60px;width:100%;border-radius:8px;border:1.5px solid var(--foreground, #171717);background:var(--surface, #ffffff);color:var(--foreground, #171717);padding:0 112px 0 14px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:48px;font-weight:600;letter-spacing:-0.025em;font-variant-numeric:tabular-nums;outline:none;} .ds-amount-input:focus{border-color:var(--accent-ink, #c2410c);box-shadow:0 0 0 4px var(--accent-soft, #fff0e6);} .ds-token{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;} .ds-amount-unit{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted, #6b6b6b);} .ds-presets{display:flex;flex-wrap:wrap;gap:8px;} .ds-chip{height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border, #e7e5e4);background:var(--surface, #ffffff);color:var(--foreground, #171717);font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-size:14px;cursor:pointer;transition:background-color 150ms,transform 150ms;} .ds-chip small{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:11px;color:var(--muted, #6b6b6b);margin-left:6px;} .ds-chip:hover{background:var(--surface-2, #f5f5f4);} .ds-chip:active{transform:scale(0.97);} .ds-chip:focus-visible{outline:2px solid var(--accent-ink, #c2410c);outline-offset:2px;} .ds-chip[aria-pressed=true]{background:var(--accent, #ff5f0f);color:var(--accent-fg, #171717);border-color:transparent;font-weight:600;} .ds-chip[aria-pressed=true] small{color:var(--accent-fg, #171717);}"
     },
@@ -606,9 +606,25 @@
       "name": "Soon Slot",
       "kind": "custom",
       "refersTo": "badge-accent",
-      "description": "A power not built yet keeps its place: the neutral Soon badge beside a disabled small secondary button naming the action, on a hairline rule row. Never orange, never hidden.",
+      "description": "A power not built yet keeps its place: the neutral Soon badge beside a disabled small secondary button naming the action, on a hairline rule row. Never orange, never hidden. The daily limit row now carries a working \"Change\" instead (see In-Row Panel); the lock-out delay and security key stay Soon.",
       "html": "<div class=\"ds-rule\"><div><p class=\"ds-rule-l\">Daily limit</p><p class=\"ds-rule-v\"><b>0.50</b> USDC a day</p><p class=\"ds-rule-l\"><b>0.00</b> spent today · resets in 21 h 18 min</p></div><span class=\"ds-slot\"><em>Soon</em><button disabled>Change</button></span></div>",
       "css": ".ds-rule{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:16px 0;border-top:1px solid var(--border, #e7e5e4);border-bottom:1px solid var(--border, #e7e5e4);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-rule p{margin:2px 0 0;} .ds-rule-l{font-size:14px;color:var(--muted, #6b6b6b);} .ds-rule-v{font-weight:500;} .ds-rule b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-slot{display:flex;align-items:center;gap:8px;flex-shrink:0;} .ds-slot em{font-style:normal;font-size:12px;font-weight:500;padding:2px 6px;border-radius:6px;background:var(--surface-2, #f5f5f4);box-shadow:inset 0 0 0 1px var(--border, #e7e5e4);} .ds-slot button{height:36px;padding:0 12px;border:1px solid var(--border, #e7e5e4);border-radius:6px;background:var(--surface, #fff);font:inherit;font-size:14px;font-weight:500;color:var(--foreground, #171717);opacity:0.45;cursor:not-allowed;} @media (max-width:639px){.ds-rule{flex-direction:column;gap:12px;} .ds-slot button{height:44px;}}"
+    },
+    {
+      "name": "Worst Case Change",
+      "kind": "card",
+      "refersTo": "worst-case-change",
+      "description": "The loss bound before → after when a rule changes, on the apricot field: the current worst case muted, an arrow, the new one large, then a live sentence with the exact difference and what Face ID can still spend today.",
+      "html": "<section class=\"ds-wcc\"><p class=\"ds-wcc-copy\">If your phone is stolen, a thief can take at most</p><p class=\"ds-wcc-figs\"><span class=\"ds-wcc-now\">4.00</span><span class=\"ds-wcc-arrow\" aria-hidden=\"true\">→</span><span class=\"ds-wcc-next\">8.00</span><span class=\"ds-wcc-unit\">USDC</span></p><p class=\"ds-wcc-copy\" aria-live=\"polite\"><b>4.00</b> USDC more than now. Face ID could still spend <b>1.00</b> today.</p></section>",
+      "css": ".ds-wcc{background:var(--accent-soft, #fff0e6);border-radius:10px;padding:16px 20px;font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-wcc-copy{margin:0;font-size:14px;color:color-mix(in srgb, var(--foreground, #171717) 75%, transparent);} .ds-wcc-copy b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-wcc-figs{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:4px 0 8px;font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-variant-numeric:tabular-nums;} .ds-wcc-now,.ds-wcc-arrow{font-size:24px;color:color-mix(in srgb, var(--foreground, #171717) 60%, transparent);} .ds-wcc-next{font-size:36px;font-weight:600;letter-spacing:-0.025em;} .ds-wcc-unit{font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;font-size:18px;}"
+    },
+    {
+      "name": "In-Row Panel",
+      "kind": "custom",
+      "refersTo": "button-secondary",
+      "description": "Changing a rule opens under its own hairline row with no card of its own; the row's small secondary control reads Cancel while open and gives focus back to Change on close. The panel stacks the field, the worst case before → after, the sealed plate and the Kit.",
+      "html": "<div class=\"ds-irp\"><div class=\"ds-irp-head\"><div><p class=\"ds-irp-l\">Daily limit</p><p class=\"ds-irp-v\"><b>0.50</b> USDC a day</p><p class=\"ds-irp-l\"><b>0.00</b> spent today · resets in 20 h 58 min</p></div><button class=\"ds-irp-btn\">Cancel</button></div><div class=\"ds-irp-panel\"><p class=\"ds-irp-l\">New daily limit · worst case before → after · plate · Kit · Cancel / Approve with Kit and Face ID</p></div></div>",
+      "css": ".ds-irp{padding:16px 0;border-top:1px solid var(--border, #e7e5e4);border-bottom:1px solid var(--border, #e7e5e4);font-family:var(--font-hanken, 'Hanken Grotesk'), system-ui, sans-serif;color:var(--foreground, #171717);} .ds-irp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;} .ds-irp p{margin:2px 0 0;} .ds-irp-l{font-size:14px;color:var(--muted, #6b6b6b);} .ds-irp-v{font-weight:500;} .ds-irp b{font-family:var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, monospace;font-weight:400;font-variant-numeric:tabular-nums;} .ds-irp-btn{height:36px;padding:0 12px;border:1px solid var(--border, #e7e5e4);border-radius:6px;background:var(--surface, #fff);font:inherit;font-size:14px;font-weight:500;flex-shrink:0;cursor:pointer;} .ds-irp-btn:hover{background:var(--surface-2, #f5f5f4);} .ds-irp-panel{margin-top:16px;} @media (max-width:639px){.ds-irp-head{flex-direction:column;gap:12px;} .ds-irp-btn{height:44px;}}"
     }
   ],
   "narrative": {
@@ -673,6 +689,11 @@
         "name": "The Loss Bound Truth Rule",
         "body": "The worst case is what is left today plus one daily limit per reset during the delay, computed exactly and shown with two decimals. Never \"about\", never rounded up for effect.",
         "section": "components"
+      },
+      {
+        "name": "The In-Row Panel",
+        "body": "Changing a rule opens under its own row, between the row's hairlines, with no border or card of its own; the row's control toggles Change ↔ Cancel and hides on the receipt. The panel shows the worst case before → after on the apricot field before the sealed plate. Later rule-change panels follow it.",
+        "section": "components"
       }
     ],
     "dos": [
@@ -691,6 +712,8 @@
       "**Do** show a rate as a percentage with two decimals and \"variable\", next to a footnote that it is a testnet rate and not promised.",
       "**Do** mark the card or row in action with an ink border, and keep the screen's one orange fill for its primary action.",
       "**Do** name an approved dApp with its short address in readable steps, and keep a transfer's recipient as the full address.",
+      "**Do** show a rule change as its worst case before → after on the apricot field, the current figure muted and the new one large, before the plate.",
+      "**Do** open a rule's change under its own row, inside its hairlines, with no card of its own, and give focus back to the row's control when it closes.",
       "**Do** keep a power that is not built yet in place as a Soon slot: the neutral \"Soon\" badge beside its disabled small secondary button.",
       "**Do** say who can do what as a powers matrix of factor squares and a few words, a table from 640px and a list on phones.",
       "**Do** use the tokens in `globals.css` and the kit in `web/src/components/ui`, never raw colours."

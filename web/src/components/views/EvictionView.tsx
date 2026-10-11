@@ -371,7 +371,7 @@ function KitStep({ busy, onSubmit }: { busy: string | null; onSubmit: (text: str
   const [passphrase, setPassphrase] = useState('')
   return (
     <StepCard icon={<FileKey className="h-5 w-5" />} title="Open your Recovery Kit" description="The file you saved when you protected your wallet, and its passphrase.">
-      <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-surface-2 px-4 py-4 text-sm transition-colors hover:border-accent-ink">
+      <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-surface-2 px-4 py-4 text-sm transition-colors hover:border-accent-ink focus-within:border-accent-ink focus-within:ring-4 focus-within:ring-accent-soft">
         <Upload className="h-5 w-5 shrink-0 text-muted" />
         <span className="min-w-0">
           <span className="block truncate font-medium">{fileName ?? 'Choose your Kit file'}</span>

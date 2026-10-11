@@ -239,7 +239,7 @@ function StopLockOut({
         </div>
       </div>
       {(!hasLocalKit || kitFile) && (
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-danger/30 bg-surface px-4 py-3 text-sm">
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-danger/30 bg-surface px-4 py-3 text-sm focus-within:border-accent-ink focus-within:ring-4 focus-within:ring-accent-soft">
           <Upload className="h-4 w-4 shrink-0 text-muted" />
           <span className="min-w-0 truncate">{kitFile ? kitFile.name : 'Choose your Kit file'}</span>
           <input
